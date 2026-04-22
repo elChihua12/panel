@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Guía de IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea;--surface:#fff;--border:rgba(0,0,0,0.08);--text:#16161e;--muted:#7a7a8c;
+  --claude:#6d3be4;--claude-bg:#f0ebff;
+  --gemini:#1d4ed8;--gemini-bg:#eff6ff;
+  --chatgpt:#059669;--chatgpt-bg:#ecfdf5;
+  --grok:#374151;--grok-bg:#f3f4f6;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);padding:36px 20px 80px;}
+
+.hdr{text-align:center;margin-bottom:36px;}
+.hdr h1{font-family:'Fraunces',serif;font-size:clamp(2rem,5vw,2.8rem);font-weight:900;line-height:1.05;margin-bottom:6px;}
+.hdr h1 em{font-style:italic;color:var(--claude);}
+.hdr p{font-size:0.8rem;color:var(--muted);}
+
+.tabs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:32px;}
+.tab{padding:8px 18px;border-radius:30px;border:2px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;}
+.tab:hover{border-color:var(--claude);color:var(--claude);}
+.tab.active{background:var(--text);border-color:var(--text);color:#fff;}
+
+.sec{display:none;max-width:880px;margin:0 auto;animation:up .25s ease;}
+.sec.on{display:block;}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:900;text-align:center;margin-bottom:4px;}
+.sec-sub{text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:28px;}
+
+/* MODELS */
+.mcards{display:flex;flex-direction:column;gap:12px;}
+.mcard{background:var(--surface);border:2px solid var(--border);border-radius:18px;padding:20px 22px;display:grid;grid-template-columns:90px 1fr;gap:18px;transition:box-shadow .2s;}
+.mcard:hover{box-shadow:0 6px 20px rgba(0,0,0,0.07);}
+.mcard-left{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;}
+.mcard-name{font-family:'Fraunces',serif;font-size:0.95rem;font-weight:800;}
+.mbadge{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:20px;}
+.mcard-right{display:flex;flex-direction:column;gap:5px;padding-top:2px;}
+.mchip{font-size:0.78rem;padding:5px 10px;border-radius:8px;background:rgba(0,0,0,0.03);border:1px solid var(--border);line-height:1.4;}
+.star-chip{font-size:0.68rem;font-weight:700;padding:4px 10px;border-radius:8px;margin-bottom:2px;display:inline-block;}
+
+/* TOOLS */
+.goal-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.gtab{padding:6px 14px;border-radius:20px;border:2px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.73rem;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.gtab:hover{border-color:var(--claude);color:var(--claude);}
+.gtab.active{background:var(--text);border-color:var(--text);color:#fff;}
+
+.goal-sec{display:none;}
+.goal-sec.on{display:block;}
+
+.cat-label{font-size:0.63rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700;margin:22px 0 10px;display:flex;align-items:center;gap:10px;}
+.cat-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:9px;}
+.tcard{background:var(--surface);border:2px solid var(--border);border-radius:13px;padding:12px 14px;transition:box-shadow .15s;}
+.tcard:hover{box-shadow:0 4px 14px rgba(0,0,0,0.07);}
+.tcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:3px;}
+.tcard-name{font-weight:700;font-size:0.82rem;}
+.tcard-desc{font-size:0.71rem;color:var(--muted);line-height:1.4;}
+.ttag{font-size:0.57rem;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.free{background:#dcfce7;color:#166534;}
+.paid{background:#fee2e2;color:#991b1b;}
+.freemium{background:#fef3c7;color:#92400e;}
+.health-tag{background:#dbeafe;color:#1e40af;}
+
+/* FLOWS */
+.flows{display:flex;flex-direction:column;gap:12px;}
+.fcard{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:18px 20px;}
+.ftitle{font-weight:800;font-size:0.9rem;margin-bottom:12px;}
+.fsteps{display:flex;align-items:flex-start;flex-wrap:wrap;gap:0;}
+.fstep{display:flex;align-items:flex-start;gap:8px;flex:1;min-width:140px;}
+.fstep-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0;margin-top:2px;}
+.fstep-body{font-size:0.76rem;line-height:1.45;}
+.fstep-body strong{display:block;font-size:0.68rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px;}
+.farrow{color:var(--muted);font-size:1rem;padding:2px 8px;align-self:center;flex-shrink:0;}
+
+@media(max-width:560px){
+  .mcard{grid-template-columns:1fr;}
+  .mcard-left{flex-direction:row;text-align:left;}
+  .fsteps{flex-direction:column;gap:8px;}
+  .farrow{transform:rotate(90deg);align-self:flex-start;margin-left:10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>Guía de <em>IA</em></h1>
+  <p>Qué usar · Cuándo · Para qué</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('modelos')">🤖 Modelos</button>
+  <button class="tab" onclick="show('tools')">🛠️ Herramientas</button>
+  <button class="tab" onclick="show('flujos')">🔄 Flujos</button>
+</div>
+
+<!-- ══ MODELOS ══ -->
+<div class="sec on" id="sec-modelos">
+  <div class="sec-title">Los modelos clave</div>
+  <div class="sec-sub">Cada uno tiene un rol — no se reemplazan, se complementan</div>
+  <div class="mcards">
+
+    <div class="mcard" style="border-color:rgba(109,59,228,.25)">
+      <div class="mcard-left">
+        <div style="font-size:1.5rem">🟣</div>
+        <div class="mcard-name" style="color:var(--claude)">Claude</div>
+        <span class="mbadge" style="background:var(--claude-bg);color:var(--claude)">Razonar</span>
+      </div>
+      <div class="mcard-right">
+        <span class="star-chip" style="background:var(--claude-bg);color:var(--claude)">⭐ Artefactos — genera apps, Word, Excel, PDF dentro del chat</span>
+        <div class="mchip">🧠 Análisis profundo, planificación y documentos complejos</div>
+        <div class="mchip">⚙️ Código y automatizaciones sin saber programar</div>
+        <div class="mchip">💾 Memoria entre sesiones · Proyectos con contexto fijo</div>
+      </div>
+    </div>
+
+    <div class="mcard" style="border-color:rgba(29,78,216,.2)">
+      <div class="mcard-left">
+        <div style="font-size:1.5rem">🔵</div>
+        <div class="mcard-name" style="color:var(--gemini)">Gemini</div>
+        <span class="mbadge" style="background:var(--gemini-bg);color:var(--gemini)">Buscar</span>
+      </div>
+      <div class="mcard-right">
+        <span class="star-chip" style="background:var(--gemini-bg);color:var(--gemini)">⭐ NotebookLM — sube tus docs y genera podcast de audio (gratis)</span>
+        <div class="mchip">🌐 Mejor búsqueda web — acceso directo a Google en tiempo real</div>
+        <div class="mchip">📂 Lee archivos de Drive · Analiza videos de YouTube con el link</div>
+      </div>
+    </div>
+
+    <div class="mcard" style="border-color:rgba(5,150,105,.2)">
+      <div class="mcard-left">
+        <div style="font-size:1.5rem">🟢</div>
+        <div class="mcard-name" style="color:var(--chatgpt)">ChatGPT</div>
+        <span class="mbadge" style="background:var(--chatgpt-bg);color:var(--chatgpt)">Todo en uno</span>
+      </div>
+      <div class="mcard-right">
+        <span class="star-chip" style="background:var(--chatgpt-bg);color:var(--chatgpt)">⭐ Advanced Voice — conversación de voz más natural del mercado</span>
+        <div class="mchip">🎨 Genera imágenes con DALL·E · GPTs: asistentes personalizados</div>
+        <div class="mchip">🔬 Deep Research: investiga 20+ fuentes en profundidad automáticamente</div>
+      </div>
+    </div>
+
+    <div class="mcard" style="border-color:rgba(55,65,81,.2)">
+      <div class="mcard-left">
+        <div style="font-size:1.5rem">⚪</div>
+        <div class="mcard-name" style="color:var(--grok)">Grok</div>
+        <span class="mbadge" style="background:var(--grok-bg);color:var(--grok)">Actualidad</span>
+      </div>
+      <div class="mcard-right">
+        <span class="star-chip" style="background:var(--grok-bg);color:var(--grok)">⭐ Tareas programadas — recordatorios automáticos sin estar presente</span>
+        <div class="mchip">📡 Noticias y tendencias en tiempo real desde X/Twitter</div>
+        <div class="mchip">🔓 Menos moderación — más directo en temas grises</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ HERRAMIENTAS ══ -->
+<div class="sec" id="sec-tools">
+  <div class="sec-title">Herramientas digitales</div>
+  <div class="sec-sub">Selecciona un área de tu vida — gratuitas primero</div>
+
+  <div class="goal-tabs">
+    <button class="gtab active" onclick="showGoal('gtodo')">🗂️ Todas</button>
+    <button class="gtab" onclick="showGoal('gtrabajo')">💼 Trabajo</button>
+    <button class="gtab" onclick="showGoal('gproyectos')">🎯 Proyectos</button>
+    <button class="gtab" onclick="showGoal('gsalud')">🏥 Salud / QF</button>
+    <button class="gtab" onclick="showGoal('gaprender')">📚 Aprender IA</button>
+    <button class="gtab" onclick="showGoal('gcontenido')">🎬 Contenido</button>
+    <button class="gtab" onclick="showGoal('gfinanzas')">💰 Finanzas</button>
+    <button class="gtab" onclick="showGoal('gbienestar')">🌿 Bienestar</button>
+  </div>
+
+  <!-- TODAS -->
+  <div class="goal-sec on" id="goal-gtodo">
+
+    <div class="cat-label">🔍 Investigación y búsqueda</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Gemini</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Búsqueda web en tiempo real. Lee Drive y analiza videos de YouTube con el link.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Perplexity</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Buscador con IA que cita fuentes verificables. Reemplaza a Google para investigación.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Consensus</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Busca en papers científicos y resume el consenso académico sobre cualquier tema.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Elicit</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Extrae datos y conclusiones de múltiples estudios simultáneamente.</div></div>
+    </div>
+
+    <div class="cat-label">⚕️ Salud y clínica</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Open Evidence</span><span class="ttag free">Gratis (credencial)</span></div><div class="tcard-desc">IA médica con literatura clínica de alta calidad. Requiere credencial profesional. Ideal para QF.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Elicit</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Revisión sistemática de literatura médica. Extrae datos de múltiples estudios a la vez.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Consensus</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Busca el consenso científico en salud. Útil para respaldo de decisiones basadas en evidencia.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Vera Health</span><span class="ttag free">Gratis (credencial)</span></div><div class="tcard-desc">60M+ papers y guías clínicas. Citaciones directas. Soportado por Mayo Clinic y Harvard.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Epocrates</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Referencia rápida de dosis, interacciones y formulario. App móvil esencial para el punto de atención.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Dr. Oracle</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Soporte clínico basado en guías de EE.UU., UK y UE. Abierto a estudiantes y profesionales.</div></div>
+    </div>
+
+    <div class="cat-label">🎨 Imágenes y diseño</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Canva</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Posts, logos, banners, presentaciones y documentos con IA integrada. El más versátil.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Microsoft Designer</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Diseños e imágenes simples. Gratis con cuenta Microsoft, integrado con Office.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Stable Diffusion</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Open source, sin restricciones, corre localmente. Máxima libertad de personalización.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Midjourney</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Calidad artística máxima — fotorrealismo, arte conceptual y renders profesionales.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Looka</span><span class="ttag paid">Pago puntual</span></div><div class="tcard-desc">Genera logos y kit de marca completo con IA. Sin necesidad de diseñador.</div></div>
+    </div>
+
+    <div class="cat-label">🎬 Video y edición</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">CapCut</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Edición rápida con IA: subtítulos automáticos, efectos y cortes inteligentes para redes.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Descript</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Edita video y audio como texto. Transcripción automática incluida.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Runway ML</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Generación y edición avanzada de video con IA. Referente para contenido profesional.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Pictory</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Convierte artículos o textos en videos con narración automática.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Sora (OpenAI)</span><span class="ttag paid">ChatGPT+</span></div><div class="tcard-desc">Genera video de alta calidad desde texto. Integrado con ChatGPT Plus.</div></div>
+    </div>
+
+    <div class="cat-label">🎵 Audio, voz y música</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">NotebookLM</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Sube tus documentos y genera un podcast de audio con dos voces discutiendo el material.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Whisper</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Transcripción precisa de audio a texto. Open source de OpenAI, múltiples idiomas.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">ElevenLabs</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Síntesis y clonación de voz ultrarrealista. Ideal para narración, podcasts y doblajes.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Suno AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Genera canciones completas con letra, melodía y arreglo desde una descripción de texto.</div></div>
+    </div>
+
+    <div class="cat-label">📊 Presentaciones y documentos</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Gamma</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Presentaciones profesionales desde texto en segundos. Sin diseño manual.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (Artefactos)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Genera Word, Excel, PDF y presentaciones descargables desde el chat.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Beautiful.ai</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Slides con diseño automático y adaptable. Alternativa premium a PowerPoint.</div></div>
+    </div>
+
+    <div class="cat-label">⚡ Productividad y automatización</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Notion AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Notas, base de datos y IA en un solo lugar. Ideal para gestionar proyectos y contexto.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Zapier</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Conecta apps y automatiza tareas repetitivas sin código. Ideal para empezar.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Otter.ai</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Transcribe y resume reuniones en tiempo real. Genera actas automáticas.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Reclaim AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Organiza tu calendario automáticamente según prioridades. Protege tiempo para lo importante.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Make</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Automatiza flujos complejos entre apps. Más potente que Zapier para tareas avanzadas.</div></div>
+    </div>
+
+    <div class="cat-label">💰 Finanzas personales</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (Artefactos)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Genera planillas de presupuesto, simuladores de deuda y dashboards financieros interactivos.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Copilot Money</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Seguimiento automático de gastos con categorización por IA. Integra cuentas bancarias.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Monarch Money</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Planificación financiera personal completa con IA. Proyecciones y metas de ahorro.</div></div>
+    </div>
+
+    <div class="cat-label">🌿 Bienestar y vida personal</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Duolingo</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Aprende idiomas con IA adaptativa. Gamificado y efectivo para aprendizaje diario.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Calm / Headspace</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Meditación guiada, manejo del estrés y mejora del sueño con IA personalizada.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Whoop / Oura</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Wearables que analizan sueño, recuperación y carga de trabajo con recomendaciones de IA.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (chat)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Planificación personal, organización familiar, reflexión y toma de decisiones complejas.</div></div>
+    </div>
+
+  </div><!-- /gtodo -->
+
+  <!-- TRABAJO -->
+  <div class="goal-sec" id="goal-gtrabajo">
+    <div class="cat-label">💼 Optimizar tu trabajo diario</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Otter.ai</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Transcribe reuniones en tiempo real y genera actas con puntos de acción automáticos.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Whisper</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Transcripción precisa de audio a texto. Ideal para documentar conversaciones y dictados.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Zapier</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Automatiza tareas repetitivas entre apps. Emails, reportes, notificaciones — sin código.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Reclaim AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Bloquea tiempo en tu calendario para tareas importantes automáticamente.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (Artefactos)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Genera macros, documentos y plantillas automatizadas para tareas repetitivas de oficina.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Make</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Flujos de trabajo automatizados complejos. Conecta cualquier app con cualquier otra.</div></div>
+    </div>
+  </div>
+
+  <!-- PROYECTOS -->
+  <div class="goal-sec" id="goal-gproyectos">
+    <div class="cat-label">🎯 Gestión y planificación de proyectos</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Notion AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Centraliza proyectos, notas, tareas y contexto con IA integrada. El mejor hub personal.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Gamma</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Convierte un plan de texto en presentación profesional en segundos.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (Artefactos)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Genera planes de negocio, cronogramas, análisis de riesgo y documentos de proyecto.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Reclaim AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Gestiona deadlines y distribuye el trabajo en tu calendario según prioridad.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Perplexity</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Investiga el mercado, competidores o regulaciones con fuentes citadas y actualizadas.</div></div>
+    </div>
+  </div>
+
+  <!-- SALUD -->
+  <div class="goal-sec" id="goal-gsalud">
+    <div class="cat-label">⚕️ Herramientas clínicas y farmacéuticas</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Open Evidence</span><span class="ttag free">Gratis (credencial QF)</span></div><div class="tcard-desc">IA médica con literatura de alta calidad. Respuestas basadas en evidencia con citas directas a estudios.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Epocrates</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Dosis, interacciones y formulario en app móvil. Esencial para consulta en punto de atención.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Vera Health</span><span class="ttag free">Gratis (credencial)</span></div><div class="tcard-desc">60M+ papers con enfoque en evidencia primero. Soportado por Mayo Clinic y Harvard.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Consensus</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Sintetiza el consenso científico de miles de estudios sobre cualquier pregunta clínica.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Elicit</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Extrae datos estructurados de múltiples estudios. Ideal para revisiones de literatura.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Dr. Oracle</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Guías clínicas de EE.UU., UK y UE. Abierto a estudiantes y profesionales internacionales.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">NotebookLM</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Sube guías MINSAL, fichas técnicas o protocolos → genera podcast y resumen para estudiar.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (Artefactos)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Analiza documentos clínicos, genera fichas de paciente, planillas de inventario y protocolos.</div></div>
+    </div>
+  </div>
+
+  <!-- APRENDER IA -->
+  <div class="goal-sec" id="goal-gaprender">
+    <div class="cat-label">📚 Aprender a usar IA — de cero a avanzado</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (este chat)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Pregunta cualquier duda sobre IA, pide ejemplos, genera código y aprende haciendo.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Coursera / edX</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Cursos formales de IA, machine learning y prompt engineering de universidades top.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">YouTube</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">El recurso más actualizado. Canales como Andrej Karpathy, Yannic Kilcher o 3Blue1Brown.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">fast.ai</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Curso práctico de deep learning orientado a personas sin experiencia técnica profunda.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Anthropic Docs</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Documentación oficial de Claude: cómo hacer mejores prompts, casos de uso y APIs.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Replit</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Programa en el navegador sin instalar nada. Ideal para aprender Python y automatización.</div></div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="goal-sec" id="goal-gcontenido">
+    <div class="cat-label">🎬 Crear contenido y material audiovisual</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">CapCut</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Edición de video para redes con subtítulos automáticos, efectos y cortes inteligentes.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Canva</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Diseño gráfico completo: posts, stories, thumbnails, flyers y más con IA.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">ElevenLabs</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Voz ultrarrealista para narración de videos, podcasts y contenido educativo.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Suno AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Crea música o jingles para tus videos desde una descripción de texto.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Descript</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Edita video y podcast como si editaras texto. Transcripción automática incluida.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Runway ML</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Efectos de video con IA y generación de clips desde texto para contenido avanzado.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Midjourney</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Imágenes de calidad profesional para miniaturas, portadas y material visual premium.</div></div>
+    </div>
+  </div>
+
+  <!-- FINANZAS -->
+  <div class="goal-sec" id="goal-gfinanzas">
+    <div class="cat-label">💰 Gestión financiera personal</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (Artefactos)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Genera planillas de presupuesto, simuladores de deuda, dashboards de gastos y planes de ahorro.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Perplexity</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Investiga inversiones, fondos, tasas y conceptos financieros con fuentes citadas.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Copilot Money</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Seguimiento automático de gastos con categorización por IA. Integra cuentas bancarias.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Monarch Money</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Planificación financiera completa: presupuesto, metas de ahorro y proyecciones a futuro.</div></div>
+    </div>
+  </div>
+
+  <!-- BIENESTAR -->
+  <div class="goal-sec" id="goal-gbienestar">
+    <div class="cat-label">🌿 Bienestar, familia y calidad de vida</div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Duolingo</span><span class="ttag free">Gratis</span></div><div class="tcard-desc">Aprende idiomas con IA adaptativa. 15 min al día, gamificado y altamente efectivo.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Calm</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Meditación guiada, manejo del estrés y mejora del sueño. Para días de alta carga laboral.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Claude (chat)</span><span class="ttag paid">Pro $20</span></div><div class="tcard-desc">Planificación personal, reflexión de decisiones, organización familiar y gestión del tiempo.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Notion AI</span><span class="ttag freemium">Freemium</span></div><div class="tcard-desc">Journaling, planificación de hábitos, metas de vida y seguimiento de objetivos personales.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">ChatGPT Voz</span><span class="ttag paid">Plus $20</span></div><div class="tcard-desc">Conversaciones en voz natural para reflexionar, practicar idiomas o simplemente pensar en voz alta.</div></div>
+      <div class="tcard"><div class="tcard-top"><span class="tcard-name">Whoop / Oura</span><span class="ttag paid">Pago</span></div><div class="tcard-desc">Wearables que analizan sueño y recuperación con recomendaciones personalizadas por IA.</div></div>
+    </div>
+  </div>
+
+</div><!-- /tools -->
+
+<!-- ══ FLUJOS ══ -->
+<div class="sec" id="sec-flujos">
+  <div class="sec-title">Flujos de trabajo</div>
+  <div class="sec-sub">Cómo combinar herramientas — aplicable a cualquier área de tu vida</div>
+  <div class="flows">
+
+    <div class="fcard">
+      <div class="ftitle">🔍 Investigar un tema y documentarlo</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:#fff4ed;color:#e85d04">1</div><div class="fstep-body"><strong style="color:#e85d04">Perplexity / Gemini</strong>Busca con fuentes verificables</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">2</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Analiza, conecta ideas y concluye</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">3</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Genera el informe o documento final</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">🎬 Producir contenido audiovisual</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">1</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Escribe el guion o estructura</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#f5f3ff;color:#6d28d9">2</div><div class="fstep-body"><strong style="color:#6d28d9">Midjourney / Canva</strong>Genera las imágenes o diseño visual</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#f0fdf4;color:#166534">3</div><div class="fstep-body"><strong style="color:#166534">CapCut / Runway</strong>Monta y edita el video final</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">🎙️ Crear un podcast o contenido de audio</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">1</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Escribe el guion del episodio</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#fce7f3;color:#9d174d">2</div><div class="fstep-body"><strong style="color:#9d174d">ElevenLabs</strong>Convierte el texto en voz natural</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#fdf4ff;color:#6b21a8">3</div><div class="fstep-body"><strong style="color:#6b21a8">Descript</strong>Edita el audio como si fuera texto</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">📚 Aprender de tus propios documentos</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:var(--gemini-bg);color:var(--gemini)">1</div><div class="fstep-body"><strong style="color:var(--gemini)">NotebookLM</strong>Sube el PDF — genera resumen y podcast</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--gemini-bg);color:var(--gemini)">2</div><div class="fstep-body"><strong style="color:var(--gemini)">NotebookLM</strong>Escucha o lee lo generado</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">3</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Profundiza dudas con análisis detallado</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">⚙️ Automatizar una tarea repetitiva</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">1</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Describe la tarea — genera el código o macro</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#f3f4f6;color:#374151">2</div><div class="fstep-body"><strong style="color:#374151">App / Make / Zapier</strong>Pegas o configuras una sola vez</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#f0fdf4;color:#166534">3</div><div class="fstep-body"><strong style="color:#166534">Automático</strong>Se ejecuta solo desde ahí en adelante</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">📰 Seguir tendencias y actuar sobre ellas</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:var(--grok-bg);color:var(--grok)">1</div><div class="fstep-body"><strong style="color:var(--grok)">Grok</strong>Tarea automática: resumen semanal del sector</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">2</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Analiza lo relevante y saca implicancias</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">3</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Genera el plan de acción documentado</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">🎯 Planificar y presentar un proyecto</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">1</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Define estructura, etapas y contenido</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#eff6ff;color:#1d4ed8">2</div><div class="fstep-body"><strong style="color:#1d4ed8">Gamma / Canva</strong>Convierte el plan en presentación visual</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--chatgpt-bg);color:var(--chatgpt)">3</div><div class="fstep-body"><strong style="color:var(--chatgpt)">ChatGPT Voz</strong>Practica la exposición y recibe feedback</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">💰 Tomar una decisión financiera</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:#fff4ed;color:#e85d04">1</div><div class="fstep-body"><strong style="color:#e85d04">Perplexity</strong>Investiga opciones con datos actualizados</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">2</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Genera simulador o planilla de comparación</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">3</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Analiza pros/contras y recomienda camino</div></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="ftitle">🗓️ Gestionar tiempo y tareas pendientes</div>
+      <div class="fsteps">
+        <div class="fstep"><div class="fstep-num" style="background:var(--grok-bg);color:var(--grok)">1</div><div class="fstep-body"><strong style="color:var(--grok)">Grok / Reclaim AI</strong>Programa recordatorios y bloquea tiempo</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:#f0fdf4;color:#166534">2</div><div class="fstep-body"><strong style="color:#166534">Notion AI</strong>Centraliza tareas, notas y proyectos</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="fstep-num" style="background:var(--claude-bg);color:var(--claude)">3</div><div class="fstep-body"><strong style="color:var(--claude)">Claude</strong>Prioriza y genera el plan semanal</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('on');
+  event.target.classList.add('active');
+}
+function showGoal(id){
+  document.querySelectorAll('.goal-sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.gtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('goal-'+id).classList.add('on');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Acción — 8 Ingresos Extra · QF Chile</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090f;--s1:#0d0e1a;--card:#111220;--card2:#161728;
+  --border:#1c1f35;--border2:#272b45;
+  --lime:#c2f542;--cyan:#38bdf8;--violet:#a78bfa;--amber:#fbbf24;
+  --green:#4ade80;--red:#f87171;--pink:#f472b6;
+  --text:#e2e6f5;--text2:#8892b0;--muted:#454d6e;
+  --mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px}
+
+/* LAYOUT */
+.shell{display:flex;min-height:100vh}
+
+/* SIDEBAR NAV */
+.sidenav{width:210px;min-height:100vh;background:var(--s1);border-right:1px solid var(--border);padding:22px 0;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+.sidenav-logo{padding:0 18px 18px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.sidenav-logo .brand{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;color:var(--lime)}
+.sidenav-logo .sub{font-size:.65rem;color:var(--muted);margin-top:2px}
+.navlink{display:flex;align-items:center;gap:9px;padding:8px 18px;font-size:.77rem;font-weight:500;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;text-decoration:none}
+.navlink:hover{color:var(--text);background:rgba(255,255,255,.02)}
+.navlink.active{color:var(--lime);border-left-color:var(--lime);background:rgba(194,245,66,.04);font-weight:600}
+.navlink .ic{font-size:.95rem;width:16px;text-align:center}
+.navdiv{height:1px;background:var(--border);margin:6px 18px}
+
+/* MAIN */
+.main{flex:1;padding:28px 24px 60px;overflow-x:hidden;max-width:860px}
+
+/* SECTION */
+.sec{display:none}.sec.active{display:block}
+
+/* PAGE HEADER */
+.phd{margin-bottom:24px}
+.ey{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--lime);font-weight:700;margin-bottom:6px}
+.phd h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;line-height:1.15}
+.phd p{color:var(--text2);font-size:.8rem;margin-top:6px;line-height:1.6;max-width:520px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:17px 19px;margin-bottom:13px}
+.card2{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.card-title{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:7px}
+
+/* STAT PILLS */
+.spills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.spill{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:8px;padding:7px 11px}
+.spill-l{font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:3px}
+.spill-v{font-family:var(--mono);font-size:.82rem;font-weight:500}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.tg{background:rgba(194,245,66,.1);color:var(--lime);border:1px solid rgba(194,245,66,.25)}
+.tc{background:rgba(56,189,248,.1);color:var(--cyan);border:1px solid rgba(56,189,248,.25)}
+.tv{background:rgba(167,139,250,.1);color:var(--violet);border:1px solid rgba(167,139,250,.25)}
+.ta{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.tg2{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.tr{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.tm{background:rgba(255,255,255,.06);color:var(--text2);border:1px solid var(--border2)}
+
+/* STEPS */
+.steps{list-style:none}
+.step{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid rgba(28,31,53,.8);font-size:.8rem;line-height:1.55;color:#b0bcd8}
+.step:last-child{border-bottom:none}
+.step-n{min-width:22px;height:22px;border-radius:7px;background:var(--lime);color:#000;font-weight:800;font-size:.65rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step b{color:var(--text)}
+
+/* PLATFORM TABLE */
+.ptbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.ptbl th{text-align:left;padding:8px 10px;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border);font-weight:600}
+.ptbl td{padding:9px 10px;border-bottom:1px solid rgba(28,31,53,.6);vertical-align:middle}
+.ptbl tr:last-child td{border-bottom:none}
+.ptbl tr:hover td{background:rgba(255,255,255,.015)}
+
+/* ALERT */
+.alert{border-radius:9px;padding:11px 14px;font-size:.78rem;line-height:1.6;margin-bottom:12px}
+.a-lime{background:rgba(194,245,66,.06);border:1px solid rgba(194,245,66,.2)}
+.a-cyan{background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.2)}
+.a-amber{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2)}
+.a-red{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2)}
+.a-violet{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2)}
+
+/* IMPOSTER BOX */
+.impostor{background:linear-gradient(135deg,rgba(194,245,66,.07),rgba(56,189,248,.07));border:1px solid rgba(194,245,66,.25);border-radius:13px;padding:18px 20px;margin-bottom:20px}
+.impostor h3{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:var(--lime);margin-bottom:8px}
+.impostor p{font-size:.8rem;color:#b8c4d8;line-height:1.65}
+.impostor strong{color:var(--text)}
+
+/* BROW */
+.brow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(28,31,53,.7);font-size:.8rem}
+.brow:last-child{border-bottom:none}
+.brow .l{color:var(--text2)}
+.brow .r{font-family:var(--mono);font-weight:500}
+
+/* G */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:680px){.sidenav{display:none}.g2,.g3{grid-template-columns:1fr}}
+
+/* MOBILE NAV */
+.mnav{display:none;background:var(--s1);border-bottom:1px solid var(--border);padding:8px 12px;gap:5px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+@media(max-width:680px){.mnav{display:flex}}
+.mnav button{padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:.68rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.mnav button.active{background:var(--lime);color:#000;border-color:var(--lime);font-weight:700}
+
+/* METER */
+.meter{display:flex;align-items:center;gap:8px;margin-top:4px}
+.meter-lbl{font-size:.68rem;color:var(--muted);min-width:80px;text-transform:uppercase;letter-spacing:.05em}
+.meter-bar{flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:5px}
+.meter-fill{height:100%;border-radius:4px}
+.meter-val{font-family:var(--mono);font-size:.68rem;color:var(--text2);min-width:30px;text-align:right}
+
+.sep{border:none;border-top:1px solid var(--border);margin:12px 0}
+.mono{font-family:var(--mono)}
+.mt{margin-top:12px}
+
+/* WEEK PLAN */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+.day-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:7px 5px;text-align:center;font-size:.68rem}
+.day-box .day-n{font-family:'Syne',sans-serif;font-weight:800;color:var(--lime);font-size:.72rem;margin-bottom:3px}
+.day-box .day-t{color:var(--text2);line-height:1.4}
+@media(max-width:600px){.week{grid-template-columns:repeat(4,1fr)}}
+
+/* OPTION HEADER */
+.opt-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.opt-num{width:36px;height:36px;border-radius:10px;background:var(--lime);color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.opt-hdr-text h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;line-height:1.2}
+.opt-hdr-text .cats{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap}
+
+/* DIFFICULTY */
+.diff{display:flex;gap:3px}
+.diff-dot{width:8px;height:8px;border-radius:50%}
+
+/* PRICE TABLE */
+.price-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:5px;font-size:.8rem}
+.price-row:nth-child(odd){background:rgba(255,255,255,.03)}
+</style>
+</head>
+<body>
+
+<div class="mnav" id="mnav">
+  <button class="active" onclick="nav('intro',this)">🧠 Intro</button>
+  <button onclick="nav('o1',this)">01 Redes</button>
+  <button onclick="nav('o6',this)">06 Guías</button>
+  <button onclick="nav('o8',this)">08 Fiverr</button>
+  <button onclick="nav('o9',this)">09 Drops.</button>
+  <button onclick="nav('o10',this)">10 Podcast</button>
+  <button onclick="nav('o11',this)">11 Curso</button>
+  <button onclick="nav('o12',this)">12 SaaS</button>
+  <button onclick="nav('o14',this)">14 Trad.</button>
+</div>
+
+<div class="shell">
+<nav class="sidenav">
+  <div class="sidenav-logo">
+    <div class="brand">Plan de Acción</div>
+    <div class="sub">8 ingresos · Contexto Chile</div>
+  </div>
+  <a class="navlink active" onclick="nav('intro',this)"><span class="ic">🧠</span>Síndrome Impostor</a>
+  <div class="navdiv"></div>
+  <a class="navlink" onclick="nav('o1',this)"><span class="ic">📱</span>01 · Redes Sociales</a>
+  <a class="navlink" onclick="nav('o6',this)"><span class="ic">📄</span>06 · Guías Digitales</a>
+  <a class="navlink" onclick="nav('o8',this)"><span class="ic">💼</span>08 · Fiverr / Workana</a>
+  <a class="navlink" onclick="nav('o9',this)"><span class="ic">📦</span>09 · Dropshipping</a>
+  <a class="navlink" onclick="nav('o10',this)"><span class="ic">🎙️</span>10 · Podcast</a>
+  <a class="navlink" onclick="nav('o11',this)"><span class="ic">🎓</span>11 · Curso Online</a>
+  <a class="navlink" onclick="nav('o12',this)"><span class="ic">⚙️</span>12 · SaaS Mini Python</a>
+  <a class="navlink" onclick="nav('o14',this)"><span class="ic">📝</span>14 · Traducciones</a>
+  <div class="navdiv"></div>
+  <a class="navlink" onclick="nav('resumen',this)"><span class="ic">🗺️</span>Hoja de Ruta</a>
+</nav>
+
+<main class="main">
+
+<!-- ══════════ INTRO ══════════ -->
+<section class="sec active" id="s-intro">
+  <div class="phd">
+    <div class="ey">Antes de arrancar</div>
+    <h2>Sobre el síndrome del impostor</h2>
+    <p>Lo que dices es más común de lo que crees — y no indica falta de conocimiento.</p>
+  </div>
+
+  <div class="impostor">
+    <h3>¿Por qué elegiste bien estas 8?</h3>
+    <p>
+      Las 8 que marcaste comparten algo clave: <strong>tú controlas el contenido, el ritmo y el nivel de exposición.</strong> No hay un cliente al teléfono exigiéndote en tiempo real. No hay una empresa esperando que seas omnisciente. Publicas cuando estás seguro. Editas antes de lanzar. Corriges sin que nadie lo vea.<br><br>
+      Eso no es cobardía — es <strong>estrategia inteligente</strong> para alguien con poco tiempo libre y alta exigencia personal.<br><br>
+      Y sobre el conocimiento: construiste un scraper multi-farmacia con fuzzy matching, un dashboard de deudas con avalancha, una herramienta posológica con tablas de Tramadol no estándar, y manejas 3 trabajos simultáneos. <strong>El problema no es lo que sabes — es que no te has dado permiso de cobrarlo todavía.</strong>
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">📊 Las 8 seleccionadas — visión general</div>
+    <table class="ptbl">
+      <thead><tr><th>#</th><th>Opción</th><th>Tiempo/sem.</th><th>Inversión</th><th>Potencial/mes</th><th>Arranque</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tg">01</span></td><td><strong>Redes sociales QF</strong></td><td class="mono">30–45 min/día</td><td class="mono">$0</td><td class="mono" style="color:var(--lime)">$80K–$500K</td><td><span class="tag tg2">Esta semana</span></td></tr>
+        <tr><td><span class="tag tc">06</span></td><td><strong>Guías digitales</strong></td><td class="mono">Una vez: 5 h</td><td class="mono">$0</td><td class="mono" style="color:var(--cyan)">$40K–$150K</td><td><span class="tag tg2">Esta semana</span></td></tr>
+        <tr><td><span class="tag tc">08</span></td><td><strong>Fiverr / Workana</strong></td><td class="mono">20–40 min/día</td><td class="mono">$0</td><td class="mono" style="color:var(--cyan)">$60K–$180K</td><td><span class="tag tg2">Esta semana</span></td></tr>
+        <tr><td><span class="tag tc">09</span></td><td><strong>Dropshipping OTC</strong></td><td class="mono">2 h setup, 1 h/sem</td><td class="mono">$30K–$100K</td><td class="mono" style="color:var(--cyan)">$60K–$250K</td><td><span class="tag ta">2–3 semanas</span></td></tr>
+        <tr><td><span class="tag tv">10</span></td><td><strong>Podcast salud+humor</strong></td><td class="mono">2–3 h grabación</td><td class="mono">$30K–$80K</td><td class="mono" style="color:var(--violet)">$50K–$400K</td><td><span class="tag ta">2–4 semanas</span></td></tr>
+        <tr><td><span class="tag tc">11</span></td><td><strong>Curso online</strong></td><td class="mono">Una vez: 20 h</td><td class="mono">$0–$50K</td><td class="mono" style="color:var(--cyan)">$80K–$400K</td><td><span class="tag ta">1–2 meses</span></td></tr>
+        <tr><td><span class="tag tg">12</span></td><td><strong>SaaS mini Python</strong></td><td class="mono">5–8 h setup</td><td class="mono">$0</td><td class="mono" style="color:var(--lime)">$150K–$600K</td><td><span class="tag ta">2–4 semanas</span></td></tr>
+        <tr><td><span class="tag tc">14</span></td><td><strong>Traducciones técnicas</strong></td><td class="mono">Variable por proyecto</td><td class="mono">$0</td><td class="mono" style="color:var(--cyan)">$60K–$200K</td><td><span class="tag tg2">Esta semana</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert a-lime">
+    💡 <strong>Recomendación de orden:</strong> Empieza con <strong>#08 Fiverr</strong> (ingreso rápido, cero inversión, async) + <strong>#01 Redes</strong> (construye audiencia que alimenta todo lo demás) + <strong>#06 Guías</strong> (ingreso pasivo que se activa desde el mes 1). Esas 3 en paralelo son 45 min extra al día máximo.
+  </div>
+</section>
+
+<!-- ══════════ 01 REDES ══════════ -->
+<section class="sec" id="s-o1">
+  <div class="phd"><div class="ey">Opción 01</div><h2>Contenido QF en Redes</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">01</div>
+    <div class="opt-hdr-text">
+      <h3>Contenido educativo QF en TikTok / Instagram</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span><span class="tag tv">🤖 IA</span><span class="tag ta">⭐ Top</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Tiempo/día</div><div class="spill-v" style="color:var(--cyan)">30–45 min</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión</div><div class="spill-v">$0</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial mes 6+</div><div class="spill-v" style="color:var(--lime)">$80K–$500K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Arranque</div><div class="spill-v" style="color:var(--green)">Esta semana</div></div>
+  </div>
+
+  <div class="alert a-lime">
+    🇨🇱 <strong>Contexto Chile:</strong> TikTok Chile tiene 7M+ usuarios activos. El nicho de salud/farmacia en español tiene creadores pero casi ninguno con título universitario visible. Un QF con uniforme o contexto de farmacia genera autoridad inmediata. El algoritmo premia la consistencia, no la perfección.
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">📋 Temas que funcionan (validados en el nicho)</div>
+    <div class="g2">
+      <div>
+        <div class="card2">
+          <div style="font-size:.72rem;color:var(--lime);font-weight:700;margin-bottom:6px">🔥 Alto engagement</div>
+          <div style="font-size:.78rem;color:var(--text2);line-height:1.7">
+            "¿Puedo tomar ibuprofeno con paracetamol?"<br>
+            "El mito del antibiótico que 'no se termina'"<br>
+            "Por qué el genérico sí funciona igual"<br>
+            "Medicamentos que NO mezclar con alcohol"<br>
+            "¿Para qué sirve realmente el omeprazol?"
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card2">
+          <div style="font-size:.72rem;color:var(--cyan);font-weight:700;margin-bottom:6px">💊 Nicho QF único</div>
+          <div style="font-size:.78rem;color:var(--text2);line-height:1.7">
+            "Lo que nadie te dice del Losartan"<br>
+            "Diferencia entre corticoides — cuál es más fuerte"<br>
+            "¿Por qué el farmacéutico te pregunta si tienes receta?"<br>
+            "Insulinas: qué hace cada una en 60 segundos"<br>
+            "Medicamentos que engordan (y por qué)"
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🗓️ Plan 7 días para arrancar</div>
+    <ul class="steps">
+      <li class="step"><div class="step-n">1</div><div><b>Día 1 — Lunes noche (post-21:00):</b> Crea cuenta TikTok + Instagram con nombre profesional. Ej: @QFBastian o @FarmaclipsChile. Foto de perfil con uniforme. Bio: "Químico Farmacéutico 💊 Desmitificando medicamentos en Chile".</div></li>
+      <li class="step"><div class="step-n">2</div><div><b>Día 2 — Martes:</b> Usa Claude para generar 10 guiones de 60 segundos. Prompt: "Soy QF chileno, público general, tono claro y sin jerga médica, tema: [X]". Guarda en Notes o Google Docs.</div></li>
+      <li class="step"><div class="step-n">3</div><div><b>Día 3–4:</b> Graba 3 videos en tu teléfono. No necesitas ring light ni fondo especial — la farmacia o tu casa está bien. CapCut (gratis) para subtítulos automáticos en español.</div></li>
+      <li class="step"><div class="step-n">4</div><div><b>Día 5:</b> Publica el primero. Hashtags: #farmacéutico #saludchile #medicamentos #farmaciaschile #QF. Responde todos los comentarios las primeras 2 horas — el algoritmo premia la interacción.</div></li>
+      <li class="step"><div class="step-n">5</div><div><b>Día 7:</b> Publica el segundo. Analiza cuál tuvo más alcance. Replica el formato del que funcionó.</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">💰 Monetización por etapas</div>
+    <table class="ptbl">
+      <thead><tr><th>Etapa</th><th>Seguidores</th><th>Fuente</th><th>Ingreso est.</th></tr></thead>
+      <tbody>
+        <tr><td>Mes 1–2</td><td>0–500</td><td>Ninguna aún — construir</td><td class="mono">$0</td></tr>
+        <tr><td>Mes 3–4</td><td>500–3.000</td><td>TikTok Creator Fund Chile + afiados enlaces</td><td class="mono" style="color:var(--amber)">$20K–$60K</td></tr>
+        <tr><td>Mes 5–6</td><td>3.000–10.000</td><td>Mención pagada laboratorio OTC, afiliados iHerb</td><td class="mono" style="color:var(--cyan)">$80K–$200K</td></tr>
+        <tr><td>Mes 7+</td><td>10.000+</td><td>Sponsorships, tráfico a curso/guías propias</td><td class="mono" style="color:var(--lime)">$200K–$500K</td></tr>
+      </tbody>
+    </table>
+    <div class="alert a-amber" style="margin-top:12px;margin-bottom:0">
+      ⚠️ <strong>Clave de confianza:</strong> Nunca hagas afirmaciones que no puedas respaldar. Usa "consulta siempre a tu médico o farmacéutico" al final de videos clínicos. Eso protege tu registro profesional y además <em>aumenta</em> la confianza de tu audiencia.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 06 GUÍAS ══════════ -->
+<section class="sec" id="s-o6">
+  <div class="phd"><div class="ey">Opción 06</div><h2>Guías Digitales QF</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">06</div>
+    <div class="opt-hdr-text">
+      <h3>Guías PDF / Ebooks para venta pasiva</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span><span class="tag tv">🤖 IA</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Tiempo total</div><div class="spill-v" style="color:var(--cyan)">5–8 h (una vez)</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión</div><div class="spill-v">$0</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial/mes</div><div class="spill-v" style="color:var(--cyan)">$40K–$150K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Ingreso pasivo</div><div class="spill-v" style="color:var(--green)">Desde mes 1</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">📚 Ideas de guías con alta demanda en Chile</div>
+    <div class="price-row"><strong>"Interacciones medicamentosas que debes conocer"</strong><span class="tag tg">Alta demanda</span></div>
+    <div class="price-row"><strong>"Automedicación segura en Chile — OTC guiado"</strong><span class="tag ta">Amplio público</span></div>
+    <div class="price-row"><strong>"Preguntas frecuentes de examen QF / Ley de Farmacias"</strong><span class="tag tc">Estudiantes</span></div>
+    <div class="price-row"><strong>"Guía para entender tu receta médica"</strong><span class="tag ta">Público general</span></div>
+    <div class="price-row"><strong>"Medicamentos en el embarazo — categorías FDA"</strong><span class="tag tg">Nicho específico</span></div>
+    <div class="price-row"><strong>"Insulinas, inhaladores y gotas: guía de uso correcto"</strong><span class="tag tc">Pacientes crónicos</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🗓️ Plan de producción en 1 semana</div>
+    <ul class="steps">
+      <li class="step"><div class="step-n">1</div><div><b>Día 1 (2 h):</b> Elige el tema más fácil de escribir (donde ya tienes el conocimiento de memoria). Usa Claude: "Genera un índice de 12 secciones para una guía de interacciones medicamentosas OTC dirigida a público general chileno". Ajusta y aprueba el índice.</div></li>
+      <li class="step"><div class="step-n">2</div><div><b>Día 2–3 (2 h):</b> Claude genera el borrador sección por sección. <em>Tú revisas y corriges con tu criterio profesional</em> — esa revisión es el valor que nadie más puede dar. Guarda en Google Docs.</div></li>
+      <li class="step"><div class="step-n">3</div><div><b>Día 4 (1 h):</b> Canva.com → plantilla "Ebook" → copia el contenido → exporta PDF. Logo simple con tu nombre y "QF". No necesitas diseño elaborado.</div></li>
+      <li class="step"><div class="step-n">4</div><div><b>Día 5 (30 min):</b> Crea cuenta en <strong>Gumroad.com</strong> (gratis, sin comisión inicial). Sube el PDF. Precio: $4.990–$7.990 CLP. Agrega descripción con Claude.</div></li>
+      <li class="step"><div class="step-n">5</div><div><b>Día 6–7:</b> Comparte el link en grupos de WhatsApp de estudiantes QF de universidades chilenas (USACH, UV, U. Chile, etc.). 1 venta al día = $150K/mes sin hacer nada más.</div></li>
+    </ul>
+  </div>
+
+  <div class="alert a-cyan">
+    🇨🇱 <strong>Plataformas para venta en Chile:</strong> <strong>Gumroad</strong> (0% comisión primeros meses, pago internacional), <strong>Mercado Libre</strong> (ítem digital, pago fácil con CLP y cuotas), <strong>Payhip</strong> (alternativa gratuita). Para estudiantes universitarios, Mercado Libre tiene mayor conversión porque ya tienen la app instalada.
+  </div>
+</section>
+
+<!-- ══════════ 08 FIVERR ══════════ -->
+<section class="sec" id="s-o8">
+  <div class="phd"><div class="ey">Opción 08</div><h2>Fiverr / Workana</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">08</div>
+    <div class="opt-hdr-text">
+      <h3>Revisiones técnicas asíncronas</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span><span class="tag tm">Async</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Tiempo/día</div><div class="spill-v" style="color:var(--cyan)">20–40 min</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión</div><div class="spill-v">$0</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial/mes</div><div class="spill-v" style="color:var(--cyan)">$60K–$180K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Arranque</div><div class="spill-v" style="color:var(--green)">Esta semana</div></div>
+  </div>
+
+  <div class="alert a-lime">
+    💡 <strong>Por qué este es el mejor primer ingreso:</strong> Es 100% async — el cliente envía, tú respondes cuando puedes. No hay llamadas, no hay urgencias. Perfecto para el bloque 17:00–18:30 o post-21:00. Y en Workana Chile el nivel de competencia en nicho farmacéutico es casi cero.
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🛒 Servicios que puedes ofrecer hoy</div>
+    <table class="ptbl">
+      <thead><tr><th>Servicio</th><th>Precio referencial CLP</th><th>Tiempo estimado</th><th>Plataforma</th></tr></thead>
+      <tbody>
+        <tr><td>Revisión de prospecto / ficha técnica</td><td class="mono" style="color:var(--lime)">$20K–$40K</td><td>30–60 min</td><td>Workana + Fiverr</td></tr>
+        <tr><td>Consulta escrita sobre interacción medicamentosa</td><td class="mono" style="color:var(--lime)">$15K–$25K</td><td>20–30 min</td><td>Fiverr</td></tr>
+        <tr><td>Traducción/adaptación de prospecto inglés→español</td><td class="mono" style="color:var(--cyan)">$30K–$60K</td><td>1–2 h</td><td>Workana + ProZ</td></tr>
+        <tr><td>Descripción técnica de producto para e-commerce</td><td class="mono" style="color:var(--cyan)">$10K–$20K/ud.</td><td>20 min</td><td>Workana</td></tr>
+        <tr><td>Revisión de contenido médico para blog/web</td><td class="mono" style="color:var(--amber)">$25K–$50K</td><td>45–90 min</td><td>Workana</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🗓️ Plan 5 días para tener perfil activo</div>
+    <ul class="steps">
+      <li class="step"><div class="step-n">1</div><div><b>Día 1:</b> Crea cuenta en <strong>Workana.com</strong> (más usado en Chile/LATAM que Fiverr para servicios técnicos). Foto profesional. Título: "Químico Farmacéutico | Revisión de prospectos, fichas técnicas y consultas farmacológicas".</div></li>
+      <li class="step"><div class="step-n">2</div><div><b>Día 2:</b> Publica 2 servicios: (1) Revisión de prospecto, (2) Consulta escrita farmacológica. Usa Claude para redactar las descripciones en 10 min. Precio inicial conservador para obtener primeras reseñas.</div></li>
+      <li class="step"><div class="step-n">3</div><div><b>Día 3:</b> Registra también en <strong>Fiverr.com</strong> con los mismos servicios en inglés — hay demanda internacional de revisores técnicos en español. Precio en USD: $15–$35 por servicio.</div></li>
+      <li class="step"><div class="step-n">4</div><div><b>Día 4:</b> Busca proyectos activos en Workana categoría "Salud y Medicina". Postula a 5 proyectos con propuesta personalizada de 3 líneas.</div></li>
+      <li class="step"><div class="step-n">5</div><div><b>Día 5:</b> Primer cliente: ofrece precio de "lanzamiento" ($5K–$10K descuento) a cambio de reseña. Con 5 reseñas positivas el perfil se posiciona solo.</div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════ 09 DROPSHIPPING ══════════ -->
+<section class="sec" id="s-o9">
+  <div class="phd"><div class="ey">Opción 09</div><h2>Dropshipping Suplementos OTC</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">09</div>
+    <div class="opt-hdr-text">
+      <h3>Tienda de suplementos / OTC en Mercado Libre</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Tiempo setup</div><div class="spill-v" style="color:var(--cyan)">2–3 h inicial</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión inicial</div><div class="spill-v" style="color:var(--amber)">$30K–$100K</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial/mes</div><div class="spill-v" style="color:var(--cyan)">$60K–$250K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Arranque</div><div class="spill-v" style="color:var(--amber)">2–3 semanas</div></div>
+  </div>
+
+  <div class="alert a-amber">
+    ⚠️ <strong>Importante para QF:</strong> Verifica que los productos que vendas no requieran receta ni estén regulados como medicamento por el ISP. Los suplementos vitamínicos, proteínas y probióticos son de venta libre. Evita productos que hagan claims de salud no autorizados — tu registro profesional no debe estar en riesgo.
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🛒 Nichos de suplementos con buen margen en Chile</div>
+    <table class="ptbl">
+      <thead><tr><th>Producto</th><th>Costo aprox.</th><th>Precio venta ML</th><th>Margen neto</th></tr></thead>
+      <tbody>
+        <tr><td>Vitamina D3 + K2 (60 cáps)</td><td class="mono">$4.000–$7.000</td><td class="mono">$12.000–$18.000</td><td class="mono" style="color:var(--lime)">~55%</td></tr>
+        <tr><td>Magnesio Glicinato (90 cáps)</td><td class="mono">$6.000–$9.000</td><td class="mono">$16.000–$22.000</td><td class="mono" style="color:var(--lime)">~50%</td></tr>
+        <tr><td>Omega 3 alta concentración</td><td class="mono">$5.000–$8.000</td><td class="mono">$14.000–$20.000</td><td class="mono" style="color:var(--cyan)">~45%</td></tr>
+        <tr><td>Probióticos (10 cepas)</td><td class="mono">$8.000–$12.000</td><td class="mono">$20.000–$28.000</td><td class="mono" style="color:var(--cyan)">~45%</td></tr>
+        <tr><td>Colágeno hidrolizado + Vit C</td><td class="mono">$5.000–$8.000</td><td class="mono">$15.000–$22.000</td><td class="mono" style="color:var(--amber)">~50%</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.72rem;color:var(--muted);margin-top:8px">Fuentes: proveedores mayoristas nacionales (Naturmil, Bioambiente) o importación por AliExpress/1688 con despacho directo al comprador (dropshipping real).</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🗓️ Plan de arranque</div>
+    <ul class="steps">
+      <li class="step"><div class="step-n">1</div><div><b>Semana 1:</b> Elige 3 productos nicho. Contacta 2 proveedores mayoristas chilenos (buscar en Google "suplementos mayorista Chile"). Pregunta si tienen dropshipping (envían al cliente final con tu etiqueta).</div></li>
+      <li class="step"><div class="step-n">2</div><div><b>Semana 1–2:</b> Abre cuenta Mercado Libre vendedor. Publica con fotos del proveedor (pide permiso). Descripción con Claude + tu revisión técnica QF = diferenciador clave.</div></li>
+      <li class="step"><div class="step-n">3</div><div><b>Semana 2:</b> Agrega en la descripción: "Publicación revisada por Químico Farmacéutico ✓". Sin prometer curaciones — solo información técnica objetiva.</div></li>
+      <li class="step"><div class="step-n">4</div><div><b>Semana 3+:</b> Las primeras 5 ventas son clave para el algoritmo de ML. Si el proveedor no hace dropshipping, compra 5 unidades de cada producto (~$30K–$50K total) y envía tú mismo.</div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════ 10 PODCAST ══════════ -->
+<section class="sec" id="s-o10">
+  <div class="phd"><div class="ey">Opción 10 — Ya lo tienes en mente</div><h2>Podcast Salud + Humor</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">10</div>
+    <div class="opt-hdr-text">
+      <h3>Podcast de divulgación farmacéutica con tono entretenido</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span><span class="tag tv">🤖 IA</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Tiempo/semana</div><div class="spill-v" style="color:var(--cyan)">2–3 h grabación</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión inicial</div><div class="spill-v" style="color:var(--amber)">$30K–$80K</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial/mes</div><div class="spill-v" style="color:var(--violet)">$50K–$400K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Horizonte</div><div class="spill-v">Mes 3–6 monetizar</div></div>
+  </div>
+
+  <div class="alert a-violet">
+    🎙️ <strong>El ángulo:</strong> No hay ningún podcast chileno de farmacéutico con humor. Hay médicos serios, hay divulgadores generalistas, pero "un QF que explica por qué te dieron el medicamento equivocado y lo hace gracioso" no existe todavía. Eso es el hueco.
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🔧 Setup mínimo para arrancar</div>
+    <table class="ptbl">
+      <thead><tr><th>Componente</th><th>Opción gratuita</th><th>Opción recomendada</th><th>Precio</th></tr></thead>
+      <tbody>
+        <tr><td>Micrófono</td><td>Audífonos iPhone/Samsung integrado</td><td>Fifine K669B o HyperX SoloCast</td><td class="mono">$20K–$45K</td></tr>
+        <tr><td>Grabación</td><td>Audacity (gratis PC)</td><td>Riverside.fm (grabación remota HD)</td><td class="mono">$0–$15K/mes</td></tr>
+        <tr><td>Edición</td><td>Audacity manual</td><td>Descript (edita como texto, IA)</td><td class="mono">$0–$20K/mes</td></tr>
+        <tr><td>Distribución</td><td>Spotify for Podcasters (gratis)</td><td>Buzzsprout (analytics avanzado)</td><td class="mono">$0–$12K/mes</td></tr>
+        <tr><td>Portada</td><td>Canva gratis</td><td>Canva Pro</td><td class="mono">$0–$8K/mes</td></tr>
+      </tbody>
+    </table>
+    <div class="alert a-lime" style="margin-top:12px;margin-bottom:0">💡 Setup mínimo viable: Audacity + Spotify for Podcasters + Canva = <strong>$0 de inversión</strong>. El micrófono lo añades cuando tengas los primeros ingresos.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">💰 Monetización realista para Chile</div>
+    <div class="brow"><div class="l">Spotify Ad Studio (publicidad automática)</div><div class="r" style="color:var(--cyan)">~$1.000–$3.000 CLP / 1.000 escuchas</div></div>
+    <div class="brow"><div class="l">Patreon (suscriptores que pagan por extras)</div><div class="r" style="color:var(--lime)">$3.000–$10.000/suscriptor</div></div>
+    <div class="brow"><div class="l">Auspicio directo (laboratorio OTC)</div><div class="r" style="color:var(--lime)">$80K–$300K por episodio (1.000+ esc.)</div></div>
+    <div class="brow"><div class="l">Tráfico a tus guías/cursos propios</div><div class="r" style="color:var(--violet)">Multiplica todo lo demás</div></div>
+    <div class="brow"><div class="l">Episodios especiales premium</div><div class="r" style="color:var(--amber)">$5.000–$15.000 CLP/episodio</div></div>
+  </div>
+</section>
+
+<!-- ══════════ 11 CURSO ══════════ -->
+<section class="sec" id="s-o11">
+  <div class="phd"><div class="ey">Opción 11</div><h2>Curso Online</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">11</div>
+    <div class="opt-hdr-text">
+      <h3>Curso grabado en Hotmart / Udemy</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span><span class="tag tv">🤖 IA</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Producción</div><div class="spill-v" style="color:var(--cyan)">15–25 h total</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión</div><div class="spill-v">$0–$50K</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial/mes</div><div class="spill-v" style="color:var(--cyan)">$80K–$400K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Ingreso pasivo</div><div class="spill-v" style="color:var(--green)">Indefinido</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🎯 Ideas de cursos con demanda comprobada</div>
+    <div class="price-row"><strong>"Farmacología OTC para estudiantes de salud"</strong><span class="mono" style="font-size:.75rem;color:var(--lime)">$19.990–$39.990</span></div>
+    <div class="price-row"><strong>"Introducción a IA para profesionales de farmacia"</strong><span class="mono" style="font-size:.75rem;color:var(--lime)">$29.990–$59.990</span></div>
+    <div class="price-row"><strong>"Manejo de medicamentos crónicos: hipertensión, diabetes, asma"</strong><span class="mono" style="font-size:.75rem;color:var(--cyan)">$24.990–$49.990</span></div>
+    <div class="price-row"><strong>"Python para farmacéuticos — de cero a scraper de precios"</strong><span class="mono" style="font-size:.75rem;color:var(--lime)">$39.990–$79.990</span></div>
+    <div class="price-row"><strong>"Atención farmacéutica centrada en el paciente"</strong><span class="mono" style="font-size:.75rem;color:var(--cyan)">$19.990–$34.990</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🏪 Plataformas — Chile</div>
+    <table class="ptbl">
+      <thead><tr><th>Plataforma</th><th>Comisión</th><th>Ventaja</th><th>Mejor para</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Hotmart</strong></td><td class="mono">9,9%+$1 USD</td><td>Muy popular en LATAM, pagos en CLP</td><td>Cursos en español, audiencia chilena</td></tr>
+        <tr><td><strong>Udemy</strong></td><td class="mono">50–75%</td><td>Tráfico orgánico masivo</td><td>Alcance internacional, inglés o español</td></tr>
+        <tr><td><strong>Teachable</strong></td><td class="mono">$0–$39 USD/mes</td><td>Control total del precio</td><td>Ya tienes audiencia propia</td></tr>
+        <tr><td><strong>Gumroad</strong></td><td class="mono">10%</td><td>Simple, sin fricción</td><td>Cursos cortos / mini-cursos</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert a-cyan">
+    🇨🇱 <strong>Estrategia Chile:</strong> Empieza en <strong>Hotmart</strong> porque acepta pagos en pesos chilenos con cuotas, y el público universitario de salud lo conoce. Precio inicial de lanzamiento (-40%) para las primeras 20 ventas → reseñas → precio normal. Con Udemy el algoritmo te trae tráfico, pero cedes control del precio.
+  </div>
+</section>
+
+<!-- ══════════ 12 SAAS ══════════ -->
+<section class="sec" id="s-o12">
+  <div class="phd"><div class="ey">Opción 12 — Tu mayor activo</div><h2>SaaS Mini Python para Farmacias</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">12</div>
+    <div class="opt-hdr-text">
+      <h3>Convertir tus scripts en un producto con suscripción mensual</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span><span class="tag tv">🤖 IA</span><span class="tag ta">⭐ Mayor potencial</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Setup inicial</div><div class="spill-v" style="color:var(--cyan)">5–8 h</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión</div><div class="spill-v">$0</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial/mes</div><div class="spill-v" style="color:var(--lime)">$150K–$600K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Escalable</div><div class="spill-v" style="color:var(--green)">Ilimitado</div></div>
+  </div>
+
+  <div class="alert a-lime">
+    🔑 <strong>La clave:</strong> Ya tienes el producto. Tu scraper de Cruz Verde + Salcobrand + Ahumada + Dr. Simi con fuzzy matching y reporte Excel <strong>ya es un SaaS</strong> — solo falta empaquetarlo y cobrarlo. Ninguna farmacia independiente de Chile tiene acceso a eso hoy.
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🏗️ Tres niveles de empaquetado (de menor a mayor esfuerzo)</div>
+    <div class="card2" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><strong>Nivel 1 — Reporte Manual</strong><span class="tag tg2">Esta semana</span></div>
+      <div style="font-size:.78rem;color:var(--text2);line-height:1.6">Corres el script tú mismo cada lunes. Envías el Excel por WhatsApp/email. Cobras suscripción mensual de <span class="mono" style="color:var(--lime)">$30.000–$60.000/farmacia</span>. Con 5 clientes = $150K–$300K/mes. Tiempo: 30 min/semana.</div>
+    </div>
+    <div class="card2" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><strong>Nivel 2 — Email Automático</strong><span class="tag ta">2–4 semanas</span></div>
+      <div style="font-size:.78rem;color:var(--text2);line-height:1.6">Script corre automáticamente con cron job o GitHub Actions. Envía el Excel por email automático (Gmail API). Tú no haces nada — el sistema trabaja. Cobras <span class="mono" style="color:var(--lime)">$40.000–$80.000/farmacia</span>. Con 10 clientes = $400K–$800K/mes.</div>
+    </div>
+    <div class="card2">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><strong>Nivel 3 — Dashboard Web</strong><span class="tag tc">2–3 meses</span></div>
+      <div style="font-size:.78rem;color:var(--text2);line-height:1.6">Interfaz web donde la farmacia entra y ve sus precios vs competencia en tiempo real. Flask/Streamlit + hosting gratuito en Railway.app. Cobras <span class="mono" style="color:var(--lime)">$60.000–$150.000/farmacia</span>.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🗓️ Plan Nivel 1 — Esta semana</div>
+    <ul class="steps">
+      <li class="step"><div class="step-n">1</div><div><b>Día 1–2:</b> Define el producto mínimo: reporte semanal Excel con precios de 50 medicamentos clave vs. Cruz Verde, Salcobrand y Ahumada. Tú ya tienes el script — solo afina los 50 productos.</div></li>
+      <li class="step"><div class="step-n">2</div><div><b>Día 3:</b> Crea una landing page simple en <strong>Notion.site</strong> (gratis) o Carrd.co ($19 USD/año). Título: "Monitoreo de precios de competencia para farmacias independientes de Chile". Precio: $49.990/mes.</div></li>
+      <li class="step"><div class="step-n">3</div><div><b>Día 4–5:</b> Contacta por Instagram o WhatsApp a 10 farmacias independientes de tu ciudad. Mensaje: "Soy QF y desarrollo herramientas de inteligencia de precios para farmacias — ¿le interesa ver un reporte de muestra gratuito?"</div></li>
+      <li class="step"><div class="step-n">4</div><div><b>Día 6–7:</b> Envía reporte de muestra gratuito (con datos reales de esa semana). Convierte el interés en suscripción. El primer cliente valida el modelo.</div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════ 14 TRADUCCIÓN ══════════ -->
+<section class="sec" id="s-o14">
+  <div class="phd"><div class="ey">Opción 14</div><h2>Traducciones Técnicas Farmacéuticas</h2></div>
+  <div class="opt-hdr">
+    <div class="opt-num">14</div>
+    <div class="opt-hdr-text">
+      <h3>Revisor / traductor de prospectos y fichas técnicas</h3>
+      <div class="cats"><span class="tag tg">💻 Digital</span><span class="tag tm">Async</span></div>
+    </div>
+  </div>
+
+  <div class="spills">
+    <div class="spill"><div class="spill-l">⏱ Por proyecto</div><div class="spill-v" style="color:var(--cyan)">1–4 h</div></div>
+    <div class="spill"><div class="spill-l">💸 Inversión</div><div class="spill-v">$0</div></div>
+    <div class="spill"><div class="spill-l">📈 Potencial/mes</div><div class="spill-v" style="color:var(--cyan)">$60K–$200K</div></div>
+    <div class="spill"><div class="spill-l">⚡ Arranque</div><div class="spill-v" style="color:var(--green)">Esta semana</div></div>
+  </div>
+
+  <div class="alert a-cyan">
+    🇨🇱 <strong>Mercado real en Chile:</strong> Laboratorios que importan productos de EE.UU., Europa o Asia necesitan adaptar sus prospectos al formato ISP chileno y al español local. Tu rol no es solo traducir — es <strong>validar que la terminología sea correcta y que no haya claims prohibidos por el ISP</strong>. Eso vale mucho más que una traducción genérica.
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">🌐 Plataformas y contactos directos</div>
+    <table class="ptbl">
+      <thead><tr><th>Canal</th><th>Cómo usarlo</th><th>Tiempo para primer proyecto</th></tr></thead>
+      <tbody>
+        <tr><td><strong>ProZ.com</strong></td><td>Perfil como traductor farmacéutico con especialidad QF. Los clientes buscan activamente revisores técnicos.</td><td>1–2 semanas</td></tr>
+        <tr><td><strong>Workana</strong></td><td>Publicar servicio "Traducción y revisión de prospectos farmacéuticos inglés → español chileno"</td><td>3–5 días</td></tr>
+        <tr><td><strong>LinkedIn directo</strong></td><td>Buscar "Regulatory Affairs" en laboratorios chilenos. Mensaje directo ofreciendo servicio de revisión.</td><td>1–3 semanas</td></tr>
+        <tr><td><strong>Contacto directo ISP</strong></td><td>Muchos dueños de droguería y labs pequeños no tienen QF de planta — necesitan servicios puntuales.</td><td>Variable</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">💰 Precios referenciales Chile 2026</div>
+    <div class="brow"><div class="l">Revisión de prospecto (sin traducción)</div><div class="r mono" style="color:var(--lime)">$25K–$50K</div></div>
+    <div class="brow"><div class="l">Traducción + revisión técnica (1–5 págs.)</div><div class="r mono" style="color:var(--lime)">$40K–$80K</div></div>
+    <div class="brow"><div class="l">Prospecto completo inglés→español (10+ págs.)</div><div class="r mono" style="color:var(--cyan)">$80K–$180K</div></div>
+    <div class="brow"><div class="l">Revisión formato ISP + adaptación normativa</div><div class="r mono" style="color:var(--cyan)">$60K–$120K</div></div>
+    <div class="brow"><div class="l">Contrato mensual (laboratorio recurrente)</div><div class="r mono" style="color:var(--amber)">$100K–$200K/mes</div></div>
+  </div>
+</section>
+
+<!-- ══════════ RESUMEN ══════════ -->
+<section class="sec" id="s-resumen">
+  <div class="phd"><div class="ey">Hoja de Ruta</div><h2>¿Por dónde empezar?</h2></div>
+
+  <div class="alert a-lime">
+    🎯 <strong>Regla:</strong> No intentes las 8 al mismo tiempo. Elige 2 para el primer mes. El resto espera en lista.
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:16px">📅 Secuencia recomendada con tu horario real</div>
+    <div class="card2" style="border-color:rgba(194,245,66,.3);margin-bottom:8px">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--lime);margin-bottom:8px">MES 1 — Semana 1–2: Las 3 de cero inversión</div>
+      <div style="font-size:.8rem;color:var(--text2);line-height:1.8">
+        <span class="tag tg" style="margin-right:6px">#08</span> Crea perfil Workana + Fiverr (3 h total, post-21:00)<br>
+        <span class="tag tg" style="margin-right:6px">#01</span> Publica primer video TikTok/Reels (guión con IA en 15 min)<br>
+        <span class="tag tc" style="margin-right:6px">#06</span> Primera guía PDF con Claude + Canva + Gumroad (sábado, 5 h)
+      </div>
+    </div>
+    <div class="card2" style="border-color:rgba(56,189,248,.3);margin-bottom:8px">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--cyan);margin-bottom:8px">MES 1–2: Encender el SaaS</div>
+      <div style="font-size:.8rem;color:var(--text2);line-height:1.8">
+        <span class="tag tg" style="margin-right:6px">#12</span> Contactar 10 farmacias independientes con reporte de muestra gratuito. <strong>1 cliente = $50K/mes sin trabajo adicional.</strong>
+      </div>
+    </div>
+    <div class="card2" style="border-color:rgba(167,139,250,.3);margin-bottom:8px">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--violet);margin-bottom:8px">MES 2–3: Podcast y Traducciones</div>
+      <div style="font-size:.8rem;color:var(--text2);line-height:1.8">
+        <span class="tag tv" style="margin-right:6px">#10</span> Primeros 3 episodios grabados (sábado tarde, post-18:00)<br>
+        <span class="tag tc" style="margin-right:6px">#14</span> Perfil ProZ.com + primer proyecto de traducción
+      </div>
+    </div>
+    <div class="card2" style="border-color:rgba(251,191,36,.3)">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--amber);margin-bottom:8px">MES 3–4: Curso y Dropshipping</div>
+      <div style="font-size:.8rem;color:var(--text2);line-height:1.8">
+        <span class="tag tc" style="margin-right:6px">#11</span> Graba el curso (15 h distribuidas en 3–4 semanas)<br>
+        <span class="tag tc" style="margin-right:6px">#09</span> Lanza tienda ML con 3 productos una vez que haya flujo de caja
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">💵 Proyección acumulada realista (escenario conservador)</div>
+    <table class="ptbl">
+      <thead><tr><th>Mes</th><th>Activos</th><th>Ingreso extra est.</th><th>Total con 3 trabajos</th></tr></thead>
+      <tbody>
+        <tr><td>Mes 1</td><td>#08 + #01 + #06</td><td class="mono" style="color:var(--amber)">$50K–$120K</td><td class="mono">$4.014K–$4.084K</td></tr>
+        <tr><td>Mes 2</td><td>+ #12 (1 cliente)</td><td class="mono" style="color:var(--cyan)">$100K–$250K</td><td class="mono">$4.064K–$4.214K</td></tr>
+        <tr><td>Mes 3</td><td>+ #10 + #14</td><td class="mono" style="color:var(--cyan)">$180K–$400K</td><td class="mono">$4.144K–$4.364K</td></tr>
+        <tr><td>Mes 4+</td><td>+ #11 + #09</td><td class="mono" style="color:var(--lime)">$300K–$700K</td><td class="mono">$4.264K–$4.664K</td></tr>
+      </tbody>
+    </table>
+    <div class="alert a-amber" style="margin-top:12px;margin-bottom:0">
+      ⚠️ <strong>Techo humano:</strong> Con 3 trabajos + familia, el límite real es ~$300K–$500K/mes de ingreso extra sostenible sin quemarte. Más que eso empieza a costar salud o relaciones. El objetivo no es maximizar — es acelerar el plan avalancha y el fondo farmacia.
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+function nav(id, el) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.navlink, .mnav button').forEach(n => n.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    // sync sidebar/mobile
+    document.querySelectorAll('.navlink').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+    });
+    document.querySelectorAll('.mnav button').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+    });
+  }
+}
+</script>
+</body>
+</html>

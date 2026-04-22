@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orquestador de IA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background: #030712; color: white; min-height: 100vh; }
+  .step-btn { transition: all .2s; }
+  .step-btn.active { color: #818cf8; border-bottom: 2px solid #818cf8; }
+  .step-btn.done { color: #6b7280; cursor: pointer; }
+  .step-btn.locked { color: #374151; cursor: default; }
+  .copy-btn { transition: background .2s; }
+  .flow-tag { cursor: pointer; transition: all .15s; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="padding:16px; border-bottom:1px solid #1f2937">
+  <h1 style="font-size:1.1rem;font-weight:700">🧠 Orquestador de IA</h1>
+  <p style="color:#6b7280;font-size:.75rem;margin-top:2px">Idea → Modelo → Flujo → Prompts listos</p>
+</div>
+
+<!-- PROGRESS TABS -->
+<div style="display:flex;border-bottom:1px solid #1f2937" id="tabs">
+  <button class="step-btn active" data-step="0" style="flex:1;padding:8px 4px;font-size:.72rem;font-weight:600;background:none;border:none;color:inherit;border-bottom:2px solid #818cf8">💡 Idea</button>
+  <button class="step-btn locked" data-step="1" style="flex:1;padding:8px 4px;font-size:.72rem;font-weight:600;background:none;border:none;color:#374151">🤖 Modelo</button>
+  <button class="step-btn locked" data-step="2" style="flex:1;padding:8px 4px;font-size:.72rem;font-weight:600;background:none;border:none;color:#374151">🔀 Flujo</button>
+  <button class="step-btn locked" data-step="3" style="flex:1;padding:8px 4px;font-size:.72rem;font-weight:600;background:none;border:none;color:#374151">📋 Prompts</button>
+</div>
+
+<div style="padding:16px;max-width:560px;margin:0 auto">
+
+<!-- STEP 0: IDEA -->
+<div id="step-0">
+  <p style="font-size:.85rem;font-weight:600;color:#d1d5db;margin-bottom:8px">¿Qué quieres lograr?</p>
+  <textarea id="idea-input" rows="4" placeholder="Ej: Quiero resumir una guía clínica con 3 fuentes distintas, generar ilustraciones de los mecanismos y comparar con la realidad en Chile..."
+    style="width:100%;background:#111827;border:1px solid #374151;border-radius:12px;padding:10px 12px;font-size:.83rem;color:white;outline:none;resize:none;"></textarea>
+  <p style="color:#4b5563;font-size:.7rem;margin-top:4px">Ctrl+Enter para continuar</p>
+  <div style="background:#111827;border:1px solid #1f2937;border-radius:12px;padding:12px;margin-top:12px">
+    <p style="font-size:.65rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:600">Ejemplos rápidos</p>
+    <div id="examples"></div>
+  </div>
+  <button onclick="goModel()" style="margin-top:12px;width:100%;padding:12px;border-radius:12px;background:#4f46e5;border:none;color:white;font-weight:600;font-size:.85rem;cursor:pointer">Analizar idea →</button>
+</div>
+
+<!-- STEP 1: MODELO -->
+<div id="step-1" class="hidden">
+  <div id="model-card"></div>
+  <div style="background:#111827;border:1px solid #1f2937;border-radius:12px;padding:12px;margin-top:12px">
+    <p style="font-size:.65rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:600">Referencia — todos los modelos</p>
+    <div id="all-models"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button onclick="goStep(0)" style="flex:1;padding:8px;border-radius:10px;background:none;border:1px solid #374151;color:#9ca3af;cursor:pointer;font-size:.82rem">← Volver</button>
+    <button onclick="goFlow()" style="flex:2;padding:8px;border-radius:10px;background:#4f46e5;border:none;color:white;font-weight:600;font-size:.82rem;cursor:pointer">Ver flujo →</button>
+  </div>
+</div>
+
+<!-- STEP 2: FLUJO -->
+<div id="step-2" class="hidden">
+  <div id="flow-header" style="background:#111827;border:1px solid #1f2937;border-radius:12px;padding:12px;margin-bottom:12px"></div>
+  <div id="flow-steps"></div>
+  <div style="background:#111827;border:1px solid #1f2937;border-radius:12px;padding:12px;margin-top:12px">
+    <p style="font-size:.7rem;color:#6b7280;margin-bottom:8px">¿Otro tipo de flujo?</p>
+    <div id="flow-selector" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button onclick="goStep(1)" style="flex:1;padding:8px;border-radius:10px;background:none;border:1px solid #374151;color:#9ca3af;cursor:pointer;font-size:.82rem">← Volver</button>
+    <button onclick="goPrompts()" style="flex:2;padding:8px;border-radius:10px;background:#4f46e5;border:none;color:white;font-weight:600;font-size:.82rem;cursor:pointer">Ver prompts →</button>
+  </div>
+</div>
+
+<!-- STEP 3: PROMPTS -->
+<div id="step-3" class="hidden">
+  <p style="font-size:.72rem;color:#6b7280;margin-bottom:12px">Prompts listos — reemplaza los corchetes con tu contenido</p>
+  <div id="prompts-list"></div>
+  <button onclick="reset()" style="margin-top:12px;width:100%;padding:10px;border-radius:10px;background:none;border:1px solid #374151;color:#9ca3af;cursor:pointer;font-size:.82rem">🔄 Nueva idea</button>
+</div>
+
+</div><!-- /container -->
+
+<script>
+const MODELS = {
+  "Claude Opus":   { color:"#6366f1", icon:"🟣", desc:"Razonamiento complejo, síntesis profunda, estrategia, documentos largos" },
+  "Claude Sonnet": { color:"#8b5cf6", icon:"🔵", desc:"Producción equilibrada, análisis, código, tareas cotidianas" },
+  "Claude Haiku":  { color:"#a78bfa", icon:"💜", desc:"Tareas rápidas, resúmenes breves, clasificación, borradores" },
+  "ChatGPT-4o":    { color:"#10b981", icon:"🟢", desc:"Redacción general, imágenes DALL·E, voz avanzada, GPTs personalizados" },
+  "Gemini":        { color:"#3b82f6", icon:"🔷", desc:"Búsqueda Google en tiempo real, Drive, análisis de videos YouTube" },
+  "Perplexity":    { color:"#f59e0b", icon:"🟡", desc:"Research con fuentes citadas, reemplaza Google para investigación" },
+  "Midjourney":    { color:"#ec4899", icon:"🩷", desc:"Imágenes artísticas profesionales, fotorrealismo, arte conceptual" },
+  "Grok":          { color:"#6b7280", icon:"⚪", desc:"Actualidad desde X/Twitter, tareas programadas automáticas" },
+};
+
+const MODEL_RULES = [
+  { keys:["investigar","buscar","fuentes","papers","evidencia","literatura","pubmed","estudios","research","actualidad","noticias"], model:"Perplexity", reason:"Requiere búsqueda con fuentes verificables y actualizadas" },
+  { keys:["imagen","ilustración","diseño","visual","gráfico","foto","render","logo","ícono"], model:"Midjourney", reason:"Implica generación de imágenes de alta calidad" },
+  { keys:["youtube","drive","pdf largo","multimodal"], model:"Gemini", reason:"Gemini maneja mejor archivos largos, Drive y videos de YouTube" },
+  { keys:["tendencia","twitter","x.com","noticia","actualidad semanal"], model:"Grok", reason:"Grok accede a tendencias en tiempo real desde X/Twitter" },
+  { keys:["rápido","breve","resumir","clasificar","borrador","simple","corto","listar"], model:"Claude Haiku", reason:"Tarea rápida — Haiku es suficiente y más eficiente" },
+  { keys:["estrategia","planificar","análisis profundo","sintetizar","comparar","integrar","complejo","informe","plan","roadmap"], model:"Claude Opus", reason:"Requiere razonamiento profundo y síntesis de múltiples fuentes" },
+  { keys:["código","automatizar","macro","script","programar","api","python","sql"], model:"Claude Sonnet", reason:"Sonnet es óptimo para código y automatizaciones cotidianas" },
+];
+
+const FLOWS = {
+  investigacion: {
+    label:"🔍 Investigar y documentar",
+    trigger:["investigar","buscar","analizar","revisar","literatura","pubmed","papers","fuentes","evidencia"],
+    steps:[
+      { ai:"Perplexity", rol:"Búsqueda inicial con fuentes citadas", pt: i=>`Busca información actualizada sobre: "${i}". Incluye fuentes verificables, datos recientes y principales perspectivas. Organiza en: contexto, hallazgos clave, controversias y lagunas de conocimiento.` },
+      { ai:"Claude Sonnet", rol:"Síntesis y análisis crítico", pt: i=>`Tengo estos resultados sobre "${i}": [PEGA RESULTADOS DE PERPLEXITY]. Analiza críticamente, identifica patrones, conecta ideas y genera conclusiones fundamentadas.` },
+      { ai:"Claude Opus", rol:"Documento final estructurado", pt: i=>`Con el análisis anterior sobre "${i}", genera un informe completo: resumen ejecutivo, hallazgos principales, implicaciones prácticas y recomendaciones. Formato profesional listo para compartir.` },
+    ]
+  },
+  contenido: {
+    label:"🎬 Crear contenido audiovisual",
+    trigger:["contenido","video","post","redes","instagram","tiktok","publicar","divulgar"],
+    steps:[
+      { ai:"Claude Sonnet", rol:"Guión y estructura", pt: i=>`Crea un guión para contenido sobre: "${i}". Incluye: gancho inicial (primeros 3 segundos), desarrollo en 3 puntos clave, llamada a la acción. Tono cercano para redes sociales.` },
+      { ai:"Midjourney", rol:"Imágenes y visual", pt: i=>`Professional illustration for: "${i}". Style: modern, clean, educational. High contrast, suitable for social media. --ar 4:5 --v 6` },
+      { ai:"ChatGPT-4o", rol:"Adaptación por plataforma", pt: i=>`Tengo este guión sobre "${i}": [PEGA GUIÓN]. Genera 3 variantes: (1) Instagram carousel, (2) TikTok/Reels 60 seg, (3) LinkedIn post profesional.` },
+    ]
+  },
+  clinico: {
+    label:"⚕️ Análisis clínico / farmacéutico",
+    trigger:["guía clínica","protocolo","fármaco","medicamento","interacción","dosis","diagnóstico","tratamiento","paciente","minsal","isp","farmacia"],
+    steps:[
+      { ai:"Perplexity", rol:"Evidencia clínica actualizada", pt: i=>`Busca evidencia clínica sobre: "${i}". Prioriza guías recientes, revisiones sistemáticas y metaanálisis. Incluye recomendaciones de OMS, MINSAL, FDA o EMA cuando corresponda.` },
+      { ai:"Gemini", rol:"Análisis del documento adjunto", pt: i=>`Analiza el documento clínico adjunto sobre "${i}". Extrae: indicaciones, contraindicaciones, dosis recomendadas, interacciones relevantes y alertas críticas para el farmacéutico.` },
+      { ai:"Claude Opus", rol:"Síntesis clínica profunda + contexto Chile", pt: i=>`Con la evidencia sobre "${i}", realiza síntesis clínica: resumen de evidencia, recomendaciones para farmacia, alertas de seguridad y comparación con Chile (disponibilidad, FONASA, alternativas).` },
+      { ai:"Claude Sonnet", rol:"Ficha práctica final", pt: i=>`Crea una ficha clínica práctica sobre "${i}" para farmacia. Formato breve y estructurado: indicación, dosis, interacciones clave, consejo al paciente y referencias.` },
+    ]
+  },
+  automatizacion: {
+    label:"⚙️ Automatizar tarea repetitiva",
+    trigger:["automatizar","repetitivo","macro","script","código","python","excel","reporte","plantilla"],
+    steps:[
+      { ai:"Claude Sonnet", rol:"Diseño de la solución", pt: i=>`Quiero automatizar: "${i}". Explícame en lenguaje simple qué herramienta usar (Python, macro Excel, Zapier, etc.) y por qué. Describe el flujo lógico paso a paso antes de escribir código.` },
+      { ai:"Claude Sonnet", rol:"Código o configuración completa", pt: i=>`Genera el código/macro completo para automatizar: "${i}". Incluye comentarios explicativos y manejo de errores básico.` },
+      { ai:"Claude Haiku", rol:"Guía de uso rápida", pt: i=>`Crea una guía de uso breve (máx 1 página) para la automatización de "${i}". Explica cómo ejecutarla y cómo modificarla si cambian los requisitos.` },
+    ]
+  },
+  aprendizaje: {
+    label:"📚 Aprender un tema nuevo",
+    trigger:["aprender","estudiar","entender","explicar","tutorial","concepto","cómo funciona","qué es"],
+    steps:[
+      { ai:"Claude Haiku", rol:"Diagnóstico de nivel actual", pt: i=>`Quiero aprender sobre "${i}". Hazme 3 preguntas cortas para evaluar mi nivel actual antes de empezar.` },
+      { ai:"Gemini", rol:"Recursos y material base", pt: i=>`Busca los mejores recursos gratuitos para aprender "${i}" en 2025: videos YouTube, cursos online, documentación oficial. Prioriza recursos en español.` },
+      { ai:"Claude Opus", rol:"Plan de estudio personalizado", pt: i=>`Crea un plan de estudio de 4 semanas para aprender "${i}" con máximo 1 hora diaria. Incluye: objetivos semanales, recursos, ejercicios prácticos e hitos de verificación. Perfil: QF sin experiencia técnica.` },
+    ]
+  },
+  financiero: {
+    label:"💰 Decisión financiera",
+    trigger:["inversión","deuda","presupuesto","ahorro","crédito","financiero","dinero","gasto","costo"],
+    steps:[
+      { ai:"Perplexity", rol:"Datos y contexto del mercado", pt: i=>`Busca datos actualizados sobre "${i}": tasas vigentes en Chile, opciones disponibles, regulaciones relevantes. Incluye fuentes verificables.` },
+      { ai:"Claude Sonnet", rol:"Simulador o tabla comparativa", pt: i=>`Crea una tabla comparativa para evaluar opciones en "${i}". Incluye variables clave, escenarios optimista/pesimista y fórmulas de cálculo.` },
+      { ai:"Claude Opus", rol:"Análisis y recomendación final", pt: i=>`Con los datos sobre "${i}", realiza análisis pros/contras y entrega una recomendación. Considera contexto chileno, riesgo personal y horizonte temporal.` },
+    ]
+  },
+};
+
+const EXAMPLES = [
+  "Resumir guía clínica con 3 fuentes y comparar con Chile",
+  "Crear contenido para Instagram sobre interacciones medicamentosas",
+  "Automatizar reporte semanal de stock de farmacia",
+  "Aprender Python para análisis de datos de salud",
+];
+
+let currentFlow = "investigacion";
+let currentIdea = "";
+
+// Init examples
+document.getElementById("examples").innerHTML = EXAMPLES.map(ex =>
+  `<button onclick="document.getElementById('idea-input').value='${ex}'" style="display:block;width:100%;text-align:left;background:none;border:none;color:#9ca3af;font-size:.75rem;padding:6px 0;border-bottom:1px solid #1f2937;cursor:pointer">→ ${ex}</button>`
+).join("");
+
+// Keyboard shortcut
+document.getElementById("idea-input").addEventListener("keydown", e => {
+  if (e.ctrlKey && e.key === "Enter") goModel();
+});
+
+function detectModel(text) {
+  const t = text.toLowerCase();
+  for (const rule of MODEL_RULES) {
+    if (rule.keys.some(k => t.includes(k))) return rule;
+  }
+  return { model:"Claude Sonnet", reason:"Tarea equilibrada — Sonnet es la opción predeterminada más versátil" };
+}
+
+function detectFlow(text) {
+  const t = text.toLowerCase();
+  let best = null, bestCount = 0;
+  for (const [key, flow] of Object.entries(FLOWS)) {
+    const count = flow.trigger.filter(k => t.includes(k)).length;
+    if (count > bestCount) { bestCount = count; best = key; }
+  }
+  return best || "investigacion";
+}
+
+function goStep(n) {
+  document.querySelectorAll('[id^="step-"]').forEach(el => el.classList.add("hidden"));
+  document.getElementById("step-"+n).classList.remove("hidden");
+  document.querySelectorAll('.step-btn').forEach((btn, i) => {
+    btn.className = "step-btn";
+    btn.style.borderBottom = "2px solid transparent";
+    btn.style.color = i === n ? "#818cf8" : (i < n ? "#6b7280" : "#374151");
+    btn.style.cursor = i < n ? "pointer" : "default";
+    if (i === n) btn.style.borderBottom = "2px solid #818cf8";
+  });
+}
+
+function goModel() {
+  currentIdea = document.getElementById("idea-input").value.trim();
+  if (!currentIdea) return;
+  const mr = detectModel(currentIdea);
+  const m = MODELS[mr.model];
+  document.getElementById("model-card").innerHTML = `
+    <div style="border-radius:12px;overflow:hidden;border:2px solid ${m.color}44">
+      <div style="padding:12px 16px;display:flex;align-items:center;gap:12px;background:${m.color}22">
+        <span style="font-size:2rem">${m.icon}</span>
+        <div><p style="font-weight:700;font-size:1rem">${mr.model}</p><p style="font-size:.72rem;color:${m.color}">Modelo recomendado</p></div>
+      </div>
+      <div style="background:#111827;padding:12px 16px">
+        <p style="font-size:.83rem;color:#d1d5db">${mr.reason}</p>
+        <p style="font-size:.72rem;color:#6b7280;margin-top:8px;padding-top:8px;border-top:1px solid #1f2937"><b style="color:#9ca3af">Fortaleza:</b> ${m.desc}</p>
+      </div>
+    </div>`;
+  document.getElementById("all-models").innerHTML = Object.entries(MODELS).map(([name, mc]) =>
+    `<div style="display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid #111827">
+      <span style="font-size:.85rem">${mc.icon}</span>
+      <span style="font-size:.72rem"><b style="color:${mc.color}">${name}:</b> <span style="color:#6b7280">${mc.desc}</span></span>
+    </div>`
+  ).join("");
+  currentFlow = detectFlow(currentIdea);
+  goStep(1);
+}
+
+function renderFlow() {
+  const flow = FLOWS[currentFlow];
+  document.getElementById("flow-header").innerHTML = `
+    <p style="font-size:.65rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Flujo detectado</p>
+    <p style="font-size:1rem;font-weight:700">${flow.label}</p>`;
+  document.getElementById("flow-steps").innerHTML = flow.steps.map((s, i) => {
+    const mc = MODELS[s.ai] || { color:"#6b7280", icon:"⚙️" };
+    return `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:${i<flow.steps.length-1?'0':'0'}">
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+        <div style="width:26px;height:26px;border-radius:50%;background:${mc.color};display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700">${i+1}</div>
+        ${i<flow.steps.length-1?`<div style="width:2px;height:24px;background:${mc.color}44;margin:2px 0"></div>`:''}
+      </div>
+      <div style="flex:1;padding-bottom:${i<flow.steps.length-1?'0':'0'}">
+        <p style="font-weight:700;font-size:.85rem">${s.ai} <span style="font-size:.75rem">${mc.icon}</span></p>
+        <p style="font-size:.72rem;color:#6b7280">${s.rol}</p>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("flow-selector").innerHTML = Object.entries(FLOWS).map(([key, f]) =>
+    `<button class="flow-tag" onclick="currentFlow='${key}';renderFlow()"
+      style="font-size:.7rem;padding:4px 10px;border-radius:20px;border:2px solid ${currentFlow===key?'#4f46e5':'#374151'};background:${currentFlow===key?'#4f46e5':'none'};color:${currentFlow===key?'white':'#9ca3af'};cursor:pointer">${f.label}</button>`
+  ).join("");
+}
+
+function goFlow() { renderFlow(); goStep(2); }
+
+function goPrompts() {
+  const flow = FLOWS[currentFlow];
+  document.getElementById("prompts-list").innerHTML = flow.steps.map((s, i) => {
+    const mc = MODELS[s.ai] || { color:"#6b7280", icon:"⚙️" };
+    const prompt = s.pt(currentIdea);
+    return `<div style="border-radius:12px;overflow:hidden;border:1px solid #374151;margin-bottom:10px">
+      <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;background:${mc.color}22">
+        <span style="width:22px;height:22px;border-radius:50%;background:${mc.color};display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">${i+1}</span>
+        <span style="font-weight:700;font-size:.85rem">${s.ai}</span>
+        <span style="font-size:.72rem;color:#9ca3af">— ${s.rol}</span>
+      </div>
+      <div style="background:#111827;padding:12px">
+        <p id="prompt-${i}" style="font-size:.75rem;color:#d1d5db;line-height:1.5;white-space:pre-wrap">${prompt}</p>
+        <button id="copy-${i}" onclick="copyPrompt(${i},'${encodeURIComponent(prompt)}')"
+          style="margin-top:8px;width:100%;padding:7px;border-radius:8px;background:${mc.color};border:none;color:white;font-size:.75rem;font-weight:600;cursor:pointer">
+          📋 Copiar prompt
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+  goStep(3);
+}
+
+function copyPrompt(i, encoded) {
+  navigator.clipboard.writeText(decodeURIComponent(encoded));
+  const btn = document.getElementById("copy-"+i);
+  const orig = btn.innerHTML;
+  btn.innerHTML = "✓ Copiado";
+  btn.style.background = "#10b981";
+  setTimeout(() => { btn.innerHTML = orig; btn.style.background = ""; }, 2000);
+}
+
+function reset() {
+  document.getElementById("idea-input").value = "";
+  currentIdea = "";
+  goStep(0);
+}
+
+// Tab navigation
+document.querySelectorAll('.step-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const s = parseInt(btn.dataset.step);
+    if (s < parseInt(document.querySelector('[id^="step-"]:not(.hidden)')?.id?.split('-')[1]||0)) goStep(s);
+  });
+});
+</script>
+</body>
+</html>

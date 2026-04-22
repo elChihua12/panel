@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🗺️ Malla de Aprendizaje IA v4 — Bastián QF</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.55;
+    padding: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .sync-banner {
+    background: #ecfdf5;
+    border: 1px solid #10b981;
+    color: #065f46;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .sync-banner a { color: #065f46; text-decoration: underline; font-weight: 600; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 14px; margin-bottom: 16px; }
+
+  .rules {
+    background: #f5f3ff;
+    border: 1px solid #c4b5fd;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+  .rules h3 { color: #5b21b6; font-size: 14px; margin-bottom: 8px; }
+  .rules ol { margin-left: 20px; font-size: 13px; color: #4c1d95; }
+  .rules li { margin-bottom: 4px; }
+
+  .session-protocol {
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #7c2d12;
+  }
+  .session-protocol strong { color: #9a3412; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; }
+  .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  .legend-item {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  .t-fund { background: #f3f4f6; color: #374151; }
+  .t-data { background: #dbeafe; color: #1e40af; }
+  .t-ml   { background: #d1fae5; color: #065f46; }
+  .t-voz  { background: #f7dff4; color: #7a1b6f; }
+  .t-farm { background: #fee2e2; color: #991b1b; }
+  .t-meta { background: #fef3c7; color: #78350f; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 120px repeat(5, 1fr);
+    gap: 6px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px;
+    overflow-x: auto;
+  }
+  .grid-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+    padding: 6px 4px;
+    text-align: center;
+    background: #f1f5f9;
+    border-radius: 6px;
+  }
+  .sem-label {
+    font-size: 12px;
+    font-weight: 700;
+    background: #0f172a;
+    color: white;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 40px;
+  }
+  .block {
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .block:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+  .block .bid { font-weight: 700; display: block; font-size: 10px; opacity: 0.7; }
+  .block .btitle { display: block; font-weight: 600; line-height: 1.2; }
+  .block .bdays { display: block; font-size: 9px; opacity: 0.6; margin-top: 2px; }
+  .block.done { opacity: 0.55; text-decoration: line-through; }
+  .block.active { border-color: #f59e0b; box-shadow: 0 0 0 3px #fef3c7; }
+  .block.detailed::before {
+    content: "📖";
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    font-size: 12px;
+  }
+  .block .prog {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 9px;
+    background: rgba(255,255,255,0.7);
+    padding: 0 4px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .notes {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .note-box {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .note-box h4 { font-size: 13px; color: #0f172a; margin-bottom: 6px; }
+  .note-box.queue { background: #fefce8; border-color: #fde047; }
+  .note-box.tools { background: #f0fdf4; border-color: #86efac; }
+  .note-box a { color: #2563eb; }
+
+  /* Modal */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.55);
+    z-index: 100;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 14px;
+    max-width: 780px;
+    width: 100%;
+    margin: 20px auto;
+    padding: 22px 26px;
+  }
+  .modal h2 { font-size: 20px; margin-bottom: 4px; }
+  .modal .meta { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+  .modal .block-intro {
+    background: #f1f5f9;
+    border-left: 3px solid #64748b;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #334155;
+    margin-bottom: 14px;
+    border-radius: 4px;
+  }
+  .modal .protocol-reminder {
+    background: #fff7ed;
+    border-left: 3px solid #fb923c;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #7c2d12;
+    margin-bottom: 14px;
+    border-radius: 4px;
+  }
+
+  /* Day accordion */
+  .day-accordion {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .day-header {
+    padding: 10px 14px;
+    background: #f8fafc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .day-header:hover { background: #f1f5f9; }
+  .day-header.checked { opacity: 0.65; }
+  .day-header.checked .day-title { text-decoration: line-through; }
+  .day-header input[type=checkbox] { cursor: pointer; width: 16px; height: 16px; }
+  .day-header .day-title { flex: 1; }
+  .day-header .toggle-icon { font-size: 12px; color: #64748b; transition: transform 0.2s; }
+  .day-accordion.open .toggle-icon { transform: rotate(90deg); }
+  .day-body {
+    display: none;
+    padding: 14px 18px 18px 18px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    font-size: 13px;
+  }
+  .day-accordion.open .day-body { display: block; }
+
+  /* Day body sections */
+  .day-section {
+    margin-bottom: 14px;
+  }
+  .day-section h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .day-section p, .day-section ul, .day-section ol {
+    color: #334155;
+    line-height: 1.6;
+  }
+  .day-section ul, .day-section ol { margin-left: 20px; }
+  .day-section li { margin-bottom: 3px; }
+  .day-section a { color: #2563eb; text-decoration: underline; word-break: break-all; }
+  .day-section code {
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 12px;
+    color: #be185d;
+  }
+  .day-section pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 12px 14px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 6px 0;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  .day-section pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+  .day-section.objetivo {
+    background: #ecfdf5;
+    border-left: 3px solid #10b981;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .day-section.objetivo h4 { color: #065f46; margin-bottom: 3px; }
+  .day-section.trampa {
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .day-section.trampa h4 { color: #991b1b; margin-bottom: 3px; }
+  .day-section.claude {
+    background: #f5f3ff;
+    border-left: 3px solid #8b5cf6;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .day-section.claude h4 { color: #5b21b6; margin-bottom: 3px; }
+  .day-section.checklist {
+    background: #f0fdf4;
+    border-left: 3px solid #22c55e;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .day-section.checklist h4 { color: #15803d; margin-bottom: 3px; }
+  .day-section.checklist ul { margin-left: 18px; }
+  .day-section.checklist li { margin-bottom: 3px; color: #166534; font-size: 12px; }
+  .day-answers summary { cursor: pointer; font-size: 12px; font-weight: 700; color: #475569; padding: 6px 0; }
+  .day-answers summary:hover { color: #0f172a; }
+  .day-answers > div { margin-top: 8px; }
+  .day-section.tecnica {
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .day-section.tecnica h4 { color: #92400e; margin-bottom: 3px; }
+  .day-section.template {
+    background: #f8fafc;
+    border-left: 3px solid #64748b;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 11px;
+    white-space: pre-wrap;
+  }
+
+  .no-detail-notice {
+    background: #fef3c7;
+    border: 1px dashed #f59e0b;
+    color: #78350f;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+    margin: 12px 0;
+  }
+  .no-detail-notice strong { display: block; margin-bottom: 6px; }
+  .no-detail-notice code {
+    display: inline-block;
+    background: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-top: 6px;
+    font-size: 11px;
+    user-select: all;
+  }
+
+  .modal-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+  }
+  .btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .btn-prim { background: #0f172a; color: white; }
+  .btn-sec { background: #e2e8f0; color: #0f172a; }
+  .btn-copy { background: #fef3c7; color: #78350f; }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 90px repeat(5, minmax(130px, 1fr)); }
+    .notes { grid-template-columns: 1fr; }
+    body { padding: 10px; }
+    .modal { padding: 16px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sync-banner">
+  <span>✅ v4 · Sincronizado con Notion · 21 abril 2026 · D0.1 · C0 · F0.1 · F0.2.W0 · F0.2.W1 · F0.2.W2 · F0.2.W3 · F0.2.W4 detallados</span>
+  <span>
+    <a href="https://www.notion.so/33c9a86ba8ec819ea562d1e4a1f6acd4" target="_blank">📋 Cola de bloques</a>
+    &nbsp;·&nbsp;
+    <a href="https://www.notion.so/33c9a86ba8ec81cbb125caca3a5e918d" target="_blank">📄 Briefing</a>
+  </span>
+</div>
+
+<h1>🗺️ Malla de Aprendizaje IA aplicada a Farmacia · v4</h1>
+<p class="subtitle">12–18 meses · 5 tracks · 6 semestres · ~28 bloques · sesiones de 45 min · plan día por día detallado</p>
+
+<div class="rules">
+  <h3>⚠️ Reglas permanentes</h3>
+  <ol>
+    <li>La hora sagrada 19:00–19:45 L-V es <b>solo</b> aprendizaje IA. Familia, podcast y real estate no invaden esta ventana.</li>
+    <li>Una sesión = un bloque activo. No saltar entre bloques el mismo día.</li>
+    <li>Cada sesión termina con <b>anotación en 📚 Archivo de Sesiones Claude</b>.</li>
+    <li>Si un día falla, no compensar duplicando: retomar al día siguiente.</li>
+    <li>Los malos hábitos son el enemigo, no la capacidad. Medir adherencia antes que velocidad.</li>
+    <li>Bloques con 📖 tienen plan detallado. Los demás se piden el viernes con el prompt de la <a href="https://www.notion.so/33c9a86ba8ec819ea562d1e4a1f6acd4" target="_blank">Cola</a>.</li>
+  </ol>
+</div>
+
+<div class="session-protocol">
+  <strong>🧭 Estructura interna de cada sesión de 45 min</strong>
+  <b>0–5</b> Encendido (abrir Notion, leer objetivo del día) ·
+  <b>5–40</b> Ejecución profunda (la tarea del día) ·
+  <b>40–43</b> Revisión (¿qué quedó entendido? ¿qué quedó pendiente?) ·
+  <b>43–45</b> Cierre (anotar en Archivo de Sesiones).
+</div>
+
+<div class="stats">
+  <div class="stat-card"><div class="stat-value" id="s-prog">0%</div><div class="stat-label">Progreso global</div></div>
+  <div class="stat-card"><div class="stat-value" id="s-sem">S0</div><div class="stat-label">Semestre actual</div></div>
+  <div class="stat-card"><div class="stat-value" id="s-av">0</div><div class="stat-label">Disponibles</div></div>
+  <div class="stat-card"><div class="stat-value" id="s-curso">0</div><div class="stat-label">En curso</div></div>
+  <div class="stat-card"><div class="stat-value" id="s-done">0</div><div class="stat-label">Completados</div></div>
+</div>
+
+<div class="legend">
+  <span class="legend-item t-fund">🧱 Fundamentos</span>
+  <span class="legend-item t-data">📊 Datos</span>
+  <span class="legend-item t-ml">🤖 IA/ML</span>
+  <span class="legend-item t-voz">🎙️ Voz/NLP</span>
+  <span class="legend-item t-farm">💊 Farmacia</span>
+  <span class="legend-item t-meta">🤖 Meta-aprendizaje</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="notes">
+  <div class="note-box queue">
+    <h4>📋 Sistema de cola — pide los bloques siguientes</h4>
+    Cada viernes 18:30 abre la <a href="https://www.notion.so/33c9a86ba8ec819ea562d1e4a1f6acd4" target="_blank">Cola de Detalle de Bloques v4</a>,
+    copia el prompt grande del medio, y pégalo en un chat nuevo con Claude Opus dentro del proyecto.
+    En ~20 min recibes los días detallados del bloque siguiente con el mismo nivel de calidad.
+  </div>
+  <div class="note-box tools">
+    <h4>🧰 Herramientas ya disponibles en tu workspace</h4>
+    <ul style="margin-left: 16px; margin-top: 4px;">
+      <li>Scrapers Playwright 4 cadenas + fuzzy matching</li>
+      <li>Calculadora posología PDF (ReportLab)</li>
+      <li>Selector de modelo IA (14 tareas)</li>
+      <li>Roadmap IA farmacia visual (5 fases)</li>
+      <li>Dashboard herramientas por área</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" id="modal">
+    <h2 id="m-title"></h2>
+    <div class="meta" id="m-meta"></div>
+    <div class="block-intro" id="m-intro"></div>
+    <div class="protocol-reminder">
+      🧭 Protocolo 4 etapas en cada día: 5 min encendido → 35 min ejecución → 3 min revisión → 2 min cierre en 📚 Archivo de Sesiones.
+    </div>
+    <div id="m-days"></div>
+    <div class="modal-actions">
+      <button class="btn btn-copy" id="btn-copy">📋 Copiar prompt Calendar</button>
+      <button class="btn btn-sec" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== TRACKS & SEMS ======
+const TRACKS = {
+  meta: { name: "🤖 Meta", cls: "t-meta", col: 0 },
+  fund: { name: "🧱 Fundamentos", cls: "t-fund", col: 0 },
+  data: { name: "📊 Datos",       cls: "t-data", col: 1 },
+  ml:   { name: "🤖 IA/ML",       cls: "t-ml",   col: 2 },
+  voz:  { name: "🎙️ Voz/NLP",    cls: "t-voz",  col: 3 },
+  farm: { name: "💊 Farmacia",    cls: "t-farm", col: 4 }
+};
+const SEMS = ["S0 · Cimientos","S1 · Construcción","S2 · Datos","S3 · ML clásico","S4 · IA Generativa","S5 · Capstone"];
+
+// ====== BLOCK DEFINITIONS ======
+// Días detallados como objetos con secciones HTML
+const BLOCKS = [
+
+  // ===========================================
+  // D0.1 · Tarea Python 2 (3 días detallados)
+  // ===========================================
+  {
+    id:"D0.1", t:"Tarea Python 2 · Serie de tiempo", tr:"data", sem:0, active:true, detailed:true,
+    intro:"Tu Tarea Pandas 1 (la que generó la IA en marzo) usaba groupby. La copiaste y ejecutaste pero no entendiste el cómo. Esta tarea es la primera que vas a <b>entender</b> porque vamos a desarmar cada concepto. Salida: cómo cambia el precio de medicamentos en el tiempo. Prerrequisitos: cero. Carga real: 3 sesiones de 45 min.",
+    pre:[],
+    days:[
+      {
+        title: "Día 1 · Decirle a Python que las fechas son fechas",
+        objetivo: "Al final de hoy sabrás qué es un DataFrame, por qué Python no entiende las fechas por defecto, y podrás cargar tu CSV de precios farmacéuticos con la columna de fecha convertida correctamente a tipo datetime.",
+        material: `
+          <ol>
+            <li><b>Lectura corta:</b> "10 minutes to pandas — Object creation y Viewing data" → <a href="https://pandas.pydata.org/docs/user_guide/10min.html" target="_blank">pandas.pydata.org/docs/user_guide/10min.html</a>. Lee solo "Object creation" y "Viewing data". 8 min.</li>
+            <li><b>Doc de pd.to_datetime:</b> <a href="https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html" target="_blank">pandas.pydata.org/docs/reference/api/pandas.to_datetime.html</a>. Solo el primer párrafo y los 2 primeros ejemplos. 5 min.</li>
+          </ol>
+          <p><b>Lo que vas a entender:</b></p>
+          <ul>
+            <li>Un <b>DataFrame</b> es como una hoja de Excel dentro de Python. Tiene filas, columnas, y cada columna tiene un tipo de dato.</li>
+            <li>Cuando lees un CSV, pandas asume que <b>todo es texto</b> salvo que le digas lo contrario. Una columna que dice <code>"2026-03-15"</code> para Python son letras, no una fecha.</li>
+            <li><code>pd.to_datetime()</code> le dice a Python: <i>"esta columna es fecha real, trátala como tal"</i>. Es como cambiar formato de celda en Excel.</li>
+          </ul>
+          <p><b>Ejemplo concreto (3 filas):</b></p>
+          <pre><code>ANTES:
+   medicamento    fecha       precio
+0  Paracetamol    2026-01-15   1200
+1  Paracetamol    2026-02-15   1250
+2  Paracetamol    2026-03-15   1300
+
+dtypes → fecha: object   (object = string = texto)
+
+DESPUÉS de pd.to_datetime:
+dtypes → fecha: datetime64[ns]   ← ahora sí es fecha real</code></pre>
+          <p>Sin esta conversión, mañana no puedes hacer "agrupar por mes" ni calcular días entre precios. Hoy es plomería invisible.</p>
+        `,
+        ejercicio: `
+          <p><i>Si no tienes CSV listo: dedica los primeros 10 min a hacer uno mínimo en Excel — 3 columnas (medicamento, fecha, precio), 3 medicamentos × 3 fechas = 9 filas. Guárdalo como <code>precios_pac.csv</code>.</i></p>
+          <ol>
+            <li>Abre <a href="https://colab.research.google.com" target="_blank">Google Colab</a> → New notebook → llámalo <code>D0.1_dia1_fechas.ipynb</code>.</li>
+            <li>Primera celda (<b>escríbelo a mano</b>, no copies):
+<pre><code>import pandas as pd</code></pre>
+              Ejecuta con <code>Shift + Enter</code>.</li>
+            <li>Sube tu CSV: ícono de carpeta a la izquierda → ícono de subir → elige <code>precios_pac.csv</code>.</li>
+            <li>Carga el archivo:
+<pre><code>df = pd.read_csv("precios_pac.csv")
+df</code></pre>
+              <code>df</code> es tu DataFrame. Ese nombre es convención universal.</li>
+            <li>Inspecciona los tipos:
+<pre><code>df.dtypes</code></pre>
+              La columna <code>fecha</code> aparece como <code>object</code> = string. Mal.</li>
+            <li>Convierte a fecha real:
+<pre><code>df["fecha"] = pd.to_datetime(df["fecha"])
+df.dtypes</code></pre>
+              Ahora <code>fecha</code> debe decir <code>datetime64[ns]</code> ✅</li>
+            <li>Verifica que ahora puedes hacer cosas que antes no podías:
+<pre><code>df["fecha"].min()
+df["fecha"].max()
+df["fecha"].max() - df["fecha"].min()</code></pre>
+              La última línea te da una <code>Timedelta</code> — días entre primer y último precio.</li>
+            <li>Guarda el notebook (File > Save).</li>
+          </ol>
+        `,
+        tecnica: "<b>Active Recall + Práctica deliberada.</b> Después del paso 8, cierra el notebook. Saca papel y lápiz. Sin mirar nada, escribe: (1) qué es un DataFrame en una frase, (2) por qué la fecha viene como string al cargar el CSV, (3) la línea exacta para convertir <code>df['fecha']</code> a datetime. Si te trabaste, vuelve, mira, cierra, intenta otra vez. Esa fricción <b>es</b> el aprendizaje.",
+        verif: `
+          <ol>
+            <li>¿Por qué <code>df["fecha"] = pd.to_datetime(df["fecha"])</code> tiene <code>df["fecha"]</code> a ambos lados del <code>=</code>?</li>
+            <li>Si tu CSV tuviera fecha en formato chileno <code>"15/03/2026"</code>, ¿qué tendrías que hacer distinto?</li>
+            <li>¿Qué significa <code>dtype: object</code> cuando lo ves en <code>df.dtypes</code>?</li>
+          </ol>
+          <p><i>Si las 3 te salen → mañana al Día 2. Si fallas 2+ → repite hoy. No hay vergüenza, solo evidencia.</i></p>
+        `,
+        template: `📆 8 abril 2026 — D0.1 Día 1
+✅ Hecho: cargué CSV en Colab, convertí columna fecha a datetime, verifiqué con .dtypes
+🧠 Concepto que más me costó: [llénalo tú — una frase]
+❓ Pregunta abierta para mañana: [llénalo tú]`,
+        trampa: "Vas a tener la tentación de <b>copiar y pegar el código en vez de escribirlo a mano</b>, porque \"es lo mismo\". No es lo mismo. Tus dedos no memorizan lo que copias. Y como ya pasaste meses copiando código generado por IA, tu cerebro ya tiene esa autopista trazada. Hoy es el día de empezar a romperla. Escribe cada línea letra por letra, aunque sea más lento. Especialmente esta semana.",
+        claude: `Plantilla Feynman Inverso (de C0 día 2). Al cierre, en chat nuevo:
+<pre><code>Soy QF aprendiendo Python desde cero. Hoy aprendí qué es un DataFrame y cómo convertir columna de string a datetime con pd.to_datetime. Quiero hacer Feynman inverso: yo te explico lo que entendí en mis palabras, y tú me dices dónde fallé. NO me corrijas hasta que termine. NO me des código nuevo. Solo evalúa mi explicación. Voy:</code></pre>
+Después escribes 3-5 frases. Anota los huecos que Claude detecte.`,
+        respaldo: 'Si el material principal no te hace clic: video "Pandas DataFrame Tutorial — Beginner\'s Guide" de Corey Schafer en YouTube. Ver solo los primeros 8 minutos.',
+        checklist: ["✅ Tengo Google Colab abierto en el navegador (<a href='https://colab.research.google.com' target='_blank'>colab.research.google.com</a>)","✅ Tengo un CSV de precios listo — o 10 minutos para crearlo ahora (3 columnas: medicamento, fecha, precio — 9 filas mínimo)","✅ Papel y lápiz al lado para el Active Recall","⛔ Si no tienes CSV: créalo primero en Excel, 3 medicamentos × 3 fechas distintas. Guárdalo como <code>precios_pac.csv</code>"],
+        answers: "<p><b>1. ¿Por qué hay <code>df[\"fecha\"]</code> a ambos lados del <code>=</code>?</b><br>El <code>=</code> de la izquierda reasigna la columna. <code>pd.to_datetime(...)</code> crea una versión convertida pero no la guarda sola — tienes que guardarla de vuelta explícitamente en <code>df[\"fecha\"]</code>. Como calcular algo en una calculadora y guardarlo en la variable.</p><p><b>2. Fecha en formato chileno <code>'15/03/2026'</code>:</b><br>Agrega el parámetro <code>format='%d/%m/%Y'</code>: <code>pd.to_datetime(df['fecha'], format='%d/%m/%Y')</code>. Sin él, pandas puede confundir día con mes.</p><p><b>3. ¿Qué significa <code>dtype: object</code>?</b><br>La columna es texto genérico. En pandas, <code>object</code> es el catch-all para strings. Si aparece en fechas, necesitas <code>pd.to_datetime()</code>.</p><p><b>Señales de listo:</b> <code>dtypes</code> muestra <code>datetime64[ns]</code> en la columna fecha · Puedes calcular <code>df['fecha'].max() - df['fecha'].min()</code> y obtener un Timedelta · Sabes por qué la re-asignación es necesaria</p>"
+      },
+      {
+        title: "Día 2 · Resumir el tiempo: días, semanas, meses",
+        objetivo: "Al final de hoy sabrás qué hace resample, por qué necesitas un índice de fechas para usarlo, y podrás generar un gráfico de la evolución del precio promedio mensual de un medicamento.",
+        material: `
+          <ol>
+            <li><b>Doc oficial Resampling:</b> <a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#resampling" target="_blank">pandas.pydata.org/docs/user_guide/timeseries.html#resampling</a>. Solo los 3 primeros ejemplos. Cuando aparezca "OHLC" o "asfreq", sáltalos.</li>
+            <li><b>Cheatsheet visual:</b> <a href="https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf" target="_blank">pandas.pydata.org/Pandas_Cheat_Sheet.pdf</a>. Mira solo "Reshaping Data" en la página 2. 2 min.</li>
+          </ol>
+          <p><b>Lo que vas a entender:</b></p>
+          <ul>
+            <li><code>resample</code> = decirle a pandas <i>"agrupa estas filas por una unidad de tiempo más grande"</i>. 90 filas (1 por día durante 3 meses) → con <code>resample('ME')</code> quedan 3 filas (1 por mes), promedio incluido.</li>
+            <li>Es lo mismo que una tabla dinámica de Excel agrupada por mes, pero en una línea de código.</li>
+            <li><b>Requisito:</b> la columna de fechas tiene que ser el <b>índice</b> del DataFrame. Por eso ayer convertimos a datetime — era el paso previo.</li>
+          </ul>
+          <p><b>Ejemplo (3 filas → 1 mes):</b></p>
+<pre><code>ANTES:
+   fecha        precio
+0  2026-01-05   1200
+1  2026-01-15   1250
+2  2026-01-28   1300
+
+df.resample('ME', on='fecha').mean()
+        ↓
+DESPUÉS:
+fecha        precio
+2026-01-31   1250.0   ← promedio de los 3 precios de enero</code></pre>
+        `,
+        ejercicio: `
+          <ol>
+            <li>Abre <code>D0.1_dia1_fechas.ipynb</code>. Re-sube CSV si Colab lo perdió (es normal).</li>
+            <li>Re-ejecuta las celdas del día 1 hasta tener <code>df</code> con fecha en datetime.</li>
+            <li><b>Filtra</b> un solo medicamento (no te marees con todo):
+<pre><code>medicamento_uno = df[df["medicamento"] == "Paracetamol"]
+medicamento_uno</code></pre>
+              Cambia "Paracetamol" por uno con varias fechas.</li>
+            <li><b>Pon la fecha como índice</b> (paso clave):
+<pre><code>medicamento_uno = medicamento_uno.set_index("fecha")
+medicamento_uno</code></pre>
+              La columna fecha desaparece del cuerpo y aparece en negrita a la izquierda. Eso es el índice.</li>
+            <li><b>Resample mensual:</b>
+<pre><code>mensual = medicamento_uno["precio"].resample("ME").mean()
+mensual</code></pre>
+              <code>"ME"</code> = Month End. <code>.mean()</code> = promedio.</li>
+            <li><b>Resample semanal:</b>
+<pre><code>semanal = medicamento_uno["precio"].resample("W").mean()
+semanal</code></pre></li>
+            <li><b>Gráfico (la recompensa visual):</b>
+<pre><code>mensual.plot(title="Evolución mensual del precio")</code></pre>
+              Una línea aparece. Si sube, el medicamento se encareció. <b>Esa línea es información que antes no podías ver.</b></li>
+            <li>Guarda como <code>D0.1_dia2_resample.ipynb</code>.</li>
+          </ol>
+        `,
+        tecnica: "<b>Práctica deliberada con farmacia.</b> Repite los pasos 3–7 con <b>otro medicamento distinto</b>. Sin mirar el código de arriba — escríbelo de memoria. Cuando te trabes, mira, anota qué olvidaste, cierra y sigue. La segunda vez que escribes algo es donde se fija.",
+        verif: `
+          <ol>
+            <li>¿Por qué tuviste que poner la fecha como índice antes de hacer resample? ¿Qué pasaría si no?</li>
+            <li>¿Qué diferencia hay entre <code>"ME"</code> y <code>"W"</code> en resample?</li>
+            <li>Si quisieras la <b>suma</b> en vez del promedio del mes, ¿qué cambiarías?</li>
+          </ol>
+        `,
+        template: `📆 9 abril 2026 — D0.1 Día 2
+✅ Hecho: filtré 1 medicamento, fecha como índice, resample mensual y semanal, gráfico generado
+🧠 Concepto que más me costó: [...]
+❓ Pregunta abierta: [...]`,
+        trampa: "Vas a querer hacer resample sobre TODO el <code>df</code> original sin filtrar. Va a darte un error feo (<code>Could not convert string 'Paracetamol' to numeric</code>) porque pandas intenta promediar texto. <b>Filtra primero, resample después.</b> Fórmula mental: <i>\"un medicamento a la vez, después uno generaliza\"</i>.",
+        claude: `Plantilla Tutoría Activa de C0 día 1, en variante "preguntas conceptuales":
+<pre><code>Acabo de hacer un gráfico mensual del precio de un medicamento con resample. Quiero que me des 3 PREGUNTAS conceptuales (no de código) que me obliguen a pensar si entendí cuándo usar resample versus groupby, sin que me des la respuesta. Hazme las preguntas y espera mi respuesta.</code></pre>
+Es Claude interrogándote, no resolviéndote.`,
+        respaldo: 'Si resample no te hace clic conceptualmente: busca en Google "Pandas resample tutorial sparkbyexamples" y entra al primer resultado.',
+        checklist: ["✅ Notebook <code>D0.1_dia1_fechas.ipynb</code> guardado y visible en Colab","✅ CSV disponible para re-subir si Colab lo borró (Colab elimina archivos cargados manualmente al cerrar — es normal)","✅ Hice el Active Recall de ayer y anoté en el Archivo de Sesiones qué fallé"],
+        answers: "<p><b>1. ¿Por qué el índice de fechas es necesario para resample?</b><br><code>resample</code> necesita que el eje temporal sea el índice del DataFrame para saber cómo agrupar las filas. Sin eso, pandas no sabe cuál columna es el eje de tiempo.</p><p><b>2. Diferencia entre <code>'ME'</code> y <code>'W'</code>:</b><br><code>'ME'</code> = Month End = agrupa por mes (resultado: una fila por mes, fecha en último día del mes). <code>'W'</code> = Week = agrupa por semana (una fila por semana, fecha en domingo).</p><p><b>3. Cambiar promedio por suma:</b><br>Reemplaza <code>.mean()</code> por <code>.sum()</code>: <code>mensual = medicamento_uno['precio'].resample('ME').sum()</code>.</p><p><b>Señales de listo:</b> Puedes filtrar 1 medicamento con <code>df[df['medicamento'] == '...']</code> · Sabes poner fecha como índice con <code>set_index</code> · El gráfico muestra una línea real con datos de tu farmacia</p>"
+      },
+      {
+        title: "Día 3 · Comparar 3 medicamentos y sacar conclusiones de QF",
+        objetivo: "Al final de hoy podrás graficar 3 medicamentos en el mismo eje, leer ese gráfico con criterio profesional de QF, y dejar el notebook subido a GitHub con un README mínimo.",
+        material: `
+          <ol>
+            <li><b>Tutorial corto:</b> busca en Google <code>pandas plot multiple columns</code> y entra al primer resultado de la documentación oficial. 5 min.</li>
+            <li><b>Mini-tutorial GitHub:</b> <a href="https://docs.github.com/en/get-started/start-your-journey/hello-world" target="_blank">docs.github.com/en/get-started/start-your-journey/hello-world</a>. Lee solo "Step 1: Create a repository" y "Step 4: Make and commit changes". 5 min.</li>
+          </ol>
+          <p><b>Lo que vas a entender:</b></p>
+          <ul>
+            <li>Para graficar varios medicamentos juntos necesitas <code>pivot_table</code> (filas = fechas, columnas = un medicamento por columna). Es como matplotlib espera los datos para varias líneas.</li>
+            <li><b>GitHub no es solo para "programadores reales".</b> Es tu cuaderno público profesional. Cada notebook subido es portafolio. En 12 meses tendrás una página que demuestra que sabes hacer análisis de datos farmacéuticos. Eso vale.</li>
+          </ul>
+        `,
+        ejercicio: `
+          <ol>
+            <li>Colab nuevo: <code>D0.1_dia3_comparacion.ipynb</code>. Sube tu CSV.</li>
+            <li>Re-aplica: <code>pd.read_csv</code> → <code>pd.to_datetime</code>.</li>
+            <li><b>Pivot</b> (operación clave del día):
+<pre><code>tabla = df.pivot_table(
+    index="fecha",
+    columns="medicamento",
+    values="precio",
+    aggfunc="mean"
+)
+tabla</code></pre>
+              Filas = fechas, columnas = un medicamento por columna. Si hay celdas <code>NaN</code> es porque ese medicamento no tenía precio ese día — está bien.</li>
+            <li><b>Resample mensual sobre toda la tabla a la vez:</b>
+<pre><code>tabla_mensual = tabla.resample("ME").mean()
+tabla_mensual</code></pre></li>
+            <li><b>Quédate solo con 3 medicamentos</b>:
+<pre><code>tres = tabla_mensual[["Paracetamol", "Ibuprofeno", "Losartán"]]
+tres</code></pre>
+              Reemplaza por los tuyos. Si tienes menos de 3, usa los que tengas.</li>
+            <li><b>Gráfico comparativo:</b>
+<pre><code>tres.plot(
+    title="Evolución mensual de precios — Top 3",
+    ylabel="Precio (CLP)",
+    figsize=(10, 5)
+)</code></pre></li>
+            <li><b>Léelo como QF, no como programador.</b> En una celda Markdown (botón <code>+ Text</code>) escribe 3 conclusiones reales:
+              <ul>
+                <li>¿Cuál subió más en el período?</li>
+                <li>¿Hay patrón estacional? (analgésicos suben en invierno, etc.)</li>
+                <li>¿Qué decisión tomarías como QF de PAC con esta info?</li>
+              </ul>
+            </li>
+            <li><b>Subir a GitHub:</b>
+              <ul>
+                <li>Si no tienes cuenta: <a href="https://github.com" target="_blank">github.com</a> → Sign up → usa mail profesional.</li>
+                <li>"New repository" → nombre <code>aprendizaje-ia-farmacia</code> → Public → Create.</li>
+                <li>En Colab: File > Download > .ipynb. Descárgalo.</li>
+                <li>En GitHub: "Add file > Upload files" → arrastra el notebook → mensaje de commit: <code>D0.1 completado: serie de tiempo precios PAC</code> → Commit changes.</li>
+                <li>Crea <code>README.md</code> con:
+<pre><code># Aprendizaje IA aplicada a Farmacia
+
+Repositorio de mi camino de 12-18 meses para aplicar IA a la práctica farmacéutica.
+
+## D0.1 - Serie de tiempo de precios
+Análisis de evolución mensual de precios de medicamentos top en Farmacia Popular PAC usando pandas.</code></pre>
+                </li>
+              </ul>
+              Tu notebook es público. Primer artefacto de portafolio listo. 🎉</li>
+          </ol>
+        `,
+        tecnica: "<b>Mini-proyecto integrador.</b> Lo de hoy no es ejercicio aislado, es un mini-producto que combina los 3 días. En 3 días pasaste de no entender qué es un DataFrame a tener un análisis temporal real subido a un portafolio público. Eso es velocidad de aprendizaje.",
+        verif: `
+          <ol>
+            <li>¿Qué hace <code>pivot_table</code> que no hace <code>groupby</code>?</li>
+            <li>¿Por qué necesitas reorganizar los datos antes de graficar varias líneas?</li>
+            <li>Mirando tu propio gráfico final, ¿qué decisión profesional respalda con datos? Una sola, concreta, accionable.</li>
+          </ol>
+        `,
+        template: `📆 10 abril 2026 — D0.1 Día 3 (CIERRE BLOQUE)
+✅ Hecho: pivot, resample mensual de tabla completa, gráfico 3 medicamentos, repo GitHub creado, notebook subido
+🎯 Conclusión profesional del análisis: [...]
+🧠 Lo que voy a recordar de este bloque: [...]
+🔜 Siguiente: F0.1 Setup ambiente (lunes)`,
+        trampa: "Vas a querer \"pulir\" el gráfico 30 minutos en lugar de pasar a las conclusiones profesionales. <b>No.</b> El gráfico funcional + 3 conclusiones de QF vale infinito más que un gráfico perfecto sin análisis. La belleza viene en D2.2 Visualización, no hoy.",
+        claude: `Plantilla Code Review Junior (de C0 día 3):
+<pre><code>Soy QF principiante en Python. Voy a pegarte el código de mi notebook D0.1 día 3. Actúa como REVISOR JUNIOR, no como experto. Reglas estrictas:
+1. Máximo 2 sugerencias de mejora
+2. Por cada una, explica el porqué con un ejemplo de 2 líneas
+3. NO me reescribas el código completo bajo ninguna circunstancia
+4. Si está bien, dilo. No inventes mejoras.
+Aquí va: [pega tu código]</code></pre>
+Las sugerencias las aplicas tú a mano. No le pidas a Claude que las aplique.`,
+        respaldo: 'Si pivot_table te confunde: <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot_table.html" target="_blank">doc oficial</a>, solo el primer ejemplo de "Examples". El resto sobra.'
+      }
+    ]
+  },
+
+  // ===========================================
+  // C0 · Claude copiloto (5 días) — META
+  // ===========================================
+  {
+    id:"C0", t:"Claude como copiloto de estudio", tr:"meta", sem:0, parallel:true, detailed:true,
+    intro:"Tu amplificador. Sin esto, Claude se convierte en muleta. Con esto, Claude te 2x el aprendizaje. Lecturas + ejercicios cortos de 15 min, <b>fuera</b> de la hora sagrada. Hazlos en el desayuno, en el bus, en FarqFar entre paciente y paciente. Carga real: 5 sesiones × 15 min = 75 min totales esta semana.",
+    pre:[],
+    days:[
+      {
+        title:"Día 1 · El prompt de tutoría activa",
+        objetivo:"Al final de hoy entenderás la diferencia entre pedirle a Claude que te resuelva algo vs. que te enseñe, y tendrás tu primer prompt-base de tutoría guardado en Notion.",
+        material:`
+          <ol>
+            <li><a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank">Anthropic — Prompt engineering overview</a>. Solo la introducción. 5 min.</li>
+            <li><a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/be-clear-and-direct" target="_blank">Anthropic — Be clear and direct</a>. 3 min. Patrón básico: rol + contexto + tarea + restricciones.</li>
+          </ol>
+          <p><b>La diferencia entre estos 2 prompts es 100x:</b></p>
+          <p>❌ <b>Malo (delegación):</b> "¿Cómo se hace un loop en Python?" → Claude da código, copias, mañana no te acuerdas.</p>
+          <p>✅ <b>Bueno (tutoría):</b></p>
+<pre><code>Soy QF aprendiendo Python desde cero, sin base previa. Acabo de leer sobre loops en CS50P Week 2. Quiero que me expliques qué problema resuelven los loops en general, ANTES de mostrarme código. Después, dame UN ejemplo en Python que use lista de medicamentos. No más de uno. Después hazme 2 preguntas para verificar que entendí.</code></pre>
+          <p><b>La fórmula del prompt de tutoría:</b></p>
+          <ol>
+            <li><b>Quién soy</b> (QF, sin base, hora limitada)</li>
+            <li><b>Qué acabo de hacer/leer</b> (contexto)</li>
+            <li><b>Qué quiero entender</b> (no qué quiero que me hagas)</li>
+            <li><b>Restricción anti-delegación</b> ("antes de código, explica el porqué" / "no me des más de X" / "hazme preguntas")</li>
+          </ol>
+        `,
+        ejercicio:`
+          <p>Haz este experimento A/B en Claude:</p>
+          <ol>
+            <li>Pregunta 1: <code>¿Cómo se carga un CSV en pandas?</code></li>
+            <li>Mira la respuesta. Te dará código directo.</li>
+            <li>Borra el chat. Empieza uno nuevo.</li>
+            <li>Pregunta 2:
+<pre><code>Soy QF aprendiendo Python desde cero. Quiero entender por qué necesito una librería como pandas para abrir un CSV en lugar de simplemente abrirlo como un Excel. Explícamelo conceptualmente primero. NO me des código todavía. Después de tu explicación, hazme una pregunta que verifique que entendí el porqué.</code></pre>
+            </li>
+            <li>Compara las dos respuestas. La diferencia es la diferencia entre 2 versiones de ti: la que delega y olvida, y la que entiende y recuerda.</li>
+          </ol>
+          <p>Crea en tu Notion una página llamada <b>🎓 Mis Plantillas Claude</b> (vacía está bien por ahora) y guarda dentro:</p>
+          <pre>🎓 PROMPT BASE DE TUTORÍA (v1)
+
+Soy QF chileno, principiante absoluto en programación, con 45 min/día.
+Acabo de [LEER X / TERMINAR EJERCICIO Y].
+Quiero entender [CONCEPTO]. 
+Antes de cualquier código:
+1. Explícame qué problema resuelve este concepto en lenguaje natural
+2. Dame UN solo ejemplo, idealmente en contexto de farmacia
+3. Hazme 2 preguntas para verificar que entendí
+NO me resuelvas el ejercicio que estoy haciendo. Yo lo hago.</pre>
+        `,
+        tecnica:"<b>Comparación A/B explícita.</b> Acabas de hacerla. Vas a empezar a notar cuándo Claude te está resolviendo (y debes parar) vs. cuándo te está enseñando (y debes seguir).",
+        verif:`
+          <ol>
+            <li>¿Cuál de las 4 partes de la fórmula es la que más a menudo olvidas tú?</li>
+            <li>¿Por qué la restricción "no me des código todavía" es la más importante para tu perfil específico?</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — C0 Día 1
+✅ Hecho: experimento A/B, plantilla de tutoría guardada en Notion
+🧠 Insight: [...]`,
+        trampa:"Vas a sentir, los primeros días, que el prompt largo \"es perder tiempo\" porque el corto te da respuesta más rápido. Sí. Y por eso pierdes meses copiando código que no entiendes. La velocidad real está en cuántos conceptos quedan grabados, no en cuántas líneas generas.",
+        claude:"Hoy <b>el ejercicio entero ES uso de Claude</b>. Lo experimentas tú directamente.",
+        respaldo:"Si los docs de Anthropic te resultan densos: video corto en YouTube \"How to write better prompts for Claude\" — busca con esos términos.",
+        checklist: ["✅ Tengo Claude abierto en el navegador (<a href='https://claude.ai' target='_blank'>claude.ai</a>)","✅ 15 minutos disponibles FUERA de la hora sagrada (bus, desayuno, pausa en FarqFar)","✅ Tengo Notion abierto para crear la página 🎓 Mis Plantillas Claude","⛔ Este bloque es de 15 min por día — si no tienes 15 min ahora, anótalo para antes de las 19:00 del día siguiente. No lo hagas durante la hora sagrada."],
+        answers: "<p><b>1. ¿Cuál de las 4 partes de la fórmula olvidas más?</b><br>No hay respuesta universal — es autodiagnóstico. Para la mayoría de principiantes es la <b>restricción anti-delegación</b> (parte 4), porque el instinto es pedir código directamente.</p><p><b>2. ¿Por qué la restricción 'antes de código' es la más importante para tu perfil?</b><br>Porque ya pasaste meses copiando código generado por IA. Tu autopista cerebral va directo a 'recibir código → copiar'. La restricción rompe esa autopista y obliga a construir la de comprensión primero.</p><p><b>Señales de listo:</b> Plantilla de tutoría guardada en Notion · Puedes describir la diferencia entre los 2 prompts A/B sin mirar · La plantilla tiene las 4 partes claras</p>"
+      },
+      {
+        title:"Día 2 · Feynman inverso",
+        objetivo:"Aprender la técnica más poderosa de tutoría con IA: tú le explicas a Claude un concepto que crees entender, y Claude te corrige los huecos. 10x más efectivo que pedir explicaciones.",
+        material:`
+          <ol>
+            <li><a href="https://en.wikipedia.org/wiki/Learning_by_teaching#Feynman_technique" target="_blank">Wikipedia — Feynman technique</a>. Solo el primer párrafo. La idea de Richard Feynman: si no puedes explicarle algo a un niño de 10 años, no lo entiendes.</li>
+            <li>Búsqueda Google: <code>feynman technique programming</code> — primer resultado. 3 min.</li>
+          </ol>
+          <p><b>Original:</b> aprendes → explicas en voz alta → notas dónde te trabas → vuelves al material. Funciona pero sin alguien que te corrija puedes auto-engañarte.</p>
+          <p><b>Feynman inverso con Claude:</b> tú le explicas a Claude → Claude detecta dónde tu explicación es vaga/incorrecta/incompleta → te lo señala con precisión. Es como tener un tutor de Harvard a las 19:00.</p>
+        `,
+        ejercicio:`
+          <p>Vas a practicar con algo que ya sabes muy bien: <b>qué es un excipiente farmacéutico</b>. Deliberado: primero la técnica con un tema donde tienes certeza, después la usas con Python donde dudas.</p>
+          <ol>
+            <li>Abre Claude. Pega:
+<pre><code>Voy a hacer Feynman inverso contigo. Voy a explicarte qué es un excipiente farmacéutico como si tuvieras 10 años. Tu trabajo: NO me corrijas hasta que termine. Cuando termine, dime: (1) qué partes están imprecisas o incorrectas, (2) qué concepto importante no mencioné, (3) UNA pregunta de estudiante que mi explicación no respondería bien. NO me des una explicación tuya — solo evalúa la mía. Voy:</code></pre>
+            </li>
+            <li>Escribe tu explicación de excipiente. 4-6 frases. Tono coloquial.</li>
+            <li>Lee la respuesta de Claude. Vas a ver 3 cosas: imprecisiones, lo que faltó, y la pregunta que un estudiante haría.</li>
+          </ol>
+          <p>Esto es exactamente lo que vas a hacer con cada concepto de Python a partir de ahora.</p>
+          <p>Agrega a <b>🎓 Mis Plantillas Claude</b>:</p>
+          <pre>🎓 FEYNMAN INVERSO (v1)
+
+Voy a hacer Feynman inverso contigo. Voy a explicarte [CONCEPTO] como si tuvieras 10 años.
+Tu trabajo: NO me corrijas hasta que termine. Cuando termine, dime:
+1. Qué partes de mi explicación están imprecisas
+2. Qué concepto importante no mencioné
+3. UNA pregunta que un estudiante haría que mi explicación no respondería bien
+NO me des una explicación tuya. Solo evalúa la mía. Voy:</pre>
+        `,
+        tecnica:"<b>Feynman inverso (la usarás 2× por semana mínimo).</b> La regla: cada vez que sientas \"creo que entendí esto\", <b>antes</b> de avanzar al siguiente tema, haces Feynman inverso. Si Claude no encuentra huecos, sigue. Si encuentra, te quedas un día más.",
+        verif:`
+          <ol>
+            <li>¿Por qué la regla "no me corrijas hasta que termine" es importante? (Pista: ¿qué pasaría si Claude te interrumpe?)</li>
+            <li>¿Cuándo NO funciona Feynman inverso? (Pista: cuando no sabes ni lo más básico, ¿qué le explicarías?)</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — C0 Día 2
+✅ Hecho: primer Feynman inverso (excipiente), plantilla guardada
+🧠 Hueco que Claude detectó en mi explicación: [...]`,
+        trampa:"Vas a querer hacer Feynman inverso sobre conceptos que <b>no</b> has estudiado todavía, esperando que Claude te enseñe. <b>No funciona así.</b> Feynman inverso es para verificar comprensión, no para sustituir el estudio. Si no leíste antes, vas a soltar puras vaguedades y no se te va a fijar nada.",
+        claude:"El ejercicio entero ES uso de Claude.",
+        respaldo:"Video YouTube \"The Feynman Technique\" del canal de Ali Abdaal (5 min).",
+        checklist: ["✅ Hice C0 Día 1: plantilla de tutoría guardada en 🎓 Mis Plantillas Claude","✅ Claude disponible en el navegador","✅ 15 minutos disponibles ahora"],
+        answers: "<p><b>1. ¿Por qué 'no me corrijas hasta que termine'?</b><br>Si Claude interrumpe, tu cerebro se enfoca en la corrección recibida en vez de terminar su propio hilo de pensamiento. El valor del Feynman inverso está en exponer TUS huecos completamente antes de recibir feedback — no en recibir correcciones parciales mientras aún estás hablando.</p><p><b>2. ¿Cuándo NO funciona Feynman inverso?</b><br>Cuando no sabes absolutamente nada del tema. Si no estudiaste antes, solo vas a soltar vaguedades y Claude no puede detectar huecos porque no hay estructura que evaluar. Primero estudias, luego Feynman.</p><p><b>Señales de listo:</b> Tienes la plantilla de Feynman guardada · Sabes cuándo (después de estudiar) y cuándo no (antes de estudiar) usarla</p>"
+      },
+      {
+        title:"Día 3 · Code review junior",
+        objetivo:"Aprender a pedirle a Claude que revise tu código sin reescribírtelo. Esto es lo que te va a permitir mejorar como programador en lugar de delegar.",
+        material:`
+          <ol>
+            <li><a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/multishot-prompting" target="_blank">Anthropic — Use examples (multishot prompting)</a>. Solo la primera mitad. Concepto: dar a Claude ejemplos del tipo de feedback que quieres, no descripciones abstractas.</li>
+          </ol>
+          <p>Cuando le pides "revisa mi código", Claude por defecto te lo reescribe entero. Tú no quieres eso. Para que Claude actúe como <b>revisor</b> y no como <b>reemplazador</b>, necesitas tres restricciones:</p>
+          <ol>
+            <li><b>Rol explícito:</b> "actúa como revisor junior", no senior. Un junior comenta, no reescribe.</li>
+            <li><b>Límite numérico:</b> "máximo 2 mejoras". Sin tope te da 15 y te abruma.</li>
+            <li><b>Prohibición explícita:</b> "NO me reescribas el código completo". En serio, hay que decirlo.</li>
+          </ol>
+        `,
+        ejercicio:`
+          <p>Si tienes código tuyo (notebook D0.1), úsalo. Si no, este ejemplo:</p>
+<pre><code>import pandas as pd
+datos = pd.read_csv("precios_pac.csv")
+datos["fecha"] = pd.to_datetime(datos["fecha"])
+paracetamol = datos[datos["medicamento"] == "Paracetamol"]
+paracetamol = paracetamol.set_index("fecha")
+mensual = paracetamol["precio"].resample("ME").mean()
+print(mensual)</code></pre>
+          <p>Prueba dos prompts en Claude:</p>
+          <p><b>Prompt A (malo):</b> <code>Revisa este código y mejóralo: [pega código]</code></p>
+          <p><b>Prompt B (bueno):</b></p>
+<pre><code>Soy QF principiante en Python. Actúa como REVISOR JUNIOR, no como experto. 
+Reglas estrictas:
+1. Máximo 2 sugerencias de mejora
+2. Por cada una, explica el porqué con un ejemplo de 2 líneas
+3. NO me reescribas el código completo bajo ninguna circunstancia
+4. Si está bien, dilo y no inventes mejoras
+Aquí va: [pega código]</code></pre>
+          <p>La A te abruma con 8 cambios y código nuevo entero. La B te da 2 cositas y te deja a ti hacer el cambio.</p>
+          <p>Agrega a <b>🎓 Mis Plantillas Claude</b>:</p>
+          <pre>🎓 CODE REVIEW JUNIOR (v1)
+
+Soy QF principiante en Python. Actúa como REVISOR JUNIOR, no como experto.
+Reglas estrictas:
+1. Máximo 2 sugerencias de mejora
+2. Por cada una, explica el porqué con un ejemplo de 2 líneas
+3. NO me reescribas el código completo bajo ninguna circunstancia
+4. Si está bien, dilo. No inventes mejoras.
+Aquí va: [CÓDIGO]</pre>
+        `,
+        tecnica:"<b>Restricción explícita anti-delegación.</b> Esta es la técnica madre. Toda interacción con Claude para aprender debe tener una restricción explícita. Sin restricción, Claude vuelve al modo \"te lo hago entero\".",
+        verif:`
+          <ol>
+            <li>¿Por qué pedirle "actúa como revisor junior" funciona mejor que "actúa como senior"?</li>
+            <li>¿Qué pasaría si quitas la regla #4 ("si está bien, dilo")?</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — C0 Día 3
+✅ Hecho: comparación A/B revisor, plantilla code review guardada
+🧠 Las 2 sugerencias que Claude me dio sobre mi código: [...]`,
+        trampa:"Vas a recibir las 2 sugerencias y tu reflejo va a ser <b>pedirle a Claude que las aplique</b>. NO. Las aplicas tú a mano en tu notebook. Si Claude las aplica, no aprendiste. Si las aplicas tú, te dolió un poco más pero te quedó.",
+        claude:"El ejercicio ES uso de Claude.",
+        respaldo:"Si quieres entender mejor el rol de \"junior reviewer\": busca \"how to give code reviews\" en Google y lee cualquier artículo sobre review junior vs senior.",
+        checklist: ["✅ Hice C0 Días 1 y 2 (tutoría activa + Feynman guardados)","✅ Tengo código propio disponible — notebook D0.1 o cualquier ejercicio escrito por ti","⛔ Si no tienes código propio: usa el ejemplo del ejercicio. Pero anota que esto indica que deberías ir a D0.1 antes de seguir con C0 Día 3","✅ Claude disponible"],
+        answers: "<p><b>1. ¿Por qué 'revisor junior' funciona mejor que 'senior'?</b><br>Un senior tiende a reescribir todo 'como lo haría él'. Un junior comenta sin reemplazar — señala problemas y explica, pero deja la implementación a ti. El rol moldea el comportamiento de Claude.</p><p><b>2. ¿Qué pasaría sin la regla #4 ('si está bien, dilo')?</b><br>Claude inventaría mejoras aunque el código esté bien. Es un comportamiento documentado: los LLMs tienden a ser 'helpfully critical' aunque no sea necesario. La regla #4 lo autoriza a decir 'bien hecho, avanza'.</p><p><b>Señales de listo:</b> Plantilla Code Review guardada · Sabes que la regla de no-reescritura hay que explicitarla · Tienes las 2 sugerencias reales de Claude aplicadas en tu notebook</p>"
+      },
+      {
+        title:"Día 4 · Cuándo NO usar Claude",
+        objetivo:"Entender los momentos exactos en que Claude te perjudica el aprendizaje, y comprometerte a no usarlo en esos momentos. Esto es lo más difícil del bloque.",
+        material:`
+          <p>Búsqueda Google: <code>learning programming with AI cognitive offloading</code>. Lee el primer resultado académico/blog.</p>
+          <p>Término técnico: <b>cognitive offloading</b> = cuando delegas tanto en una herramienta que tu cerebro deja de hacer el trabajo, y por lo tanto deja de aprender. Es lo opuesto al aprendizaje.</p>
+          <p><b>Hay 4 momentos donde NO debes usar Claude:</b></p>
+          <ol>
+            <li><b>Cuando estás resolviendo un problem set por primera vez.</b> Si no puedes, ese fracaso ES el aprendizaje. Pelea 30 min. Después puedes pedir ayuda.</li>
+            <li><b>Cuando estás escribiendo código desde cero por primera vez.</b> Tus dedos tienen que sufrir la sintaxis.</li>
+            <li><b>Cuando el error es simple.</b> Tipeos, paréntesis, indentación. Búscalos tú. Eso entrena tu ojo de programador.</li>
+            <li><b>Cuando intentas "entender" código que ya funciona sin haberlo escrito tú.</b> Aprendizaje nulo. Escribe tú primero, después discutes.</li>
+          </ol>
+          <p><b>4 momentos donde SÍ debes usar Claude:</b></p>
+          <ol>
+            <li><b>Después</b> de fallar 30 min, para pistas (no solución).</li>
+            <li><b>Después</b> de escribir tu código, para code review junior.</li>
+            <li><b>Para</b> verificar comprensión vía Feynman inverso.</li>
+            <li><b>Para</b> explicar conceptos abstractos antes de empezar el ejercicio.</li>
+          </ol>
+        `,
+        ejercicio:`
+          <p>Crea en Notion una nota titulada <b>⛔ Mi línea roja con Claude</b>. Pega esto y léelo en voz alta:</p>
+          <pre>⛔ MI LÍNEA ROJA CON CLAUDE
+
+Me comprometo a NO usar Claude en estos momentos:
+1. Los primeros 30 min de cualquier problem set, ejercicio o problema nuevo
+2. Cuando esté escribiendo código por primera vez (escribo solo, sin pedir nada)
+3. Cuando tenga un error: lo leo yo, lo busco yo, intento yo
+4. Cuando "ya tenga código que funciona" (no le pido que me lo explique)
+
+Cuando rompa esta línea roja, lo anoto en el Archivo de Sesiones del día.
+Tres rupturas en una semana = revisión obligatoria de este compromiso.</pre>
+        `,
+        tecnica:"<b>Compromiso explícito por escrito (implementation intentions, Gollwitzer 1999).</b> Las personas que escriben sus compromisos los cumplen 2-3x más que las que solo los piensan.",
+        verif:`
+          <ol>
+            <li>¿Cuál de los 4 "no usar" va a ser el más difícil para ti, dada tu historia de copy-paste de IA?</li>
+            <li>¿Por qué pelear 30 min antes de pedir ayuda no es "perder tiempo"?</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — C0 Día 4
+✅ Hecho: línea roja escrita y guardada en Notion
+⛔ El "no usar" más difícil para mí: [...]`,
+        trampa:"Esta semana, en el día 1 o 2 de F0.2 W0 problem set, te vas a topar con un ejercicio que no sale al primer intento. Tu reflejo va a ser pegárselo a Claude. <b>Resiste 30 min.</b> Marca timer. Si después no salió, pide una <b>pista</b>, no la solución.",
+        claude:"Plantilla nueva para guardar (Pista, no solución):<br><pre>Llevo 30 min atascado en este problema:\n[PROBLEMA]\nMi código actual:\n[CÓDIGO]\nDame UNA pista, no la solución. La pista debe apuntar a dónde está mi error o qué concepto me falta, sin decirme exactamente qué cambiar.</pre>",
+        respaldo:"Artículo \"The dangers of using AI for learning to code\" — busca en Google.",
+        checklist: ["✅ Hice C0 Días 1, 2, 3","✅ 15 minutos disponibles fuera de la hora sagrada","✅ Tengo Notion abierto para crear la nota '⛔ Mi línea roja con Claude'","⛔ Este día es solo lectura + escritura de compromiso. No requiere código."],
+        answers: "<p><b>1. ¿Cuál de los 4 'no usar' es más difícil para ti?</b><br>Respuesta personal. Para alguien con historial de copy-paste, la más difícil suele ser #2 (escribir código por primera vez solo). El impulso de pedir el ejemplo antes de intentar es muy fuerte.</p><p><b>2. ¿Por qué 30 min de pelea no es 'perder tiempo'?</b><br>Las conexiones neurales se forman con el esfuerzo, no con la respuesta. Recibir la solución en 2 min no activa los mismos circuitos que luchar 30 min y llegar a ella. Es como el músculo: sin resistencia no hay crecimiento.</p><p><b>Señales de listo:</b> Compromiso escrito en Notion · Sabes exactamente cuál de los 4 será el más difícil de respetar · Lo firmaste con fecha</p>"
+      },
+      {
+        title:"Día 5 · Tu plantilla maestra personalizada",
+        objetivo:"Consolidar las plantillas de los días 1, 2 y 3 en un solo documento maestro guardado en Notion, al que vas a recurrir todos los días durante los próximos 12 meses.",
+        material:`
+          <ol>
+            <li>Re-lee tus 3 plantillas guardadas en <b>🎓 Mis Plantillas Claude</b>.</li>
+            <li><a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/long-context-tips" target="_blank">Anthropic — Long context tips</a>. Solo la primera sección. Concepto: contexto al inicio del prompt funciona mejor que al final.</li>
+          </ol>
+        `,
+        ejercicio:`
+          <p>En <b>🎓 Mis Plantillas Claude</b>, reorganiza todo así:</p>
+<pre># 🎓 MIS PLANTILLAS CLAUDE — Maestro
+
+## 🪪 Mi contexto fijo (lo pego al inicio de todo prompt nuevo)
+
+Soy Bastián. QF chileno, padre de 2, trabajo en 3 farmacias.
+Aprendo IA aplicada a farmacia con 45 min/día (19:00-19:45 L-V).
+Principiante absoluto en programación.
+Mi malla está en Notion: 🗺️ Malla v3.
+
+## 1. 🎓 TUTORÍA ACTIVA (concepto nuevo)
+[contexto fijo]
+Acabo de [leer X / terminar ejercicio Y].
+Quiero entender [CONCEPTO]. 
+Antes de cualquier código:
+1. Explícame qué problema resuelve este concepto en lenguaje natural
+2. Dame UN solo ejemplo en contexto de farmacia
+3. Hazme 2 preguntas para verificar que entendí
+NO me resuelvas el ejercicio que estoy haciendo.
+
+## 2. 🪞 FEYNMAN INVERSO (creo que entendí)
+[contexto fijo]
+Voy a hacer Feynman inverso. Te explico [CONCEPTO] como si tuvieras 10 años.
+NO me corrijas hasta que termine. Cuando termine, dime:
+1. Qué partes están imprecisas
+2. Qué concepto importante no mencioné
+3. UNA pregunta de estudiante que mi explicación no respondería
+NO me des explicación tuya. Voy:
+
+## 3. 🔍 CODE REVIEW JUNIOR (terminé de escribir código)
+[contexto fijo]
+Actúa como REVISOR JUNIOR, no como experto.
+1. Máximo 2 sugerencias
+2. Cada una con porqué y ejemplo de 2 líneas
+3. NO me reescribas el código completo
+4. Si está bien, dilo. No inventes mejoras.
+Aquí va: [CÓDIGO]
+
+## 4. 💡 PISTA, NO SOLUCIÓN (30+ min atascado)
+[contexto fijo]
+Llevo 30 min atascado en:
+[PROBLEMA]
+Mi código actual:
+[CÓDIGO]
+Dame UNA pista, no la solución. Apunta al concepto que me falta, sin decirme qué cambiar.
+
+## ⛔ Mi línea roja
+(ver nota separada)
+
+## 📅 Bitácora
+Voy a anotar aquí cuándo rompo la línea roja.</pre>
+        `,
+        tecnica:"<b>Externalización en sistema confiable.</b> Tu cerebro no debería tener que recordar 4 plantillas a las 19:00. Lo dejas en Notion, lo abres con un atajo, lo copias, lo pegas. Cero fricción.",
+        verif:`
+          <ol>
+            <li>¿Por qué tener el "contexto fijo" separado al inicio te ahorra trabajo cada día?</li>
+            <li>¿Cuál de las 4 plantillas vas a usar más esta primera semana?</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — C0 Día 5 (CIERRE BLOQUE)
+✅ Hecho: plantilla maestra consolidada en Notion
+🎯 Aprendizaje principal del bloque: [...]
+🔜 A partir de mañana, cada sesión termina con 1 uso de plantilla`,
+        trampa:"Vas a \"guardar las plantillas para usar después\" y nunca vas a abrir el documento. Compromiso: <b>mañana mismo</b> en tu hora sagrada, abres 🎓 Mis Plantillas Claude y usas al menos 1. Si lo logras 5 días seguidos, se convierte en hábito.",
+        claude:"Hoy guardas las plantillas. Mañana las usas en D0.1 / F0.1.",
+        respaldo:"No aplica.",
+        checklist: ["✅ Las 3 plantillas (Tutoría, Feynman, Code Review) ya guardadas en 🎓 Mis Plantillas Claude","✅ Plantilla 'Pista no solución' de C0 Día 4 también guardada","⛔ Si alguna falta, cópiala del chat anterior o del Archivo de Sesiones antes de empezar este día"],
+        answers: "<p><b>1. ¿Por qué el 'contexto fijo' al inicio ahorra trabajo?</b><br>Claude no tiene memoria entre conversaciones. Sin contexto fijo, en cada chat nuevo tienes que re-explicar quién eres. Con el contexto fijo al inicio, Claude sabe tu perfil desde el primer token y personaliza toda la respuesta.</p><p><b>2. ¿Cuál de las 4 plantillas usarás más esta semana?</b><br>Respuesta personal. Lo más probable: Tutoría Activa en D0.1/F0.1 cuando encuentres conceptos nuevos, Feynman al final de cada día. Code Review solo cuando tengas código propio suficientemente completo.</p><p><b>Señales de listo:</b> El documento 🎓 Mis Plantillas Claude existe en Notion con las 4 plantillas · Mañana usas al menos 1 plantilla en tu sesión de las 19:00 · El contexto fijo está actualizado con tus 3 trabajos</p>"
+      }
+    ]
+  },
+
+  // ===========================================
+  // F0.1 · Setup ambiente (3 días detallados)
+  // ===========================================
+  {
+    id:"F0.1", t:"Setup de ambiente de trabajo", tr:"fund", sem:0, detailed:true,
+    intro:"\"Instalar Python\" no es aprender Python. Pero sin un ambiente organizado, vas a perder 10 min cada sesión buscando archivos. Estos 3 días son <b>organización</b>, no programación. <b>Importante:</b> NO te voy a hacer instalar Python local, ni VS Code, ni terminales. Vas a vivir en Google Colab por al menos 3 meses. Es gratis, no instala nada, funciona desde el navegador.",
+    pre:[],
+    days:[
+      {
+        title:"Día 1 · Tu carpeta-casa en Google Drive",
+        objetivo:"Al final de hoy tendrás una estructura de carpetas en Google Drive donde van a vivir todos tus notebooks, datos y experimentos del próximo año. Ordenada, predecible, indexable.",
+        material:`
+          <ol>
+            <li>Búsqueda Google: <code>How to Organize Your Files for Data Science Projects</code>. Lee el primer resultado.</li>
+            <li>Inspiración: <a href="https://github.com/drivendataorg/cookiecutter-data-science" target="_blank">cookiecutter-data-science</a>. Solo el README hasta "Directory structure". Es la convención de la industria.</li>
+          </ol>
+          <p>La pregunta no es "dónde guardo este archivo". Es <b>"si dentro de 6 meses necesito buscarlo, ¿dónde lo voy a buscar?"</b>. La respuesta es la convención que defines hoy.</p>
+        `,
+        ejercicio:`
+          <ol>
+            <li>Abre Google Drive. Crea esta estructura:
+<pre>📁 ia-farmacia/                  ← carpeta raíz
+   📁 00_aprendizaje/             ← notebooks de curso
+      📁 D0.1_serie_tiempo/
+      📁 C0_claude_copiloto/
+      📁 F0.1_setup/
+      📁 F0.2_cs50p/
+      📁 F0.3_python_solido/
+   📁 01_datos/                   ← CSVs, parquets
+      📁 raw/                     ← datos como vinieron
+      📁 procesados/              ← datos limpios
+   📁 02_proyectos/               ← cosas más grandes
+   📁 99_archivo/                 ← cosas viejas que no botas</pre>
+            </li>
+            <li>Mueve tu notebook D0.1 a <code>00_aprendizaje/D0.1_serie_tiempo/</code>.</li>
+            <li>Mueve tu CSV a <code>01_datos/raw/</code>.</li>
+            <li><b>Convención de nombres:</b> todos tus notebooks siguen este formato:
+<pre>[BLOQUE]_dia[N]_[tema_corto].ipynb
+Ej: D0.1_dia1_fechas.ipynb
+Ej: F02_W0_dia2_loops.ipynb</pre>
+              No espacios, no acentos, minúsculas excepto IDs. Suena pedante hoy, será oro en 6 meses.</li>
+            <li>En <code>00_aprendizaje/</code> crea Google Doc <code>00_INDICE.gdoc</code>:
+<pre>Índice de mi aprendizaje IA
+
+Última actualización: [fecha]
+
+Bloques completados:
+- (vacío)
+
+Bloque actual:
+- D0.1 Tarea Python 2 (en curso)</pre>
+              Cada bloque cerrado vuelves aquí y lo agregas.</li>
+          </ol>
+        `,
+        tecnica:"<b>Sistema antes de contenido.</b> Pasaste 35 min \"sin programar nada\" y eso te va a producir ansiedad. Es deliberado. Los profesionales pasan tiempo en infraestructura porque saben que el contenido fluye sobre la infraestructura. Sin sistema, en 3 meses tienes 47 archivos sueltos.",
+        verif:`
+          <ol>
+            <li>¿Por qué <code>01_datos/raw/</code> y <code>01_datos/procesados/</code> son carpetas separadas?</li>
+            <li>Si en 4 meses estás en F0.2 Week 5 día 3, ¿cómo se llama tu archivo y dónde vive?</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — F0.1 Día 1
+✅ Hecho: estructura de carpetas, convención de nombres, índice maestro
+🧠 Trampa que evité: querer "saltarme esto" porque no es programación`,
+        trampa:"Vas a sentir que esto \"no es aprender\". Es. Estás aprendiendo a pensar como profesional de datos: convención, predictibilidad, repetibilidad. Es 50% del trabajo real.",
+        claude:"Plantilla 1 (Tutoría Activa):<br><pre>[contexto fijo]. Acabo de organizar mi estructura de carpetas para data science. Quiero entender el principio detrás de por qué los profesionales separan datos 'raw' de 'procesados' en carpetas distintas. Explícame el porqué con un ejemplo de farmacia. Hazme 2 preguntas para verificar.</pre>",
+        respaldo:"Si cookiecutter te confunde por ser \"demasiado\", video YouTube \"How I Organize My Data Science Projects\" de Ken Jee (8 min).",
+        checklist: ["✅ Tengo acceso a Google Drive (<a href='https://drive.google.com' target='_blank'>drive.google.com</a>)","✅ No necesitas saber programar — este día es solo crear carpetas y un documento de texto","⛔ Si saltaste D0.1 días 1-3: hazlos primero. Vas a querer mover tu CSV y notebook a la nueva estructura — sin ellos el día no tiene objeto"],
+        answers: "<p><b>1. ¿Por qué <code>raw</code> y <code>procesados</code> separados?</b><br><code>raw</code> = datos tal como vinieron del origen (CSV del sistema de farmacia, descarga directa). NUNCA se modifican. <code>procesados</code> = versiones limpias, filtradas o transformadas. Si un procesamiento sale mal, siempre tienes el raw intacto para empezar de nuevo. Es como mantener la materia prima separada del producto final en farmacia.</p><p><b>2. Nombre de archivo para F0.2 Week 5 Día 3:</b><br><code>F02_W5_dia3_[tema].ipynb</code>, ubicado en <code>00_aprendizaje/F0.2_cs50p/W5/</code>. Si no sabes el tema, usa el ID del bloque.</p><p><b>Señales de listo:</b> La estructura de carpetas existe en Drive · Tu notebook D0.1 está en <code>00_aprendizaje/D0.1_serie_tiempo/</code> · El índice maestro existe en <code>00_aprendizaje/00_INDICE.gdoc</code></p>"
+      },
+      {
+        title:"Día 2 · Domando Google Colab — atajos, formularios, secretos",
+        objetivo:"Pasar de \"abrir Colab y mirarlo\" a saber 5 trucos que te ahorran 5 min cada sesión. También configurar acceso seguro a tus secretos (API keys de Claude, los necesitarás en S4).",
+        material:`
+          <ol>
+            <li><a href="https://colab.research.google.com/notebooks/basic_features_overview.ipynb" target="_blank">Documentación oficial Colab — basic features</a>. Notebook tutorial. Léelo ejecutándolo. 8 min.</li>
+            <li>Atajos: dentro de Colab → Tools > Keyboard shortcuts. Lee los con estrella ⭐. 2 min.</li>
+          </ol>
+          <p><b>Los 5 atajos para todos los días</b> (memorízalos hoy):</p>
+          <ul>
+            <li><code>Ctrl + M + B</code> → insertar celda abajo</li>
+            <li><code>Ctrl + M + D</code> → borrar celda</li>
+            <li><code>Ctrl + M + Y</code> → cambiar a código</li>
+            <li><code>Ctrl + M + M</code> → cambiar a texto (markdown)</li>
+            <li><code>Shift + Enter</code> → ejecutar celda y pasar a la siguiente</li>
+          </ul>
+          <p>(Mac: <code>Cmd</code> en lugar de <code>Ctrl</code>.)</p>
+        `,
+        ejercicio:`
+          <ol>
+            <li>Crea notebook <code>F0.1_dia2_colab_tricks.ipynb</code> en <code>00_aprendizaje/F0.1_setup/</code>.</li>
+            <li>Practica los 5 atajos. Crea 10 celdas usando solo el teclado, alterna texto y código, ejecuta. Hasta que los dedos los hagan solos.</li>
+            <li><b>Conecta Colab a tu Drive</b> (esencial):
+<pre><code>from google.colab import drive
+drive.mount('/content/drive')</code></pre>
+              Autoriza permisos. Después de esto, tu Drive aparece como <code>/content/drive/MyDrive/</code>.</li>
+            <li><b>Verifica que puedes leer tu CSV desde la estructura del día 1:</b>
+<pre><code>import pandas as pd
+df = pd.read_csv('/content/drive/MyDrive/ia-farmacia/01_datos/raw/precios_pac.csv')
+df.head()</code></pre>
+              <b>Esta es la línea más importante de tu setup.</b> A partir de ahora todos tus notebooks empiezan así. Nunca más vas a re-subir el CSV.</li>
+            <li><b>Formularios de Colab</b> (truco que casi nadie conoce):
+<pre><code>#@title Configuración del análisis
+medicamento = "Paracetamol" #@param {type:"string"}
+meses_a_analizar = 6 #@param {type:"slider", min:1, max:12, step:1}
+print(f"Analizando {medicamento} durante {meses_a_analizar} meses")</code></pre>
+              Ejecuta. Aparece formulario con campo de texto y slider. Cualquier QF de tu equipo podría cambiar parámetros sin tocar código.</li>
+            <li><b>Configura Colab Secrets</b> para guardar API keys (no la usarás todavía pero queda lista):
+              <ul>
+                <li>Ícono de la llave 🔑 a la izquierda → "Add new secret"</li>
+                <li>Name: <code>ANTHROPIC_API_KEY</code></li>
+                <li>Value: déjalo vacío por ahora</li>
+                <li><b>Por qué importa hoy:</b> así te aseguras de NO pegar API keys directo en código (error #1 de seguridad de principiantes — la razón por la que la gente termina con cobros de USD 5000).</li>
+              </ul>
+            </li>
+          </ol>
+        `,
+        tecnica:"<b>Práctica deliberada de muscle memory.</b> Los atajos no se aprenden leyendo. Se aprenden ejecutándolos 30 veces hoy. Mañana 10 veces. En 3 días los usas sin pensar. Anders Ericsson: pequeño, repetido, consciente.",
+        verif:`
+          <ol>
+            <li>¿Por qué <code>drive.mount</code> es la línea más importante de tu setup?</li>
+            <li>¿Cuál es el riesgo de poner una API key directamente en una celda en vez de Secrets?</li>
+            <li>Sin mirar: el atajo para insertar celda de código abajo es ___</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — F0.1 Día 2
+✅ Hecho: 5 atajos memorizados, drive.mount funcionando, formulario probado, secret slot creado
+🧠 Truco que más me sorprendió: [...]`,
+        trampa:"Vas a leer los atajos en lugar de practicarlos físicamente. Memoria visual ≠ memoria muscular. \"30 veces el primer día, no menos\".",
+        claude:"Plantilla 1 (Tutoría):<br><pre>[contexto fijo]. Acabo de aprender drive.mount en Colab. Quiero entender qué pasa técnicamente cuando 'monto' Drive: ¿es copia? ¿acceso en vivo? ¿qué pasa si modifico un archivo desde Colab? Explícamelo con una analogía. Después hazme 2 preguntas.</pre>",
+        respaldo:"Video YouTube \"Google Colab Tutorial for Beginners\" de Tech With Tim — primeros 12 min.",
+        checklist: ["✅ Estructura de carpetas creada en Drive (Día 1 hecho)","✅ Notebook D0.1 movido a la carpeta correcta (<code>00_aprendizaje/D0.1_serie_tiempo/</code>)","✅ CSV de precios en <code>01_datos/raw/</code>","⛔ Si no hiciste el Día 1, hazlo ahora — este día asume que la estructura existe"],
+        answers: "<p><b>1. ¿Por qué <code>drive.mount</code> es la línea más importante?</b><br>Porque hace que tus archivos de Drive persistan entre sesiones de Colab. Sin esta línea, cada vez que cierras Colab tienes que re-subir todo. Con esta línea, lees directamente desde Drive y tus datos siempre están ahí.</p><p><b>2. Riesgo de API key en celda:</b><br>Si el notebook queda en GitHub (público o privado con permisos laxos), tu API key es visible. Terceros pueden usarla y generar cargos en tu nombre. Los Secrets de Colab la encriptan y nunca aparecen en el código.</p><p><b>3. Atajo insertar celda:</b><br><code>Ctrl + M + B</code> (Mac: <code>Cmd + M + B</code>).</p><p><b>Señales de listo:</b> <code>drive.mount</code> funciona y ves tus archivos en <code>/content/drive/MyDrive/</code> · Lees tu CSV desde la ruta completa de Drive · Los 5 atajos los ejecutas sin mirar</p>"
+      },
+      {
+        title:"Día 3 · GitHub fluido: tu portafolio público empieza",
+        objetivo:"Conectar Colab con GitHub directamente, de modo que en 1 clic puedas guardar cualquier notebook como commit. Sin esto, GitHub se vuelve fricción y dejas de subir tu trabajo.",
+        material:`
+          <ol>
+            <li><b>Colab → GitHub:</b> en Colab usa <code>File > Save a copy in GitHub</code>. La primera vez te lleva a un tutorial.</li>
+            <li><a href="https://docs.github.com/en/get-started/quickstart/github-glossary#commit" target="_blank">GitHub Docs — glossary</a>. Lee solo "commit" y "repository" (2 min).</li>
+          </ol>
+          <p><b>Los 3 conceptos que necesitas hoy</b> (en F1.3 los profundizamos):</p>
+          <ul>
+            <li><b>Repositorio (repo):</b> carpeta versionada en GitHub. Tu <code>aprendizaje-ia-farmacia</code> ya es uno (lo creaste en D0.1 día 3).</li>
+            <li><b>Commit:</b> "foto" del estado del repo en un momento. Cada commit tiene un mensaje que dice qué cambió.</li>
+            <li><b>Push:</b> subir tus commits desde Colab/computador a GitHub.</li>
+          </ul>
+          <p>Por ahora <b>no</b> usas terminales ni <code>git push</code> por línea de comandos. Colab tiene un botón.</p>
+        `,
+        ejercicio:`
+          <ol>
+            <li><b>Conectar Colab con GitHub:</b>
+              <ul>
+                <li>Abre cualquier notebook tuyo (ej: <code>D0.1_dia3_comparacion.ipynb</code>).</li>
+                <li><code>File > Save a copy in GitHub</code>.</li>
+                <li>Te pide autorización con GitHub. Acepta.</li>
+                <li>Selecciona repo <code>aprendizaje-ia-farmacia</code>.</li>
+                <li>File path: <code>00_aprendizaje/D0.1/dia3.ipynb</code></li>
+                <li>Commit message: <code>D0.1 día 3: comparación 3 medicamentos</code></li>
+                <li>Branch: <code>main</code> → OK.</li>
+              </ul>
+            </li>
+            <li><b>Verifica en GitHub:</b> abre tu repo en navegador. Tu notebook aparece renderizado bonito.</li>
+            <li><b>Convención de mensajes</b> (apréndela hoy):
+              <ul>
+                <li>✅ <code>D0.1 día 3: comparación 3 medicamentos</code></li>
+                <li>❌ <code>update</code>, <code>cambios</code>, <code>asdf</code>, <code>commit final</code></li>
+              </ul>
+              Fórmula: <code>[Bloque] día X: qué cambió en 5-7 palabras</code></li>
+            <li>Sube los notebooks de D0.1 días 1 y 2 igual.</li>
+            <li><b>Crea README serio</b>. Edita el archivo README.md en GitHub:
+<pre># Aprendizaje IA aplicada a Farmacia
+
+Repositorio de mi camino de 12-18 meses para aplicar IA a la práctica farmacéutica.
+QF chileno, 45 min/día, principiante absoluto, contexto Farmacia Popular PAC.
+
+## Estructura
+- 00_aprendizaje/ — notebooks de curso
+- 01_datos/ — datos farmacia
+- 02_proyectos/ — proyectos integradores
+
+## Bloques completados
+- [x] D0.1 Tarea Python 2 — Serie de tiempo
+- [ ] C0 — Claude como copiloto
+- [ ] F0.1 — Setup ambiente
+- [ ] F0.2 — CS50P W0-3
+- [ ] F0.3 — Python sólido
+
+## Stack
+Python · pandas · matplotlib · Google Colab · Claude · GitHub</pre>
+              Commit: <code>README inicial con plan de bloques</code>.</li>
+          </ol>
+        `,
+        tecnica:"<b>Portafolio público como motivador externo.</b> Cada commit es público. Tu repo crece visiblemente. Esto activa <i>motivación de progreso</i>: ver evidencia tangible es de los predictores más fuertes de adherencia a largo plazo. En 6 meses, 100+ commits, una historia que vas a poder mostrar.",
+        verif:`
+          <ol>
+            <li>¿Por qué un mensaje de commit como "asdf" es un problema en 3 meses?</li>
+            <li>¿Diferencia entre repositorio y commit?</li>
+            <li>Sin mirar: ¿qué opción de menú en Colab te permite guardar a GitHub?</li>
+          </ol>
+        `,
+        template:`📆 [Fecha] — F0.1 Día 3 (CIERRE BLOQUE)
+✅ Hecho: Colab+GitHub conectados, README serio, todos los notebooks D0.1 subidos
+🎯 Mi sistema queda: Drive (carpetas) + Colab (ejecutar) + GitHub (versionar y portafolio)
+🔜 Siguiente: F0.2 CS50P Week 0 (pedir el viernes con prompt de la Cola)`,
+        trampa:"Vas a hacer commits gigantes con muchos cambios mezclados. <b>Un commit, un cambio.</b> Si terminaste D0.1 día 1, ese es un commit. Día 2, otro. No mezcles 4 días. Regla: \"si tuviera que revertir esto, ¿quiero revertir todo o solo una parte?\".",
+        claude:"Plantilla 2 (Feynman Inverso):<br><pre>[contexto fijo]. Voy a hacer Feynman inverso. Te explico qué es un commit en Git como si tuvieras 10 años. NO me corrijas hasta que termine. Después dime: (1) qué partes están imprecisas, (2) qué falta, (3) UNA pregunta de estudiante. Voy: 'Un commit es como cuando saco una foto de mi cuaderno...'</pre>",
+        respaldo:"YouTube: \"Save Colab notebooks to GitHub\" — primer video corto.",
+        checklist: ["✅ F0.1 Días 1 y 2 completados (Drive montado, atajos Colab dominados)","✅ Tengo cuenta de GitHub (o 10 minutos para crearla ahora en <a href='https://github.com' target='_blank'>github.com</a>)","✅ Repo <code>aprendizaje-ia-farmacia</code> creado (de D0.1 Día 3, o créalo ahora — mismo nombre)","⛔ Si el Día 2 no hiciste drive.mount, hazlo ahora antes de continuar. Este día asume que Colab y Drive están conectados."],
+        answers: "<p><b>1. ¿Por qué 'asdf' como mensaje de commit es un problema en 3 meses?</b><br>En 3 meses vas a tener 80-100 commits. Si busco cuándo agregué el verificador de interacciones, un historial de 'asdf', 'cambios', 'update' es inútil. Un historial de 'FA3.2 día 3: verificador interacciones beta funcionando' es navegable en 5 segundos.</p><p><b>2. Diferencia repositorio vs commit:</b><br>Repositorio = la carpeta completa versionada (todos los archivos, todo el historial). Commit = una fotografía del repositorio en un momento específico, con un mensaje que describe qué cambió. El repositorio contiene miles de commits.</p><p><b>3. Opción en menú Colab para GitHub:</b><br><code>File > Save a copy in GitHub</code>.</p><p><b>Señales de listo:</b> Tu notebook D0.1 aparece en GitHub renderizado · README tiene los bloques completados · El triángulo de Drive + Colab + GitHub está operativo</p>"
+      }
+    ]
+  },
+
+  // ===========================================
+  // BLOQUES NO DETALLADOS (placeholders)
+  // ===========================================
+  // ===========================================
+  // F0.2.W0 · CS50P Week 0 — Functions, Variables (5 días detallados)
+  // ===========================================
+  {
+    id:"F0.2.W0", t:"CS50P W0 · Functions, Variables", tr:"fund", sem:0, detailed:true,
+    intro:"Primera semana real de CS50P. Lecture oficial dura 1h 53min — la partimos en 3 días de video + 2 días de problem set. <b>Prerrequisitos:</b> D0.1 + F0.1 completos. <b>Carga real:</b> 5 sesiones × 45 min = 3h 45min. ⚠️ Los problem sets oficiales son ejercicios reales. No los resuelvo por ti — ahí ocurre el 80% del aprendizaje. Línea roja C0: 30 min de pelea solo antes de pista.",
+    pre:["F0.1"],
+    days:[
+      {
+        title:"Día 1 · ¿Qué es una función? — Primer tercio del lecture",
+        checklist:["✅ Tengo Colab abierto y sé crear un notebook nuevo","✅ Audífonos o lugar para escuchar video (lecture en inglés, subtítulos en español disponibles)","✅ Papel y lápiz al lado (para Active Recall)","⛔ Si no hiciste C0 Día 1 todavía, hazlo hoy o mañana temprano — usarás la plantilla de Tutoría el Día 2"],
+        objetivo:"Al final de hoy sabrás qué es una función en programación, por qué existen, y podrás escribir y llamar tus primeras 2 funciones en Python dentro de Colab.",
+        material:`<ol><li><b>Video: CS50P Week 0 lecture — primer tercio</b><br>URL: <a href="https://youtu.be/JP7ITIXGpHk" target="_blank">https://youtu.be/JP7ITIXGpHk</a><br><b>Stop exacto:</b> cuando aparezca el título <b>"Variables"</b> en pantalla (texto grande sobre fondo oscuro). Si ves <code>x = 10</code> en pantalla, retrocede — eso es mañana. Aprox los primeros <b>35–40 min</b>.</li></ol><p>Una función es como una <b>receta magistral</b>: le das ingredientes (argumentos), ejecuta pasos, entrega un producto. Escrita una vez, se ejecuta mil veces sin variación.</p><pre><code>print("Bastián")  # función print(), argumento: "Bastián"</code></pre>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W0_dia1_functions.ipynb</code> en <code>00_aprendizaje/F0.2_cs50p/</code></li><li>Celda 1 (escribe a mano): <pre><code>print("Hola, soy Bastián y estoy aprendiendo Python")</code></pre></li><li>Celda 2: <pre><code>nombre = input("¿Cuál es tu nombre? ")
+print("Hola,", nombre)</code></pre></li><li>Celda 3 (farmacia): <pre><code>medicamento = input("¿Qué medicamento busca? ")
+print("Voy a revisar el stock de:", medicamento)</code></pre></li><li>Error a propósito: escribe <code>print("Hola"</code> sin cerrar. Lee el SyntaxError. Arregla.</li><li>Keyword argument: <pre><code>print("Paracetamol", 1200, sep=" - $")</code></pre></li><li>Guarda el notebook.</li></ol>`,
+        tecnica:"<b>Active Recall en papel.</b> Después de guardar, cierra Colab. En papel: (1) línea exacta para pedir la edad del usuario y guardarla en <code>edad</code>, (2) qué es un argumento de una función en 1 frase, (3) qué muestra <code>SyntaxError: unexpected EOF</code>. Compara con el notebook. Anota qué fallaste.",
+        verif:`<ol><li>¿Cuál es la diferencia entre <code>print("Hola")</code> y <code>input("Hola ")</code>?</li><li>¿Por qué <code>print(Hola)</code> sin comillas da error pero <code>print("Hola")</code> sí funciona?</li><li>Si una función no devuelve nada visible pero muestra algo en pantalla, ¿cómo se llama eso?</li></ol>`,
+        answers:`<p><b>1. print vs input:</b> <code>print</code> muestra algo al usuario (output). <code>input</code> le pide algo al usuario y guarda la respuesta (input). Uno habla, el otro escucha.</p><p><b>2. Sin comillas:</b> Python cree que <code>Hola</code> es una variable. Como no existe, da NameError. Con comillas es una cadena de texto (str), un dato literal.</p><p><b>3. Side effect:</b> La función no devuelve valor pero modifica algo del mundo (la pantalla).</p><p><b>Señales listo:</b> Escribes print/input sin mirar · Entiendes por qué "Hola" con comillas es distinto de Hola · Lees errores antes de entrar en pánico</p>`,
+        template:`📆 [Fecha] — F0.2 W0 Día 1
+✅ Hecho: primer tercio lecture CS50P W0, 5 celdas con print/input
+🧠 Concepto que más me costó: [...]
+🔜 Mañana: variables y tipos`,
+        trampa:"Vas a querer ver todo el video de una. NO. 45 min máximo de pantalla. Después ejecuta el código, aunque sea con manos temblando.",
+        claude:`Plantilla <b>Tutoría Activa</b> al inicio si algo del video no quedó claro:<pre>[contexto fijo]
+Acabo de ver el primer tercio de CS50P W0.
+Quiero entender qué diferencia hay entre una función que "hace algo"
+y una que "devuelve algo", ANTES de ver código.
+Dame UN ejemplo en contexto de farmacia y hazme 2 preguntas.</pre>`,
+        respaldo:'Notes oficiales CS50P Week 0: <a href="https://cs50.harvard.edu/notes/0/" target="_blank">https://cs50.harvard.edu/notes/0/</a> — si el inglés hablado del video te cuesta, lee las notes en paralelo.'
+      },
+      {
+        title:"Día 2 · Variables, tipos y operadores — Segundo tercio",
+        checklist:["✅ Notebook Día 1 guardado y accesible en Drive","✅ Video de lecture CS50P W0 listo para continuar","✅ C0 Día 1 hecho (vas a usar la plantilla de Tutoría al final)"],
+        objetivo:"Al final de hoy entenderás qué es una variable, cuál es la diferencia con los nombres de columna que ya usaste en pandas, qué son los tipos básicos (int, str, float), y podrás convertir entre tipos cuando Python se queje.",
+        material:`<ol><li>Video: <a href="https://youtu.be/JP7ITIXGpHk" target="_blank">https://youtu.be/JP7ITIXGpHk</a><br><b>Inicio:</b> capítulo "Variables"<br><b>Stop exacto:</b> cuando aparezca el título <b>"Mario"</b> o veas bloques de colores subiendo escaleras. ~35-45 min adicionales hoy.</li></ol><p>Una <b>variable</b> es como una etiqueta adhesiva pegada a un dato: <code>precio_paracetamol = 1200</code>. Los <b>tipos</b> existen porque Python trata datos distinto según qué son. <code>"1200"</code> (str) no se puede multiplicar; <code>1200</code> (int) sí.</p>`,
+        ejercicio:`<p>Crea <code>F0.2_W0_dia2_variables.ipynb</code>.</p><ol><li>Variables básicas de farmacia:<pre><code>medicamento = "Paracetamol 500mg"
+precio = 1200
+en_stock = True
+print(medicamento, precio, en_stock)</code></pre></li><li>Tipos: <pre><code>print(type(medicamento))  # str
+print(type(precio))        # int
+print(type(en_stock))      # bool</code></pre></li><li>f-string: <pre><code>print(f"El {medicamento} cuesta \${precio} y en stock: {en_stock}")</code></pre></li><li>Trampa clásica del input:<pre><code>precio_str = input("Precio: ")
+iva = precio_str * 0.19   # TypeError!</code></pre>Arreglo: <pre><code>precio = float(input("Precio: "))
+iva = precio * 0.19
+total = precio + iva
+print(f"Total: \${total}")</code></pre></li><li>Mini-script 5 líneas: pide nombre de med y costo, calcula 30% de margen, muestra con f-string.</li></ol>`,
+        tecnica:"<b>Práctica deliberada con farmacia.</b> El paso 5 escríbelo sin mirar los pasos anteriores. Cuando te trabes, mira, anota qué olvidaste, cierra y sigue. La segunda vez que escribes algo es donde se fija.",
+        verif:`<ol><li>¿Por qué <code>input()</code> siempre devuelve str aunque escribas un número?</li><li>¿Qué hace la <code>f</code> antes de una comilla en <code>f"Hola {nombre}"</code>?</li><li>Si <code>x = "10"</code> y <code>y = "20"</code>, ¿qué da <code>print(x + y)</code>?</li></ol>`,
+        answers:`<p><b>1. input() siempre devuelve str:</b> Porque input no sabe si lo que escribiste es número, fecha o texto. Siempre devuelve texto y tú decides si convertirlo.</p><p><b>2. La f antes de comilla:</b> Activa f-string formatting: dentro del texto, lo que esté entre {} se reemplaza por el valor de la variable.</p><p><b>3. "10" + "20":</b> Devuelve <code>"1020"</code>. El + entre strings concatena en lugar de sumar. Para sumar: <code>int(x) + int(y) = 30</code>.</p><p><b>Señales listo:</b> Reconoces TypeError cuando mezclas tipos incompatibles · Usas f-strings automáticamente · Conviertes input() a número con float() o int()</p>`,
+        template:`📆 [Fecha] — F0.2 W0 Día 2
+✅ Hecho: variables, tipos, f-strings, mini-script IVA
+🧠 Lo que más me costó: [...]
+🎯 Concepto que voy a olvidar: [...]`,
+        trampa:"Vas a olvidar la f antes de las comillas, o olvidar convertir input(). <b>input = str, si quiero número lo envuelvo en float() o int()</b>. Estos 2 errores aparecen 50 veces en los próximos días.",
+        claude:`Plantilla <b>Feynman Inverso</b> al cierre:<pre>[contexto fijo]
+Feynman inverso. Te explico qué son los "tipos de datos" en Python
+como si tuvieras 10 años, con ejemplo de farmacia.
+NO me corrijas hasta que termine. Después: (1) partes imprecisas,
+(2) concepto importante no mencioné, (3) UNA pregunta de estudiante. Voy:</pre>`,
+        respaldo:'Notes oficiales CS50P Week 0: <a href="https://cs50.harvard.edu/notes/0/" target="_blank">cs50.harvard.edu/notes/0/</a> — sección "Variables" en adelante.'
+      },
+      {
+        title:"Día 3 · Return values, scope y notes oficiales",
+        checklist:["✅ Notebooks Días 1 y 2 accesibles en Drive","✅ Sé lo que es una variable y un tipo de dato","✅ Pestaña abierta con <a href='https://cs50.harvard.edu/notes/0/' target='_blank'>cs50.harvard.edu/notes/0/</a>"],
+        objetivo:"Al final de hoy entenderás qué significa 'return' en una función (diferencia clave con print), qué es scope (por qué una variable a veces 'no existe'), y habrás leído las notes oficiales como consolidación.",
+        material:`<ol><li><b>Video — último tercio (desde "Mario" hasta el final)</b><br>URL: <a href="https://youtu.be/JP7ITIXGpHk" target="_blank">https://youtu.be/JP7ITIXGpHk</a><br>Mira hasta el final del video.</li><li><b>Notes oficiales (≈7 min):</b> <a href="https://cs50.harvard.edu/notes/0/" target="_blank">cs50.harvard.edu/notes/0/</a> — lee toda la página de principio a fin.</li></ol><p>La diferencia entre <code>print</code> y <code>return</code> es la diferencia más importante de esta semana: <code>print</code> muestra algo pero no devuelve valor. <code>return</code> devuelve un valor que puedes guardar y usar.</p>`,
+        ejercicio:`<p>Crea <code>F0.2_W0_dia3_return.ipynb</code>.</p><ol><li>Print vs return:<pre><code>def saludar(nombre):
+    print(f"Hola, {nombre}!")         # muestra pero no devuelve
+
+def saludo_formal(nombre):
+    return f"Estimado/a {nombre}"     # devuelve pero no muestra
+
+x = saludar("Bastián")
+print(x)   # None — porque saludar() no devuelve nada</code></pre></li><li>Función farmacéutica:<pre><code>def calcular_precio_final(costo, margen_pct):
+    ganancia = costo * (margen_pct / 100)
+    return costo + ganancia
+
+print(f"Paracetamol: \${calcular_precio_final(800, 30)}")</code></pre></li><li>Scope:<pre><code>def experimento():
+    mensaje_secreto = "Hola desde dentro"
+    print(mensaje_secreto)
+
+experimento()           # funciona
+print(mensaje_secreto)  # NameError</code></pre>Lee el error. La variable solo existe dentro de la función.</li></ol>`,
+        tecnica:"<b>Feynman en papel + Claude.</b> Cierra el notebook. En papel, en 3 frases, explica la diferencia entre print y return. Luego pásaselas a Claude con la plantilla de Feynman inverso.",
+        verif:`<ol><li>¿Qué imprime <code>print(calcular_precio_final(1000, 50))</code>? ¿Por qué?</li><li>¿Qué imprime esto y por qué? <pre><code>def foo():
+    return "A"
+    return "B"
+print(foo())</code></pre></li><li>¿La variable <code>ganancia</code> existe fuera de <code>calcular_precio_final</code>?</li></ol>`,
+        answers:`<p><b>1:</b> Imprime <code>1500</code>. La función devuelve 1000 + (1000*50/100) = 1500, y print muestra ese valor.</p><p><b>2:</b> Imprime <code>A</code>. Python sale al primer return. El segundo return "B" nunca se ejecuta — es código muerto.</p><p><b>3:</b> No. <code>ganancia</code> es variable local. Fuera de la función da NameError.</p><p><b>Señales listo:</b> Distingues print de return automáticamente · Sabes que función sin return devuelve None · Entiendes NameError cuando sales del scope</p>`,
+        template:`📆 [Fecha] — F0.2 W0 Día 3
+✅ Hecho: terminé lecture W0, notes leídas, 2 funciones propias escritas
+🧠 El concepto que más me voló la cabeza: [print vs return / scope]
+🤖 Hueco que Claude detectó en mi Feynman: [...]`,
+        trampa:"Vas a mezclar print y return los primeros días. Regla mental: <b>si quiero guardar el resultado → return. Si solo quiero que aparezca en pantalla → print. Si dudas → return.</b>",
+        claude:`Plantilla <b>Feynman Inverso</b> sobre return vs print. Si Claude detecta 0 huecos, estás listo para el problem set.`,
+        respaldo:'Si quieres otro ángulo sobre def y return: busca en YouTube "Python Tutorial for Beginners 4: Methods and Functions" de Corey Schafer (22 min).'
+      },
+      {
+        title:"Día 4 · Problem Set 0 — Primera mitad",
+        checklist:["✅ Lecture W0 completa (Días 1, 2, 3 hechos)","✅ Notes oficiales leídas","✅ C0 Día 4 hecho ('Cuándo NO usar Claude') — hoy es donde más importa","✅ Timer listo para 30 min de pelea solitaria","✅ Pestaña abierta: <a href='https://cs50.harvard.edu/python/psets/0/' target='_blank'>cs50.harvard.edu/python/psets/0/</a>"],
+        objetivo:"Atacar los primeros 2-3 ejercicios del Problem Set 0 oficial sin ayuda de Claude los primeros 30 min de cada ejercicio. El objetivo real no es terminarlos todos — es ejercitar el músculo de leer, pensar, intentar, fallar, ajustar.",
+        material:`<p>Lee los nombres de los 5 ejercicios en <a href="https://cs50.harvard.edu/python/psets/0/" target="_blank">cs50.harvard.edu/python/psets/0/</a>. Elige los <b>2 que parezcan más simples</b>. Lee cada enunciado completo antes de abrir Colab.</p>`,
+        ejercicio:`<p>⛔ <b>LÍNEA ROJA:</b> primeros 30 min de cada ejercicio solo. Timer en mano. Solo después de 30 min → plantilla "Pista no solución" de C0.</p><ol><li>Lee el primer ejercicio. Resume en voz alta: "este programa tiene que pedir X, hacer Y, mostrar Z"</li><li>Escribe pseudocódigo en celda Markdown:<pre>// Mi plan:
+// 1. Pedir al usuario [...]
+// 2. Hacer [...]
+// 3. Mostrar [...]</pre></li><li>Escribe código, ejecuta con los inputs de ejemplo del enunciado</li><li>Si no sale después de 30 min → plantilla Pista no Solución de C0</li><li>Guarda en <code>F0.2_W0_dia4_pset_parte1.ipynb</code></li></ol>`,
+        tecnica:"<b>Deliberate practice con desirable difficulty.</b> La frustración de estar atascado 30 min es el aprendizaje. Lo que se forme hoy es lo que distingue a alguien que 'aprendió Python' de alguien que 'copió Python'.",
+        verif:`<ol><li>¿Cuántas veces rompiste la línea roja hoy?</li><li>De los ejercicios intentados, ¿cuál resolviste sin pista?</li><li>¿Hubo algún error que te apareció más de una vez?</li></ol>`,
+        answers:`<p>No hay respuestas correctas — son preguntas de honestidad contigo mismo.</p><p><b>Señales de que hoy fue exitoso:</b> ✅ Completaste al menos 1 ejercicio completo · ✅ Respetaste la regla de los 30 min en al menos 1 · ✅ Tienes pseudocódigo escrito · ✅ Leíste al menos 1 error y lo arreglaste sin ayuda</p><p><b>NO es señal de éxito:</b> ❌ "Resolví los 5 con ayuda de Claude" = delegación, no aprendizaje</p>`,
+        template:`📆 [Fecha] — F0.2 W0 Día 4
+✅ Ejercicios intentados: [cuáles]
+✅ Resueltos solo: [cuáles]
+🤖 Resueltos con pista: [cuáles]
+⛔ Líneas rojas rotas: [0/1/2+]`,
+        trampa:"La trampa de hoy es pedirle a Claude un 'ejemplo casi idéntico' al ejercicio. Es delegación disfrazada. Si te pillas haciéndolo, para, borra, y vuelve al enunciado.",
+        claude:`Solo después de 30 min. Plantilla <b>Pista no Solución</b>:<pre>[contexto fijo]
+Llevo 30 min atascado en pset 0 ejercicio [nombre].
+Mi código: [...]
+Error: [...]
+Dame 1 pista conceptual, sin código.</pre>`,
+        respaldo:"Si el enunciado en inglés te cuesta: Google Translate del enunciado. No es trampa. Lo que importa es entender el problema."
+      },
+      {
+        title:"Día 5 · Problem Set 0 — Cierre + Commit",
+        checklist:["✅ Notebook del Día 4 accesible con mis intentos","✅ Sé qué ejercicios me faltan del pset","✅ GitHub connection desde Colab funcionando (F0.1 Día 3)"],
+        objetivo:"Terminar ejercicios restantes del Pset 0 (o intentarlos con 30 min de pelea cada uno), commitear a GitHub, y cerrar W0 con auto-evaluación honesta.",
+        material:`<p>Revisión rápida de ejercicios pendientes. No hay material nuevo hoy — hoy es ejecución pura.</p>`,
+        ejercicio:`<ol><li>Termina ejercicios que faltan (mismas reglas: 30 min solo)</li><li>Consolida en <code>F0.2_W0_final_pset.ipynb</code>. Una celda por ejercicio (enunciado en Markdown + código)</li><li>Celda de auto-evaluación al final:<pre># Auto-evaluación Week 0
+## Lo que aprendí: [...]
+## Lo que quedó débil: [...]
+## Mi peor error: [...]
+## Mi mejor momento: [...]</pre></li><li>Commit a GitHub: <code>F0.2 W0: CS50P Week 0 problem set completado</code></li><li>Actualiza README: [x] F0.2 W0 CS50P Week 0 — Functions, Variables ← NUEVO</li></ol>`,
+        tecnica:"<b>Mini-proyecto integrador + auto-evaluación honesta.</b> Las neuronas fijan lo aprendido cuando el cierre es consciente y explícito.",
+        verif:`<ol><li>Sin mirar: escribe el esqueleto de una función que reciba nombre de medicamento y costo, calcule precio con 30% de margen, y lo devuelva con return.</li><li>Explica en 2 frases la diferencia entre int, str y float.</li><li>¿Qué hace la f antes de las comillas en un f-string?</li></ol>`,
+        answers:`<p><b>1:</b> <pre>def precio_final(medicamento, costo):
+    precio = costo * 1.30
+    return precio</pre>Si no recordabas def → repasa Día 3. Si no recordabas el cálculo → repasa Día 2.</p><p><b>2:</b> int = enteros sin decimales. str = texto entre comillas. float = números con decimales. Un mismo valor puede existir como los 3: 10 (int), "10" (str), 10.0 (float).</p><p><b>3:</b> Activa f-string formatting: lo que esté entre {} dentro del texto se reemplaza por el valor de la variable.</p><p><b>Si fallaste más de 1 de las 3:</b> Dedica un día extra a repasar Días 2 y 3. W1 asume esto sólido.</p>`,
+        template:`📆 [Fecha] — F0.2 W0 Día 5 (CIERRE W0)
+✅ Ejercicios pset completados: X de 5
+✅ Commit GitHub: hecho
+🧠 Aprendizaje principal: [...]
+🔜 F0.2 W1 CS50P Week 1 - Conditionals`,
+        trampa:"Vas a saltarte el commit y la auto-evaluación porque 'el aprendizaje ya lo hice'. NO. Sin cierre explícito, en 2 semanas no recordarás si hiciste W0. Con cierre, tu repo y Notion te muestran el avance.",
+        claude:`Plantilla <b>Code Review Junior</b> sobre uno de los ejercicios del pset que SÍ resolviste solo.`,
+        respaldo:"Si no resolviste ningún ejercicio: escribe en el próximo chat 'no resolví ningún ejercicio del pset 0, necesito pair programming, no pistas'. Claude propone una dinámica de línea por línea que NO es delegación."
+      }
+    ]
+  },
+
+  // ===========================================
+  // F0.2.W1 · CS50P Week 1 — Conditionals (5 días detallados)
+  // ===========================================
+  {
+    id:"F0.2.W1", t:"CS50P W1 · Conditionals", tr:"fund", sem:0, detailed:true,
+    intro:"La semana que separa el código que solo corre de un lado del código que <b>decide</b>. if/elif/else es la primera herramienta de control de flujo. Esta semana la desarmamos con casos farmacéuticos reales. <b>Prerrequisitos:</b> F0.2 W0 completa. <b>Carga real:</b> 5 sesiones × 45 min.",
+    pre:["F0.2.W0"],
+    days:[
+      {
+        title:"Día 1 · if/elif/else — tu primer árbol de decisiones",
+        checklist:["✅ F0.2 W0 Día 5 completado (puedo escribir funciones con def y return)","✅ Notebook <code>F0.2_W0_final_pset.ipynb</code> accesible en Drive","✅ Audífonos y Colab abierto","✅ Papel y lápiz al lado"],
+        objetivo:"Al final de hoy entenderás qué problema resuelven los condicionales, escribirás tu primer if/elif/else completo, y aplicarás lógica de verificación de stock de farmacia.",
+        material:`<ol><li>Video: <a href="https://youtu.be/_b6NgY_pMdw" target="_blank">https://youtu.be/_b6NgY_pMdw</a><br><b>Inicio:</b> desde el principio<br><b>Stop exacto:</b> cuando aparezca el título <b>"or"</b> en pantalla. Si ves <code>x or y</code> en código, retrocede 2 min.</li></ol><p>Un condicional es como un <b>protocolo de dispensación</b>: IF requiere receta AND paciente no la tiene → rechazar. ELIF restricción de edad → verificar. ELSE → dispensar.</p>`,
+        ejercicio:`<p>Crea <code>F0.2_W1_dia1_conditionals.ipynb</code> en <code>00_aprendizaje/F0.2_cs50p/W1/</code>.</p><ol><li>Verificador de stock:<pre><code>stock = int(input("Unidades en stock: "))
+if stock == 0:
+    print("SIN STOCK — pedido urgente")
+elif stock < 5:
+    print("STOCK CRÍTICO — pedido esta semana")
+elif stock < 20:
+    print("Stock normal")
+else:
+    print("Stock suficiente")</code></pre>Prueba con 0, 3, 15, 50.</li><li>Precio con descuento:<pre><code>precio = float(input("Precio: $"))
+es_convenio = input("¿Es convenio? (si/no): ")
+if es_convenio == "si":
+    print(f"Precio convenio: \${precio * 0.80}")
+else:
+    print(f"Precio normal: \${precio}")</code></pre></li><li>Experimenta el orden: cambia el primer elif y observa qué pasa con stock = 3.</li><li>Error a propósito: usa = en lugar de == en la condición. Lee el SyntaxError.</li></ol>`,
+        tecnica:"<b>Active Recall en papel.</b> Cierra Colab. Escribe: (1) esqueleto if/elif/else para verificar si precio es caro/normal/barato, (2) ¿por qué importa el orden de las condiciones? (1 frase). Compara.",
+        verif:`<ol><li>¿Por qué solo se ejecuta uno de los bloques if/elif/else aunque múltiples condiciones sean True?</li><li>Si tienes dos <code>if</code> separados vs <code>if/elif</code>, ¿cuántos bloques se ejecutan cuando precio es 1500 y tienes condiciones >1000 y >500?</li><li>¿Qué diferencia hay entre == y = en Python?</li></ol>`,
+        answers:`<p><b>1:</b> Python evalúa en orden y sale al primer bloque cuya condición es True. Los elif se omiten si un anterior fue True.</p><p><b>2:</b> Con dos if separados: ambos se ejecutan (1500 > 1000 es True, 1500 > 500 también). Con elif: solo el primero. Para condiciones excluyentes, usar elif.</p><p><b>3:</b> = asigna un valor a variable. == compara dos valores y devuelve True o False.</p><p><b>Señales listo:</b> Escribes if/elif/else sin mirar · Entiendes por qué el orden de elif importa · Distingues == de = sin dudar</p>`,
+        template:`📆 [Fecha] — F0.2 W1 Día 1
+✅ Hecho: primer tercio lecture W1, if/elif/else stock y precio
+🧠 Concepto que más me costó: [...]
+🔜 Mañana: and/or/not`,
+        trampa:"Vas a usar múltiples if en lugar de elif. Regla: si las condiciones son excluyentes (solo puede pasar una), usa if/elif/else. Si son independientes, usa if separados. Stock vacío/crítico/normal → excluyentes → elif.",
+        claude:`Plantilla <b>Tutoría Activa</b> si algo del video no quedó claro:<pre>[contexto fijo]
+Acabo de ver el primer tercio del lecture CS50P Week 1.
+Quiero entender por qué el ORDEN de elif importa.
+Antes de código, explícame con un ejemplo de verificación
+de receta médica. Hazme 2 preguntas de verificación.</pre>`,
+        respaldo:'Notes oficiales W1: <a href="https://cs50.harvard.edu/python/notes/1/" target="_blank">cs50.harvard.edu/python/notes/1/</a> — sección "Conditionals" hasta el primer bloque con "or". Sin respaldo adicional en video verificado para este día.'
+      },
+      {
+        title:"Día 2 · and, or, not — combinando condiciones",
+        checklist:["✅ Notebook del Día 1 accesible en Drive","✅ Sé escribir if/elif/else sin mirar","⛔ Si fallaste 2+ preguntas de verificación del Día 1, repite ese día primero"],
+        objetivo:"Al final de hoy podrás combinar múltiples condiciones con and, or, not, y aplicarlo a decisiones reales de dispensación farmacéutica con múltiples criterios simultáneos.",
+        material:`<ol><li>Video: <a href="https://youtu.be/_b6NgY_pMdw" target="_blank">https://youtu.be/_b6NgY_pMdw</a><br>Retoma desde el capítulo <b>"or"</b><br><b>Stop exacto:</b> cuando aparezca el título <b>"match"</b>. Si ves <code>match variable:</code> seguido de <code>case</code>, para.</li></ol>`,
+        ejercicio:`<p>Crea <code>F0.2_W1_dia2_logical.ipynb</code>.</p><ol><li>Verificador de dispensación multi-criterio:<pre><code>tiene_receta = input("¿Tiene receta? (si/no): ") == "si"
+es_mayor = int(input("Edad: ")) >= 18
+es_controlado = input("¿Controlado? (si/no): ") == "si"
+
+if es_controlado and not tiene_receta:
+    print("RECHAZADO — controlado requiere receta")
+elif es_controlado and not es_mayor:
+    print("RECHAZADO — menor de edad")
+elif es_controlado and tiene_receta and es_mayor:
+    print("DISPENSAR — criterios cumplidos")
+else:
+    print("DISPENSAR — sin restricciones")</code></pre></li><li>Imprime el tipo de <code>tiene_receta</code> — es bool directamente.</li><li>Experimenta con not:<pre><code>stock = True
+print(not stock)       # False
+print(not not stock)   # True</code></pre></li><li>Interacción básica:<pre><code>med1 = input("Med 1: ").lower()
+med2 = input("Med 2: ").lower()
+if (med1 == "warfarina" and med2 == "aspirina") or \
+   (med1 == "aspirina" and med2 == "warfarina"):
+    print("⚠️ INTERACCIÓN — riesgo hemorrágico")</code></pre></li></ol>`,
+        tecnica:"<b>Práctica deliberada con farmacia.</b> Repite el ejercicio 1 desde cero con un caso diferente: verificador de antibiótico (requiere receta + no alergia a penicilina). Sin mirar el código anterior.",
+        verif:`<ol><li>¿Cuál es la diferencia entre and y or? ¿Cuándo es True cada uno?</li><li>¿Qué devuelve <code>not True</code>? ¿Y <code>not False</code>?</li><li>Si <code>tiene_receta = True</code> y <code>es_mayor = False</code>, ¿qué vale <code>tiene_receta and es_mayor</code>? ¿Y <code>tiene_receta or es_mayor</code>?</li></ol>`,
+        answers:`<p><b>1:</b> and es True solo si ambas condiciones son True. or es True si al menos una es True.</p><p><b>2:</b> not True → False. not False → True. Invierte el valor booleano.</p><p><b>3:</b> True and False → False. True or False → True.</p><p><b>Señales listo:</b> Escribes and/or/not correctamente · Entiendes que input() == "si" devuelve bool · Construyes lógica de 2+ criterios simultáneos</p>`,
+        template:`📆 [Fecha] — F0.2 W1 Día 2
+✅ Hecho: and/or/not, verificador dispensación, bool explícito
+🎯 Caso real donde usaría and/or: [...]`,
+        trampa:"Confundir and con or al describir el requisito en español. Regla: si el requisito en español dice 'y' → and. Si dice 'o' → or. Lee la condición en español antes de escribirla.",
+        claude:`Plantilla <b>Feynman Inverso</b> al cierre:<pre>[contexto fijo]
+Feynman inverso. Te voy a explicar la diferencia entre and y or
+en Python usando dispensación de medicamentos.
+No me corrijas hasta que termine. Voy:</pre>`,
+        respaldo:'Notes oficiales: <a href="https://cs50.harvard.edu/python/notes/1/" target="_blank">cs50.harvard.edu/python/notes/1/</a> — sección "or" y "and".'
+      },
+      {
+        title:"Día 3 · match/case + pythonic style + notes",
+        checklist:["✅ Notebooks Días 1 y 2 guardados en Drive","✅ Sé combinar condiciones con and/or/not","✅ Pestaña abierta: <a href='https://cs50.harvard.edu/python/notes/1/' target='_blank'>cs50.harvard.edu/python/notes/1/</a>","✅ C0 Día 2 hecho — usarás Feynman inverso hoy"],
+        objetivo:"Conocer match/case, entender el estilo pythónico de condicionales, y consolidar todo W1 leyendo las notes oficiales.",
+        material:`<ol><li>Video retoma desde <b>"match"</b>: <a href="https://youtu.be/_b6NgY_pMdw" target="_blank">https://youtu.be/_b6NgY_pMdw</a><br><b>Stop:</b> cuando David se despida o aparezcan créditos finales.</li><li>Notes: <a href="https://cs50.harvard.edu/python/notes/1/" target="_blank">cs50.harvard.edu/python/notes/1/</a> — lee toda la página de principio a fin (≈7 min).</li></ol>`,
+        ejercicio:`<p>Crea <code>F0.2_W1_dia3_match.ipynb</code>.</p><ol><li>match/case — clasificador:<pre><code>categoria = input("Categoría: ").lower()
+match categoria:
+    case "analgesico":
+        print("Sin receta. Máx 3 días OTC.")
+    case "antibiotico":
+        print("Requiere receta.")
+    case "antihipertensivo":
+        print("Requiere receta. Control médico.")
+    case _:
+        print("Categoría no reconocida.")</code></pre></li><li>Escribe la versión equivalente con if/elif. Compara legibilidad.</li><li>Ternary (una línea):<pre><code>en_stock = True
+estado = "disponible" if en_stock else "sin stock"
+print(estado)</code></pre></li><li>Refactor: toma tu verificador del Día 2 y reescribe en estilo más pythónico donde puedas.</li></ol>`,
+        tecnica:"<b>Feynman inverso en papel + Claude.</b> Cierra el notebook. Escribe en papel: 'match/case en Python funciona como...'. Luego usa plantilla Feynman inverso con Claude.",
+        verif:`<ol><li>¿En qué se diferencia match/case de if/elif? ¿Cuándo preferirías uno sobre el otro?</li><li>¿Qué hace <code>case _:</code>?</li><li>Reescribe en ternary: <code>if precio > 3000: caro = True else: caro = False</code></li></ol>`,
+        answers:`<p><b>1:</b> match/case es más legible para comparar un valor contra múltiples opciones exactas. if/elif es más flexible para rangos (precio > 1000), condiciones compuestas y lógica compleja.</p><p><b>2:</b> El "catch-all" — equivalente al else. Se ejecuta si ningún caso anterior coincidió.</p><p><b>3:</b> <code>caro = True if precio > 3000 else False</code>. Más pythónico: <code>caro = precio > 3000</code> (la comparación ya devuelve bool).</p><p><b>Señales listo:</b> Escribes match/case sin mirar · Sabes cuándo match vs if/elif · Usas ternary para asignaciones simples</p>`,
+        template:`📆 [Fecha] — F0.2 W1 Día 3
+✅ Hecho: match/case, ternary, notes W1 leídas, Feynman hecho
+🤖 Hueco que Claude detectó: [...]`,
+        trampa:"Usar match/case para rangos numéricos — solo funciona bien con valores exactos. Para rangos (precio > 1000) o lógica compuesta, if/elif es la herramienta correcta.",
+        claude:`Plantilla <b>Feynman Inverso</b> sobre match/case.`,
+        respaldo:'Notes oficiales W1 completas: <a href="https://cs50.harvard.edu/python/notes/1/" target="_blank">cs50.harvard.edu/python/notes/1/</a> — cubren todo W1.'
+      },
+      {
+        title:"Día 4 · Problem Set 1 — Primera mitad",
+        checklist:["✅ Lecture W1 completa (Días 1, 2, 3 hechos)","✅ Notes oficiales W1 leídas","✅ C0 Día 4 'Línea Roja' fresca — hoy es donde más importa","✅ Timer listo (30 min de pelea solitaria antes de pista)","✅ Pestaña: <a href='https://cs50.harvard.edu/python/psets/1/' target='_blank'>cs50.harvard.edu/python/psets/1/</a>"],
+        objetivo:"Atacar los primeros 2-3 ejercicios del Problem Set 1 con disciplina. El objetivo no es terminarlos todos — es ejercitar el músculo de leer, pensar, intentar, fallar, ajustar.",
+        material:`<p>Lee los 5 nombres de ejercicios en <a href="https://cs50.harvard.edu/python/psets/1/" target="_blank">cs50.harvard.edu/python/psets/1/</a>. Elige los 2 que parezcan más simples.</p>`,
+        ejercicio:`<p>⛔ Mismas reglas que W0 Día 4: 30 min de pelea solitaria por ejercicio.</p><ol><li>Lee el enunciado, resume en voz alta qué pide</li><li>Pseudocódigo en Markdown antes del código</li><li>Código, ejecuta con inputs de ejemplo</li><li>Si falla tras 30 min → Pista no Solución de C0</li><li>Guarda en <code>F0.2_W1_dia4_pset_parte1.ipynb</code></li></ol><p><b>Truco W1 específico:</b> Los bugs de condicionales son silenciosos (no dan SyntaxError — dan resultado incorrecto). Prueba 5 inputs distintos incluyendo valores exactamente en el límite.</p>`,
+        tecnica:"<b>Deliberate practice con desirable difficulty.</b> Los condicionales son el primer concepto donde el error de lógica no avisa. Aprender a detectarlo solo se desarrolla peleando.",
+        verif:`<ol><li>¿Cuántas veces rompiste la línea roja?</li><li>¿Qué tipo de error fue más común: sintaxis, lógica o tipo?</li><li>¿Qué condición fue más difícil de escribir en Python desde el enunciado en español?</li></ol>`,
+        answers:`<p>No hay respuestas correctas — autodiagnóstico.</p><p><b>Señales exitosas:</b> ✅ Al menos 1 ejercicio completo · ✅ 30 min respetados en al menos 1 · ✅ Pseudocódigo escrito · ✅ Leíste y arreglaste 1 error sin ayuda</p><p><b>Diferencia sintaxis vs lógica:</b> SyntaxError = Python no puede leer tu código (inmediato). Error de lógica = corre pero resultado incorrecto. En W1 los errores de lógica vienen de and en lugar de or, > en lugar de >=, orden incorrecto de elif.</p>`,
+        template:`📆 [Fecha] — F0.2 W1 Día 4
+✅ Ejercicios intentados: [cuáles]
+✅ Resueltos solo: [cuáles]
+🤖 Resueltos con pista: [cuáles]
+⛔ Líneas rojas rotas: [0/1/2+]`,
+        trampa:"Pedir a Claude 'un ejemplo casi idéntico' al ejercicio. Es delegación disfrazada. Si te pillas haciéndolo, para, borra, vuelve al enunciado.",
+        claude:`Solo después de 30 min. Plantilla <b>Pista no Solución</b>:<pre>[contexto fijo]
+30 min atascado en pset 1 ejercicio [nombre].
+Mi código: [...] Error o resultado incorrecto: [...]
+1 pista conceptual, sin código.</pre>`,
+        respaldo:"Si el inglés del enunciado frena: Google Translate del enunciado. Lo que importa es entender el problema."
+      },
+      {
+        title:"Día 5 · Problem Set 1 — Cierre + Commit + Revisión espaciada W0",
+        checklist:["✅ Notebook del Día 4 con intentos accesible","✅ Sé qué ejercicios me faltan","✅ Colab → GitHub conectado (de F0.1 Día 3)","⚠️ Si no subiste nada a GitHub desde F0.1, hazlo hoy antes del timer — es infraestructura, no trampa"],
+        objetivo:"Terminar ejercicios restantes del Pset 1, commitear a GitHub, auto-evaluar la semana W1, y hacer la primera revisión espaciada 2357 sobre W0.",
+        material:`<p>Revisa tus notebooks de la semana. No hay material nuevo hoy — ejecución pura.</p>`,
+        ejercicio:`<ol><li>Termina ejercicios pendientes (30 min solo)</li><li>Consolida en <code>F0.2_W1_final_pset.ipynb</code></li><li>Auto-evaluación al final:<pre># Auto-evaluación W1
+## Lo que aprendí: [...]
+## Lo que quedó débil: [...]
+## La condición más difícil que escribí: [...]
+## Diferencia con W0: [...]</pre></li><li><b>Revisión espaciada W0 (5 min):</b> sin mirar, en papel: (1) función que calcula precio con 30% de margen y lo devuelve con return, (2) ¿qué devuelve input() siempre? Si falla algo → anota para repaso.</li><li>Commit: <code>F0.2 W1: CS50P Week 1 Conditionals pset completado</code></li><li>Actualiza README: [x] F0.2 W1 CS50P Week 1 — Conditionals ← NUEVO</li></ol>`,
+        tecnica:"<b>Mini-proyecto integrador + revisión espaciada 2357.</b> La revisión espaciada no es extra — es el sistema 2357: revisa en el día 2, 5, 7 después de aprender. Hoy es el día ~7 de W0.",
+        verif:`<ol><li>Sin mirar: if/elif/else que clasifique stock como URGENTE (<3), NORMAL (3-20), o SUFICIENTE (>20)</li><li>¿Diferencia entre dos if separados vs if/elif?</li><li>¿Cuándo usarías match/case en lugar de if/elif?</li></ol>`,
+        answers:`<p><b>1:</b><pre>stock = int(input("Stock: "))
+if stock < 3:
+    print("URGENTE")
+elif stock <= 20:
+    print("NORMAL")
+else:
+    print("SUFICIENTE")</pre></p><p><b>2:</b> Dos if evalúan ambos independientemente. elif sale al primer True. Para condiciones excluyentes (stock no puede ser URGENTE Y NORMAL), elif es correcto.</p><p><b>3:</b> match/case cuando comparas un valor contra opciones exactas (categorías, estados). if/elif para rangos, and/or, o lógica compleja.</p>`,
+        template:`📆 [Fecha] — F0.2 W1 Día 5 (CIERRE W1)
+✅ Ejercicios pset: X de 5
+✅ Commit GitHub: hecho
+🎯 Aprendizaje principal: [...]
+📋 Revisión espaciada W0: ✅/❌ en [concepto]
+🔜 F0.2 W2 CS50P Week 2 - Loops
+📋 ACCIÓN VIERNES: Cola Notion + pedir F0.2 W2`,
+        trampa:"Saltarte la revisión espaciada de W0. Si realmente lo sabes, toma 5 min y te confirmas. Si no lo recuerdas, es exactamente cuando más valor tiene.",
+        claude:`Plantilla <b>Code Review Junior</b> sobre uno de los ejercicios del pset que resolviste solo.`,
+        respaldo:"Sin respaldo nuevo. Si no resolviste ningún ejercicio: escribe en el próximo chat 'necesito pair programming para pset 1, no pistas'. Claude propone dinámica línea a línea."
+      }
+    ]
+  },
+
+  // ===========================================
+  // F0.2.W2 · CS50P Week 2 — Loops (6 días detallados)
+  // ===========================================
+  {
+    id:"F0.2.W2", t:"CS50P W2 · Loops", tr:"fund", sem:0, detailed:true,
+    intro:"Los loops son el primer superpoder de la programación: en vez de repetir líneas de código 50 veces, escribes la instrucción una sola vez y le dices 'repite esto N veces'. Esta semana aprendes <b>while</b> (repite mientras sea verdad) y <b>for</b> (repite por cada elemento de una lista), más break/continue para controlarlo. Todo con contexto de farmacia. <b>Prerrequisitos:</b> F0.2 W1 completa (condicionales sólidos). <b>Carga real:</b> 6 sesiones × 45 min.",
+    pre:["F0.2.W1"],
+    days:[
+      {
+        title:"Día 1 · while — el loop que se repite mientras una condición sea verdad",
+        checklist:["✅ F0.2 W1 Día 5 completado (puedo escribir if/elif/else sin mirar)","✅ Notebook <code>F0.2_W1_final_pset.ipynb</code> accesible en Drive","✅ Colab abierto en el navegador","⛔ Si no tienes W1 completa, hazla primero — los loops usan condicionales internamente"],
+        objetivo:"Al final de hoy entenderás qué problema resuelve un while loop, escribirás 3 loops funcionales con contexto de farmacia, y reconocerás el patrón loop infinito intencional + break.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=-7xg8pGcP6w" target="_blank">https://www.youtube.com/watch?v=-7xg8pGcP6w</a><br><b>Inicio:</b> desde el principio.<br><b>Stop exacto:</b> cuando aparezca el título <b>"for"</b> en pantalla por primera vez. Si ves <code>for i in [...]</code> en código, retrocede 30 segundos.</li></ol><p>Un <code>while</code> loop es como el protocolo de reposición de stock: <i>MIENTRAS el stock esté bajo mínimo → hacer pedido → verificar de nuevo</i>. Repite hasta que la condición deje de cumplirse.</p>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W2_dia1_while.ipynb</code> en <code>00_aprendizaje/F0.2_cs50p/W2/</code>.</li><li>Loop contador:<pre><code>contador = 0
+while contador < 5:
+    print(f"Verificación #{contador + 1}")
+    contador += 1
+print("Proceso terminado")</code></pre></li><li>Verificador de stock interactivo:<pre><code>stock = int(input("Stock inicial: "))
+while stock > 0:
+    dispensar = int(input("¿Cuántas unidades dispensar? "))
+    stock -= dispensar
+    print(f"Stock restante: {stock}")
+print("⚠️ SIN STOCK")</code></pre>Prueba con stock=10, dispensando 3, 4, 2, 5.</li><li>Loop infinito intencional (patrón clave):<pre><code>while True:
+    respuesta = input("¿Continuar? (si/no): ")
+    if respuesta == "no":
+        break
+    print("Procesando...")</code></pre>El <code>break</code> rompe el loop. Sin él, corre para siempre.</li></ol>`,
+        tecnica:"<b>Active Recall en papel.</b> Cierra Colab. Escribe: (1) esqueleto while que cuente de 10 a 1 (cuenta regresiva), (2) en una frase, ¿cuál es la diferencia entre while con condición y while True + break? Compara con tu código.",
+        verif:`<ol><li>¿Qué pasa si el <code>contador += 1</code> del primer loop se te olvida poner?</li><li>¿Cuántas veces se ejecuta <code>print("hola")</code> en: <code>i = 5; while i > 0: print("hola"); i -= 2</code>?</li><li>¿Por qué es más seguro usar <code>while True + break</code> que <code>while input != "no"</code>?</li></ol>`,
+        answers:`<p><b>1. Olvidar contador += 1:</b> Loop infinito. Python ejecuta <code>while contador < 5</code> para siempre porque contador nunca cambia. Si eso pasa, Ctrl+C para salir.</p><p><b>2. Cuántas veces:</b> 3 veces. i empieza en 5: imprime (5>0 ✓), i=3: imprime (3>0 ✓), i=1: imprime (1>0 ✓), i=-1: (−1>0 ✗) sale. Respuesta: 3.</p><p><b>3. while True + break:</b> Permite validar la condición dentro del loop con toda la lógica que quieras (if/elif/else). <code>while condicion_simple</code> solo evalúa esa condición al inicio de cada iteración.</p><p><b>Señales de listo:</b> Escribes while sin mirar · Entiendes por qué loop infinito + break es un patrón válido · Sabes qué pasa si olvidas incrementar el contador</p>`,
+        template:`📆 [Fecha] — F0.2 W2 Día 1
+✅ Hecho: while contador, loop de stock, while True + break
+🧠 Concepto que más me costó: [...]
+⚠️ Error que cometí: [...]`,
+        trampa:"Vas a olvidar incrementar el contador (<code>i += 1</code>) y quedar atrapado en un loop infinito. La señal: Colab se congela o el círculo de 'ejecutando' no para. Ctrl+C para salir, y busca el incremento que falta.",
+        claude:`Plantilla <b>Tutoría Activa</b>:<pre>[contexto fijo]
+Acabo de aprender while loops en CS50P. Quiero entender cuándo
+usar while vs while True + break con un ejemplo de proceso de
+dispensación farmacéutica. Hazme 2 preguntas de verificación.</pre>`,
+        respaldo:"Notes oficiales CS50P W2: <a href='https://cs50.harvard.edu/python/notes/2/' target='_blank'>cs50.harvard.edu/python/notes/2/</a> — sección 'while' hasta antes de 'for'."
+      },
+      {
+        title:"Día 2 · for loops — iterar sobre listas de medicamentos",
+        checklist:["✅ Notebook Día 1 accesible en Drive","✅ Sé escribir un while loop sin mirar","⛔ Si fallaste 2+ preguntas de verificación del Día 1, repite ese día primero"],
+        objetivo:"Al final de hoy podrás recorrer listas de medicamentos con for, usar range() para repetir N veces, y combinar for con condicionales para filtrar stock.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=-7xg8pGcP6w" target="_blank">https://www.youtube.com/watch?v=-7xg8pGcP6w</a><br>Retoma desde el capítulo <b>"for"</b>.<br><b>Stop exacto:</b> cuando aparezca el título <b>"enumerate"</b> o veas <code>enumerate(</code> en pantalla, para.</li></ol><p>Un <code>for</code> loop recorre cada elemento de una lista: <i>PARA CADA medicamento en inventario → revisar stock</i>. <code>range(5)</code> genera automáticamente [0,1,2,3,4] — así no necesitas crear la lista manualmente.</p>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W2_dia2_for.ipynb</code>.</li><li>for sobre lista:<pre><code>medicamentos = ["Paracetamol", "Ibuprofeno", "Losartán", "Metformina"]
+for med in medicamentos:
+    print(f"Verificando stock de: {med}")</code></pre></li><li>for con range (para repetir N veces):<pre><code>for i in range(5):
+    print(f"Turno #{i+1}: dispensando")
+# Cuenta del 0 al 4. i+1 para mostrarlo desde 1.</code></pre></li><li>for + if (filtrar):<pre><code>stock = {"Paracetamol": 15, "Ibuprofeno": 2, "Losartán": 8, "Metformina": 0}
+for med, cantidad in stock.items():
+    if cantidad < 5:
+        print(f"⚠️ {med}: stock crítico ({cantidad} unidades)")
+    else:
+        print(f"✅ {med}: stock OK ({cantidad} unidades)")</code></pre></li><li>zip (dos listas juntas):<pre><code>nombres = ["Paracetamol", "Ibuprofeno"]
+precios = [500, 1200]
+for nombre, precio in zip(nombres, precios):
+    print(f"{nombre}: \${precio}")</code></pre></li></ol>`,
+        tecnica:"<b>Práctica deliberada con farmacia.</b> Repite el ejercicio 3 con TUS medicamentos de PAC. Sin mirar el código de arriba. Escríbelo de memoria. Cuando te trabes, mira, anota qué olvidaste, cierra y sigue.",
+        verif:`<ol><li>¿Cuántas veces itera <code>for i in range(3, 8)</code>?</li><li>¿Qué hace <code>.items()</code> en un diccionario?</li><li>Si tienes una lista de 10 meds y quieres mostrar solo los que tienen precio > 1000, ¿qué estructura usas?</li></ol>`,
+        answers:`<p><b>1. range(3, 8):</b> 5 veces. range(inicio, fin_excluido): 3, 4, 5, 6, 7.</p><p><b>2. .items():</b> Devuelve pares (clave, valor) del diccionario para poder iterar sobre ambos simultáneamente: <code>for key, value in dict.items()</code>.</p><p><b>3. for + if:</b> <code>for med in lista: if med["precio"] > 1000: print(med)</code>. Un for recorre todos, el if filtra cuáles mostrar.</p><p><b>Señales de listo:</b> Distingues for de while sin pensar · Usas .items() automáticamente con dicts · Sabes que range(n) empieza en 0</p>`,
+        template:`📆 [Fecha] — F0.2 W2 Día 2
+✅ Hecho: for sobre lista, range(), for+if sobre dict de stock
+🧠 Lo que más me costó: [...]
+🔜 Mañana: break, continue, enumerate`,
+        trampa:"Vas a confundir range(5) con [1,2,3,4,5]. range(5) genera [0,1,2,3,4] — empieza en 0. Si necesitas 1 al 5: range(1, 6). Si necesitas 1 al N: range(1, N+1).",
+        claude:`Plantilla <b>Feynman Inverso</b> al cierre:<pre>[contexto fijo]
+Te explico la diferencia entre while y for como si tuvieras 10 años,
+con ejemplos de farmacia. NO me corrijas hasta que termine.</pre>`,
+        respaldo:"Notes CS50P W2: <a href='https://cs50.harvard.edu/python/notes/2/' target='_blank'>cs50.harvard.edu/python/notes/2/</a> — sección 'for' hasta antes de 'enumerate'."
+      },
+      {
+        title:"Día 3 · break, continue y enumerate",
+        checklist:["✅ Notebooks Días 1 y 2 accesibles","✅ Sé escribir for + if sin mirar","✅ Entiendo la diferencia entre while y for"],
+        objetivo:"Al final de hoy controlarás el flujo de loops con break (salir inmediatamente) y continue (saltar esta iteración), y usarás enumerate para tener índice + valor en cada iteración.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=-7xg8pGcP6w" target="_blank">https://www.youtube.com/watch?v=-7xg8pGcP6w</a><br>Retoma desde <b>"enumerate"</b>.<br><b>Stop exacto:</b> cuando aparezca el título <b>"dict"</b> — si ves <code>{"key": value}</code> como tema central del segmento, para.</li></ol>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W2_dia3_control.ipynb</code>.</li><li>break — salir al primer stock vacío:<pre><code>inventario = ["Paracetamol", "Ibuprofeno", "Losartán", "Metformina"]
+stocks = [12, 0, 5, 3]
+for i, med in enumerate(inventario):
+    if stocks[i] == 0:
+        print(f"🚨 ALERTA: {med} sin stock. Proceso interrumpido.")
+        break
+    print(f"✅ {med}: {stocks[i]} unidades")</code></pre></li><li>continue — saltar los que no necesitan revisión:<pre><code>stocks = {"Paracetamol": 15, "Ibuprofeno": 0, "Losartán": 8}
+for med, cantidad in stocks.items():
+    if cantidad > 5:
+        continue  # tiene suficiente, sáltalo
+    print(f"⚠️ {med} necesita reposición: {cantidad} unidades")</code></pre></li><li>enumerate — cuando necesitas índice Y valor:<pre><code>lista = ["Amoxicilina", "Clonazepam", "Atorvastatina"]
+for i, nombre in enumerate(lista):
+    print(f"Posición {i}: {nombre}")</code></pre></li></ol>`,
+        tecnica:"<b>Active Recall.</b> Cierra Colab. En papel: (1) ¿qué hace break vs continue? (1 frase cada uno con farmacia como contexto), (2) ¿cuándo usarías enumerate en vez de un for normal?",
+        verif:`<ol><li>¿Qué diferencia hay entre break y continue?</li><li>¿Para qué sirve enumerate?</li><li>Con stocks = [10, 0, 5], ¿qué imprime el loop del ejercicio 2 si empiezas desde "Ibuprofeno"?</li></ol>`,
+        answers:`<p><b>1. break vs continue:</b> break termina el loop completamente (no itera más). continue salta la iteración actual y pasa a la siguiente.</p><p><b>2. enumerate:</b> Cuando necesitas el índice (posición) Y el valor de cada elemento a la vez. Sin enumerate necesitarías i = 0 y i += 1 manualmente.</p><p><b>3. desde Ibuprofeno:</b> Imprime "⚠️ Ibuprofeno: 0 unidades". Losartán: 5, también ⚠️. Paracetamol: 10, se salta.</p><p><b>Señales de listo:</b> Usas break para salir temprano de un loop · Usas continue para saltar casos sin anidar if dentro de if · enumerate te parece más limpio que llevar contador manual</p>`,
+        template:`📆 [Fecha] — F0.2 W2 Día 3
+✅ Hecho: break en loop de stock, continue para filtrar, enumerate
+🧠 Lo que más me costó: [...]`,
+        trampa:"Confundir break y continue. Regla mental: <b>break = salir del edificio. continue = saltar al siguiente piso.</b>",
+        claude:`Plantilla <b>Tutoría Activa</b>:<pre>[contexto fijo]
+Quiero entender cuándo usar break vs return para salir de un loop.
+¿Son intercambiables? Dame un ejemplo de farmacia con cada uno.</pre>`,
+        respaldo:"Notes CS50P W2 completas: <a href='https://cs50.harvard.edu/python/notes/2/' target='_blank'>cs50.harvard.edu/python/notes/2/</a>"
+      },
+      {
+        title:"Día 4 · Diccionarios como inventario farmacéutico",
+        checklist:["✅ Días 1-3 de W2 completados","✅ Sé usar for, break, continue, enumerate"],
+        objetivo:"Al final de hoy usarás diccionarios para modelar un inventario real de farmacia: crear, actualizar, buscar y recorrer un dict con lógica de QF.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=-7xg8pGcP6w" target="_blank">https://www.youtube.com/watch?v=-7xg8pGcP6w</a><br>Retoma desde el título <b>"dict"</b>.<br><b>Stop exacto:</b> cuando el video termine (es el último tema de W2).</li></ol><p>Un diccionario es exactamente como una ficha de medicamento: tiene un nombre (clave) y propiedades (valores). <code>{"Paracetamol": {"stock": 10, "precio": 500}}</code></p>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W2_dia4_dict.ipynb</code>.</li><li>Dict básico:<pre><code>inventario = {
+    "Paracetamol": {"stock": 15, "precio": 500},
+    "Ibuprofeno":  {"stock": 3,  "precio": 1200},
+    "Losartán":    {"stock": 0,  "precio": 800}
+}
+print(inventario["Paracetamol"]["stock"])  # → 15</code></pre></li><li>Acceso seguro con .get():<pre><code># Si el medicamento no existe, get() devuelve None (no da error)
+stock = inventario.get("Metformina", {}).get("stock", "no existe")
+print(stock)  # → no existe</code></pre></li><li>Recorrer y reportar:<pre><code>for nombre, datos in inventario.items():
+    estado = "⚠️ CRÍTICO" if datos["stock"] < 5 else "✅ OK"
+    print(f"{nombre}: {datos['stock']} uds | {estado}")</code></pre></li><li>Actualizar stock:<pre><code>inventario["Ibuprofeno"]["stock"] += 20  # llegó pedido
+print(inventario["Ibuprofeno"]["stock"])  # → 23</code></pre></li></ol>`,
+        tecnica:"<b>Mini-proyecto de farmacia.</b> Crea un dict con 5 medicamentos reales de tu farmacia PAC (los que recuerdes). Recórrelo e imprime cuáles necesitan reposición urgente (stock < 10).",
+        verif:`<ol><li>¿Qué hace dict.get(clave, valor_default)?</li><li>¿Por qué usar dict en vez de dos listas separadas (una de nombres, una de stocks)?</li><li>¿Cómo accedes al precio del Paracetamol en el dict del ejercicio?</li></ol>`,
+        answers:`<p><b>1. .get():</b> Busca la clave en el dict. Si existe, devuelve su valor. Si no existe, devuelve el valor_default en vez de dar KeyError.</p><p><b>2. Dict vs dos listas:</b> Con dos listas pierdes la sincronía fácilmente (si insertas en posición incorrecta). El dict mantiene nombre↔datos juntos siempre.</p><p><b>3. Precio Paracetamol:</b> <code>inventario["Paracetamol"]["precio"]</code> → 500.</p><p><b>Señales de listo:</b> Creas un dict con datos reales · Usas .items() para iterar · Accedes a claves anidadas sin error</p>`,
+        template:`📆 [Fecha] — F0.2 W2 Día 4
+✅ Hecho: dict de inventario PAC, .get() seguro, reporte de stock crítico
+🧠 Lo que más me costó: [...]`,
+        trampa:"Usar corchetes para clave que no existe → KeyError inmediato. Siempre que no estés seguro de si la clave existe, usa <code>.get()</code>.",
+        claude:`Plantilla <b>Code Review Junior</b>:<pre>[contexto fijo]
+Aquí está mi dict de inventario farmacéutico. ¿Qué mejorarías en términos de
+estructura? No me reescribas el código. Dame máximo 3 observaciones.</pre>`,
+        respaldo:"Notes CS50P W2 — sección 'dict': <a href='https://cs50.harvard.edu/python/notes/2/' target='_blank'>cs50.harvard.edu/python/notes/2/</a>"
+      },
+      {
+        title:"Día 5 · Problem Set 2 — Primera mitad",
+        checklist:["✅ Lecture W2 completa (Días 1-4 hechos)","✅ Notes oficiales W2 leídas","✅ C0 Día 4 'Línea Roja' fresca — hoy es donde más importa","✅ Timer listo (30 min de pelea solitaria)","✅ Pestaña abierta: <a href='https://cs50.harvard.edu/python/psets/2/' target='_blank'>cs50.harvard.edu/python/psets/2/</a>"],
+        objetivo:"Atacar los primeros 2-3 ejercicios del Problem Set 2. El objetivo no es terminarlos todos — es ejercitar leer, pensar, intentar, fallar, ajustar.",
+        material:`<p>Lee los nombres de los ejercicios en <a href="https://cs50.harvard.edu/python/psets/2/" target="_blank">cs50.harvard.edu/python/psets/2/</a>. Elige los 2 que parezcan más simples.</p>`,
+        ejercicio:`<p>⛔ <b>LÍNEA ROJA:</b> primeros 30 min de cada ejercicio solo. Solo después de 30 min → plantilla "Pista no solución" de C0.</p><ol><li>Lee el enunciado. Resume en voz alta qué pide.</li><li>Pseudocódigo en Markdown antes del código real.</li><li>Escribe código, ejecuta con los inputs de ejemplo del enunciado.</li><li>Si no sale después de 30 min → Pista no Solución de C0.</li><li>Guarda en <code>F0.2_W2_dia5_pset_parte1.ipynb</code>.</li></ol>`,
+        tecnica:"<b>Deliberate practice con desirable difficulty.</b> Los loops son el primer tema donde los bugs de lógica son sutiles (loop termina 1 iteración antes/después). Aprender a detectarlos solo se forma peleando.",
+        verif:`<ol><li>¿Cuántas veces rompiste la línea roja?</li><li>¿Qué tipo de error fue más común: while vs for, o range()?</li><li>¿Tuviste algún loop infinito accidental?</li></ol>`,
+        answers:`<p>No hay respuestas correctas — autodiagnóstico.</p><p><b>Señales exitosas:</b> ✅ Al menos 1 ejercicio completo · ✅ 30 min respetados · ✅ Pseudocódigo escrito · ✅ Leíste y arreglaste 1 error solo</p><p><b>Error clásico W2:</b> <code>range(n)</code> cuando necesitas <code>range(1, n+1)</code>. Siempre prueba con n pequeño para verificar.</p>`,
+        template:`📆 [Fecha] — F0.2 W2 Día 5
+✅ Ejercicios intentados: [cuáles]
+✅ Resueltos solo: [cuáles]
+🤖 Resueltos con pista: [cuáles]
+⛔ Líneas rojas rotas: [0/1/2+]`,
+        trampa:"Pedir a Claude 'un ejemplo casi idéntico' al ejercicio. Delegación disfrazada. Si te pillas haciéndolo, para, borra, vuelve al enunciado.",
+        claude:`Solo después de 30 min. Plantilla <b>Pista no Solución</b>:<pre>[contexto fijo]
+30 min atascado en pset 2 ejercicio [nombre].
+Mi código: [...] Error: [...]
+1 pista conceptual, sin código.</pre>`,
+        respaldo:"Si el inglés del enunciado frena: Google Translate del enunciado. Lo que importa es entender el problema."
+      },
+      {
+        title:"Día 6 · Problem Set 2 — Cierre + Commit + Revisión espaciada W0",
+        checklist:["✅ Notebook Día 5 con intentos accesible","✅ Sé qué ejercicios me faltan","✅ Colab → GitHub conectado (de F0.1 Día 3)"],
+        objetivo:"Terminar ejercicios restantes del Pset 2, commitear a GitHub, auto-evaluar la semana, y hacer revisión espaciada W0 (10 min).",
+        material:`<p>No hay material nuevo. Ejecución pura + cierre consciente.</p>`,
+        ejercicio:`<ol><li>Termina ejercicios pendientes (30 min solo por ejercicio).</li><li>Consolida en <code>F0.2_W2_final_pset.ipynb</code>.</li><li>Auto-evaluación al final:<pre># Auto-evaluación W2
+## Lo que aprendí: [...]
+## Lo que quedó débil: [...]
+## Mi peor bug de loop: [...]
+## Diferencia con W1: [...]</pre></li><li><b>Revisión espaciada W0 (10 min):</b> sin mirar, en papel: (1) función que calcula precio con margen y retorna el resultado, (2) ¿qué devuelve input() siempre? Si falla → anota para repaso.</li><li>Commit: <code>F0.2 W2: CS50P Week 2 Loops pset completado</code></li><li>Actualiza README: <code>[x] F0.2 W2 — Loops ← NUEVO</code></li></ol>`,
+        tecnica:"<b>Revisión espaciada 2357 + cierre integrador.</b> La revisión espaciada no es extra: fija W0 a largo plazo.",
+        verif:`<ol><li>Sin mirar: while loop que pida número al usuario hasta que ingrese 0, luego imprima cuántos números ingresó.</li><li>¿Diferencia entre for y while en 1 frase?</li><li>¿Cuándo usarías break vs continue?</li></ol>`,
+        answers:`<p><b>1:</b><pre>contador = 0
+while True:
+    n = int(input("Número (0 para salir): "))
+    if n == 0:
+        break
+    contador += 1
+print(f"Ingresaste {contador} números")</pre></p><p><b>2:</b> for itera sobre una secuencia conocida. while repite mientras una condición sea verdad (secuencia no conocida de antemano).</p><p><b>3:</b> break termina el loop. continue salta al siguiente ciclo sin ejecutar el resto de ese ciclo.</p>`,
+        template:`📆 [Fecha] — F0.2 W2 Día 6 (CIERRE W2)
+✅ Ejercicios pset: X de total
+✅ Commit GitHub: hecho
+🧠 Aprendizaje principal: [...]
+📋 Revisión espaciada W0: ✅/❌ en [concepto]
+🔜 F0.2 W3 CS50P Week 3 - Exceptions
+📋 ACCIÓN VIERNES: Cola Notion + pedir F0.2 W3`,
+        trampa:"Saltarte la revisión espaciada de W0. Si realmente lo sabes, toma 10 min y te confirmas. Si no lo recuerdas, es exactamente cuando más valor tiene.",
+        claude:`Plantilla <b>Code Review Junior</b> sobre uno de los ejercicios del pset que SÍ resolviste solo.`,
+        respaldo:"Sin respaldo nuevo. Si no resolviste ningún ejercicio: escribe 'necesito pair programming para pset 2, no pistas'. Claude propone dinámica línea a línea."
+      }
+    ]
+  },
+
+  // ===========================================
+  // F0.2.W3 · CS50P Week 3 — Exceptions (5 días detallados)
+  // ===========================================
+  {
+    id:"F0.2.W3", t:"CS50P W3 · Exceptions", tr:"fund", sem:0, detailed:true,
+    intro:"El código que no maneja errores falla de manera catastrófica. Esta semana aprendes a escribir código robusto: <b>try/except</b> para anticipar errores, <b>raise</b> para señalar problemas explícitamente, y el patrón QF de 'entrada validada + proceso seguro'. En farmacia: un sistema que se cae cuando el usuario escribe texto en vez de un número no es un sistema profesional. <b>Prerrequisitos:</b> F0.2 W2 completa (loops sólidos). <b>Carga real:</b> 5 sesiones × 45 min.",
+    pre:["F0.2.W2"],
+    days:[
+      {
+        title:"Día 1 · ValueError + try/except — el primer escudo anticrash",
+        checklist:["✅ F0.2 W2 Día 6 completado (loops sólidos)","✅ Sé usar while True + break","✅ Colab abierto con Drive montado","⛔ Si no tienes W2 completa: loops son prerequisito directo de while True + try/except"],
+        objetivo:"Al final de hoy escribirás código que no se cae cuando el usuario ingresa datos incorrectos, usando try/except para capturar ValueError, y el patrón 'pedir hasta que sea válido'.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=LW7g1169v7w" target="_blank">https://www.youtube.com/watch?v=LW7g1169v7w</a><br><b>Inicio:</b> desde el principio.<br><b>Stop exacto:</b> cuando aparezca el título <b>"else"</b> como parte de un try/except (busca <code>except ValueError: ... else: ...</code>). Para antes de llegar ahí.</li></ol><p>try/except es como el protocolo de recepción de recetas: intentas procesar la receta, pero si hay un error (receta ilegible, datos faltantes), capturas el problema en vez de dejar caer todo el sistema.</p>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W3_dia1_try_except.ipynb</code> en <code>00_aprendizaje/F0.2_cs50p/W3/</code>.</li><li>Sin protección (para ver qué pasa):<pre><code>precio = float(input("Precio: "))
+print(f"Con IVA: \${precio * 1.19}")
+# Ejecuta y escribe "abc" → ValueError</code></pre></li><li>Con try/except básico:<pre><code>try:
+    precio = float(input("Precio: "))
+    print(f"Con IVA: \${precio * 1.19}")
+except ValueError:
+    print("❌ Error: ingresa un número válido")</code></pre></li><li>Patrón "pedir hasta que sea válido" (clave de QF):<pre><code>def pedir_precio(mensaje):
+    while True:
+        try:
+            valor = float(input(mensaje))
+            return valor  # sale del while solo si llegó hasta acá
+        except ValueError:
+            print("❌ Solo números. Intenta de nuevo.")
+
+precio = pedir_precio("Precio del medicamento: $")
+print(f"Precio ingresado: \${precio}")</code></pre>Este patrón lo vas a usar en todos los sistemas de entrada de datos.</li></ol>`,
+        tecnica:"<b>Active Recall en papel.</b> Cierra Colab. Escribe de memoria la función pedir_precio() completa. No recordar exactamente algún detalle es información: ¿qué olvidaste?",
+        verif:`<ol><li>¿Qué pasa si escribes un número en el try pero ocurre otro error (p.ej., ZeroDivisionError)? ¿Lo captura el except ValueError?</li><li>¿Por qué el return está DENTRO del try y no después del while?</li><li>¿Qué diferencia hay entre except ValueError y except Exception?</li></ol>`,
+        answers:`<p><b>1. Otro tipo de error:</b> No. except ValueError solo captura errores de tipo ValueError. Un ZeroDivisionError pasaría sin capturarse y caería el programa. Cada except solo atrapa su tipo específico.</p><p><b>2. return dentro del try:</b> Si el float(input()) falla, Python salta al except. El return solo se ejecuta si el float() tuvo éxito. Si el return estuviera después del while, nunca se alcanzaría (el while True no termina solo).</p><p><b>3. ValueError vs Exception:</b> ValueError captura solo ese tipo. Exception captura CUALQUIER error. Para empezar: específico es mejor — te avisa exactamente qué salió mal.</p><p><b>Señales de listo:</b> Escribes el patrón while+try+except+return sin mirar · Entiendes por qué return está dentro del try · Reconoces un ValueError al verlo</p>`,
+        template:`📆 [Fecha] — F0.2 W3 Día 1
+✅ Hecho: try/except básico, patrón pedir_precio() validado
+🧠 Concepto que más me costó: [...]`,
+        trampa:"Poner el try/except FUERA del while en vez de dentro. Si lo pones fuera, captura el error UNA vez y el programa termina. Para repetir la pregunta hasta obtener un valor válido, el try DEBE estar dentro del while True.",
+        claude:`Plantilla <b>Tutoría Activa</b>:<pre>[contexto fijo]
+Acabo de aprender try/except. Quiero entender cuándo usar
+except ValueError vs except Exception en un sistema de farmacia.
+Dame un ejemplo de cada caso y 2 preguntas de verificación.</pre>`,
+        respaldo:"Notes CS50P W3: <a href='https://cs50.harvard.edu/python/notes/3/' target='_blank'>cs50.harvard.edu/python/notes/3/</a> — sección 'Exceptions' hasta antes de 'else'."
+      },
+      {
+        title:"Día 2 · Múltiples except + else + pass",
+        checklist:["✅ Notebook Día 1 accesible","✅ Sé escribir while True + try/except + return sin mirar","⛔ Si fallaste 2+ preguntas del Día 1, repite ese día"],
+        objetivo:"Al final de hoy manejarás múltiples tipos de errores con except encadenados, usarás else para código que corre solo si no hubo error, y sabrás cuándo usar pass.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=LW7g1169v7w" target="_blank">https://www.youtube.com/watch?v=LW7g1169v7w</a><br>Retoma desde el título <b>"else"</b> dentro de try/except.<br><b>Stop exacto:</b> cuando aparezca el título <b>"raise"</b>. Si ves <code>raise ValueError(</code> en código, para.</li></ol>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W3_dia2_multiples_except.ipynb</code>.</li><li>Múltiples except:<pre><code>def analizar_precio(texto_precio, texto_cantidad):
+    try:
+        precio = float(texto_precio)
+        cantidad = int(texto_cantidad)
+        total = precio / cantidad  # puede dar ZeroDivisionError
+    except ValueError:
+        print("❌ Precio o cantidad no son números válidos")
+    except ZeroDivisionError:
+        print("❌ La cantidad no puede ser 0")
+    else:
+        print(f"✅ Precio unitario: \${total:.2f}")
+
+analizar_precio("1500", "3")   # → ✅ $500.00
+analizar_precio("1500", "0")   # → ZeroDivisionError
+analizar_precio("mil", "3")    # → ValueError</code></pre></li><li>pass — ignorar silenciosamente:<pre><code>medicamentos_texto = ["500", "abc", "1200", "", "800"]
+precios_validos = []
+for texto in medicamentos_texto:
+    try:
+        precios_validos.append(float(texto))
+    except ValueError:
+        pass  # silenciosamente ignora los no-numéricos
+print(precios_validos)  # → [500.0, 1200.0, 800.0]</code></pre></li></ol>`,
+        tecnica:"<b>Práctica deliberada.</b> Escribe 3 funciones de QF distintas (calcular_iva, verificar_stock, convertir_dosis) y en cada una incluye try/except para el error más probable.",
+        verif:`<ol><li>¿En qué orden evalúa Python los except encadenados?</li><li>¿Cuándo usarías else en try/except?</li><li>¿Cuándo usarías pass y cuándo no?</li></ol>`,
+        answers:`<p><b>1. Orden except:</b> De arriba a abajo, el primero que coincide. Solo ejecuta uno aunque haya varios que coincidan. Por eso: primero los más específicos, luego los más generales.</p><p><b>2. Else en try/except:</b> Cuando tienes código que debe ejecutarse SOLO si no hubo excepción. Más limpio que meter todo en el try.</p><p><b>3. pass:</b> Úsalo cuando quieres ignorar deliberadamente un error (ej: datos sucios de un CSV). No uses pass cuando el error necesita ser registrado o comunicado al usuario.</p><p><b>Señales de listo:</b> Escribes try/except/else/pass sin mirar · Sabes por qué el orden de los except importa · Distingues cuándo silenciar vs comunicar un error</p>`,
+        template:`📆 [Fecha] — F0.2 W3 Día 2
+✅ Hecho: múltiples except, else, pass en lista de precios
+🧠 Lo que más me costó: [...]`,
+        trampa:"Poner except Exception (demasiado genérico) para todo. Captura hasta errores de programación que deberías ver (como un NameError porque escribiste mal una variable). Empieza específico.",
+        claude:`Plantilla <b>Feynman Inverso</b> sobre try/except/else:<pre>[contexto fijo]
+Te explico cuándo usar else en un try/except en farmacia,
+como si tuvieras 10 años. NO me corrijas hasta que termine.</pre>`,
+        respaldo:"Notes CS50P W3 completas: <a href='https://cs50.harvard.edu/python/notes/3/' target='_blank'>cs50.harvard.edu/python/notes/3/</a>"
+      },
+      {
+        title:"Día 3 · raise — lanzar tus propios errores",
+        checklist:["✅ Notebooks Días 1 y 2 accesibles","✅ Sé usar try/except/else/pass sin mirar"],
+        objetivo:"Al final de hoy podrás crear tus propias excepciones con raise cuando los datos no cumplen criterios farmacéuticos, y escribir funciones que fallan explícitamente en vez de producir resultados silenciosamente incorrectos.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=LW7g1169v7w" target="_blank">https://www.youtube.com/watch?v=LW7g1169v7w</a><br>Retoma desde el título <b>"raise"</b>.<br><b>Stop exacto:</b> al final del video.</li></ol><p>raise es como el sistema de alertas de farmacia: en vez de que el sistema procese silenciosamente una dosis incorrecta, lo detienes explícitamente con un mensaje claro.</p>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W3_dia3_raise.ipynb</code>.</li><li>Función con raise:<pre><code>def dispensar(medicamento, cantidad_solicitada, stock_disponible):
+    if cantidad_solicitada <= 0:
+        raise ValueError(f"Cantidad inválida: {cantidad_solicitada}. Debe ser > 0.")
+    if cantidad_solicitada > stock_disponible:
+        raise ValueError(
+            f"Stock insuficiente: pediste {cantidad_solicitada} "
+            f"pero solo hay {stock_disponible}."
+        )
+    return stock_disponible - cantidad_solicitada</code></pre></li><li>Usarla con try/except:<pre><code>try:
+    nuevo_stock = dispensar("Paracetamol", 5, 3)
+    print(f"Dispensado. Stock nuevo: {nuevo_stock}")
+except ValueError as e:
+    print(f"❌ Error de dispensación: {e}")</code></pre>El <code>as e</code> captura el mensaje del raise para mostrarlo.</li><li>Función de procesamiento completa:<pre><code>def procesar_receta(medicamento, dosis_mg, peso_kg):
+    if dosis_mg <= 0:
+        raise ValueError("Dosis debe ser positiva")
+    if peso_kg < 1 or peso_kg > 300:
+        raise ValueError(f"Peso fuera de rango: {peso_kg} kg")
+    dosis_ajustada = dosis_mg * peso_kg / 70  # normalizado a 70kg
+    return round(dosis_ajustada, 1)
+
+try:
+    dosis = procesar_receta("Ibuprofeno", 400, 75)
+    print(f"Dosis ajustada: {dosis} mg")
+except ValueError as e:
+    print(f"❌ {e}")</code></pre></li></ol>`,
+        tecnica:"<b>Active Recall.</b> Cierra Colab. Escribe de memoria la función dispensar() completa con sus dos raise. Cuando te trabes en la sintaxis, anótalo.",
+        verif:`<ol><li>¿Qué diferencia hay entre raise ValueError("mensaje") y print("mensaje")?</li><li>¿Por qué es mejor raise que return None cuando algo sale mal?</li><li>¿Qué hace el as e en except ValueError as e?</li></ol>`,
+        answers:`<p><b>1. raise vs print:</b> print muestra un mensaje pero el código CONTINÚA ejecutándose. raise detiene la ejecución y la devuelve al except más cercano (o al usuario si no hay except). raise es para "esto es un error real que necesita ser manejado".</p><p><b>2. raise vs return None:</b> None es ambiguo — ¿significa que salió bien y no hay resultado, o que salió mal? raise ValueError con un mensaje es explícito: algo salió mal y aquí está exactamente qué.</p><p><b>3. as e:</b> Guarda la excepción en la variable e para poder acceder a su mensaje. <code>str(e)</code> o <code>print(e)</code> muestra el mensaje que pusiste en el raise.</p><p><b>Señales de listo:</b> Escribes raise con mensaje descriptivo · Usas as e para mostrar el mensaje · Distingues cuándo raise vs cuándo return None</p>`,
+        template:`📆 [Fecha] — F0.2 W3 Día 3
+✅ Hecho: dispensar() con raise, procesar_receta() con validaciones
+🧠 Lo que más me costó: [...]`,
+        trampa:"Usar raise sin mensaje descriptivo. <code>raise ValueError()</code> sin mensaje es inútil en producción — nadie sabe qué fue mal. Siempre incluye un mensaje que diga qué se esperaba vs qué llegó.",
+        claude:`Plantilla <b>Code Review Junior</b>:<pre>[contexto fijo]
+Aquí está mi función dispensar() con raise. ¿Qué mejorarías?
+No me reescribas el código. Máximo 3 observaciones.</pre>`,
+        respaldo:"Notes CS50P W3 — sección raise: <a href='https://cs50.harvard.edu/python/notes/3/' target='_blank'>cs50.harvard.edu/python/notes/3/</a>"
+      },
+      {
+        title:"Día 4 · Problem Set 3 — Primera mitad",
+        checklist:["✅ Lecture W3 completa (Días 1-3 hechos)","✅ Notes oficiales W3 leídas","✅ Timer listo (30 min de pelea solitaria)","✅ Pestaña: <a href='https://cs50.harvard.edu/python/psets/3/' target='_blank'>cs50.harvard.edu/python/psets/3/</a>"],
+        objetivo:"Atacar los primeros 2 ejercicios del Problem Set 3. El objetivo es ejercitar el músculo de identificar dónde poner try/except en código real.",
+        material:`<p>Lee los ejercicios en <a href="https://cs50.harvard.edu/python/psets/3/" target="_blank">cs50.harvard.edu/python/psets/3/</a>. Elige los 2 más simples.</p>`,
+        ejercicio:`<p>⛔ <b>LÍNEA ROJA:</b> 30 min solo. Después → Pista no Solución.</p><ol><li>Lee el enunciado, identifica qué tipo de error es posible.</li><li>Pseudocódigo con la estructura try/except antes de codear.</li><li>Código, ejecuta con inputs válidos e inválidos.</li><li>Guarda en <code>F0.2_W3_dia4_pset_parte1.ipynb</code>.</li></ol>`,
+        tecnica:"<b>Deliberate practice.</b> W3 es el primer pset donde el código que funciona con inputs buenos puede caerse con inputs malos. Prueba siempre los casos límite: texto en vez de número, 0, negativo.",
+        verif:`<ol><li>¿Cuántas veces rompiste la línea roja?</li><li>¿Fue más difícil identificar dónde poner el try o qué tipo de except usar?</li><li>¿Validaste con inputs inválidos además de los del enunciado?</li></ol>`,
+        answers:`<p>No hay respuestas correctas — autodiagnóstico.</p><p><b>Señales exitosas:</b> ✅ Al menos 1 ejercicio completo · ✅ 30 min respetados · ✅ Probaste inputs inválidos · ✅ Tu código no se cae con texto cuando espera número</p>`,
+        template:`📆 [Fecha] — F0.2 W3 Día 4
+✅ Ejercicios intentados: [cuáles]
+✅ Resueltos solo: [cuáles]
+🤖 Resueltos con pista: [cuáles]
+⛔ Líneas rojas rotas: [0/1/2+]`,
+        trampa:"Poner el try/except demasiado amplio (envolviendo TODO el código) en vez de solo la parte que puede fallar. Identifica la línea exacta que puede lanzar el error y envuelve solo esa.",
+        claude:`Solo después de 30 min. Plantilla <b>Pista no Solución</b>:<pre>[contexto fijo]
+30 min atascado en pset 3 ejercicio [nombre].
+Mi código: [...] Error: [...]
+1 pista conceptual, sin código.</pre>`,
+        respaldo:"Sin respaldo adicional verificado para este día."
+      },
+      {
+        title:"Día 5 · Problem Set 3 — Cierre + Commit + Revisión espaciada W1",
+        checklist:["✅ Notebook Día 4 accesible","✅ Sé qué ejercicios me faltan","✅ GitHub conectado desde Colab"],
+        objetivo:"Terminar ejercicios restantes del Pset 3, commitear a GitHub, auto-evaluar, y hacer revisión espaciada W1 (10 min).",
+        material:`<p>No hay material nuevo. Ejecución pura + cierre consciente.</p>`,
+        ejercicio:`<ol><li>Termina ejercicios pendientes (30 min solo).</li><li>Consolida en <code>F0.2_W3_final_pset.ipynb</code>.</li><li>Auto-evaluación:<pre># Auto-evaluación W3
+## Lo que aprendí: [...]
+## Lo que quedó débil: [...]
+## Mi código más robusto escrito hasta hoy: [...]</pre></li><li><b>Revisión espaciada W1 (10 min):</b> sin mirar, en papel: (1) if/elif/else que clasifique stock crítico/normal/suficiente, (2) ¿diferencia entre dos if separados vs elif?</li><li>Commit: <code>F0.2 W3: CS50P Week 3 Exceptions pset completado</code></li><li>Actualiza README: <code>[x] F0.2 W3 — Exceptions ← NUEVO</code></li></ol>`,
+        tecnica:"<b>Mini-proyecto integrador + revisión espaciada 2357 sobre W1.</b>",
+        verif:`<ol><li>Sin mirar: escribe pedir_stock() que valide que el usuario ingresa un entero positivo.</li><li>¿Cuándo usas raise vs except?</li><li>¿Qué pasa si un raise no tiene except que lo capture?</li></ol>`,
+        answers:`<p><b>1:</b><pre>def pedir_stock(mensaje):
+    while True:
+        try:
+            n = int(input(mensaje))
+            if n < 0:
+                raise ValueError("El stock no puede ser negativo")
+            return n
+        except ValueError as e:
+            print(f"❌ {e}. Intenta de nuevo.")</pre></p><p><b>2. raise vs except:</b> raise LANZA una excepción (señala que algo salió mal). except CAPTURA una excepción (maneja el error). Son complementarios.</p><p><b>3. raise sin except:</b> El programa se detiene con un Traceback completo visible al usuario. Útil en desarrollo para depurar. No deseable en producción.</p>`,
+        template:`📆 [Fecha] — F0.2 W3 Día 5 (CIERRE W3)
+✅ Ejercicios pset: X de total
+✅ Commit GitHub: hecho
+🧠 Aprendizaje principal: [...]
+📋 Revisión espaciada W1: ✅/❌ en [concepto]
+🔜 F0.2 W4 CS50P Week 4 - Libraries
+📋 ACCIÓN VIERNES: Cola Notion + pedir F0.2 W4`,
+        trampa:"Saltarte la revisión espaciada W1. Si la omites, W1 empieza a difuminarse en la memoria. 10 min en papel consolidan 5 días de trabajo.",
+        claude:`Plantilla <b>Code Review Junior</b> sobre uno de los ejercicios del pset que SÍ resolviste solo.`,
+        respaldo:"Sin respaldo nuevo. Si no resolviste ningún ejercicio: escribe 'necesito pair programming para pset 3, no pistas'."
+      }
+    ]
+  },
+
+  // ===========================================
+  // F0.2.W4 · CS50P Week 4 — Libraries (5 días detallados)
+  // ===========================================
+  {
+    id:"F0.2.W4", t:"CS50P W4 · Libraries", tr:"fund", sem:0, detailed:true,
+    intro:"Las librerías convierten Python de calculadora a caja de herramientas profesional. Esta semana aprendes a usar módulos de la librería estándar (<b>random</b>, <b>statistics</b>, <b>sys</b>), instalar paquetes externos con <b>pip</b>, y crear tu propio módulo reutilizable <b>farmacia_utils.py</b>. Todo con contexto farmacéutico directo. <b>Prerrequisitos:</b> F0.2 W3 completa. <b>Carga real:</b> 5 sesiones × 45 min.",
+    pre:["F0.2.W3"],
+    days:[
+      {
+        title:"Día 1 · import, random — tu primera librería estándar",
+        checklist:["✅ F0.2 W3 Día 5 completado (try/except/raise sólidos)","✅ Notebook <code>F0.2_W3_final_pset.ipynb</code> accesible","✅ Colab abierto con Drive montado","⛔ Si no tienes W3 completa: exceptions son prerequisito directo del uso correcto de librerías"],
+        objetivo:"Al final de hoy entenderás qué es una librería, la diferencia entre <code>import random</code> y <code>from random import choice</code>, y usarás random para simular dispensación y selección aleatoria en farmacia.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=MztLZWibctI" target="_blank">https://www.youtube.com/watch?v=MztLZWibctI</a><br><b>Inicio:</b> desde el principio.<br><b>Stop exacto:</b> cuando aparezca en pantalla el título <b>"statistics"</b>. Si ves <code>import statistics</code> en código, retrocede 30 segundos.</li></ol><p>Una librería es como una caja de herramientas que alguien ya fabricó para ti. <code>import random</code> abre esa caja. <code>random.choice(lista)</code> saca una herramienta específica. <code>from random import choice</code> es lo mismo pero pone la herramienta directamente en tu mesa de trabajo.</p>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W4_dia1_random.ipynb</code> en <code>00_aprendizaje/F0.2_cs50p/W4/</code>.</li><li>Import básico:<pre><code>import random
+# random.randint(a, b) → entero aleatorio entre a y b (ambos incluidos)
+stock_simulado = random.randint(0, 50)
+print(f"Stock simulado: {stock_simulado} unidades")</code></pre></li><li>Simular variación de precios 7 días:<pre><code>precios = []
+precio_base = 1000
+for dia in range(1, 8):
+    variacion = random.randint(-50, 50)
+    precio_dia = precio_base + variacion
+    precios.append(precio_dia)
+    print(f"Día {dia}: \${precio_dia}")
+print(f"Rango: \${min(precios)} — \${max(precios)}")</code></pre></li><li>random.choice — selección aleatoria:<pre><code>from random import choice  # importa solo lo que necesito
+medicamentos_turno = ["Paracetamol", "Ibuprofeno", "Losartán", "Metformina"]
+seleccionado = choice(medicamentos_turno)
+print(f"Revisión aleatoria hoy: {seleccionado}")</code></pre></li><li>random.shuffle — mezclar lista de atención:<pre><code>import random
+cola_pacientes = ["P001", "P002", "P003", "P004", "P005"]
+random.shuffle(cola_pacientes)
+print(f"Nueva cola: {cola_pacientes}")
+# shuffle modifica la lista en el lugar (no devuelve nada)</code></pre></li></ol>`,
+        tecnica:"<b>Active Recall en papel.</b> Cierra Colab. Escribe: (1) ¿qué diferencia hay entre <code>import random</code> y <code>from random import choice</code>? (2) ¿qué hace random.shuffle diferente de random.choice?",
+        verif:`<ol><li>¿Por qué <code>x = random.shuffle(lista)</code> devuelve None en vez del resultado mezclado?</li><li>¿Qué pasa si haces <code>from random import choice</code> y después intentas usar <code>random.randint()</code>?</li><li>¿Cuándo usarías <code>import random</code> en vez de <code>from random import choice</code>?</li></ol>`,
+        answers:`<p><b>1. shuffle devuelve None:</b> shuffle modifica la lista "en el lugar" (in-place). En Python, las funciones que modifican in-place retornan None por convención. Para obtener la lista mezclada: primero shuffle, luego usa la variable original.</p><p><b>2. from random import choice + random.randint:</b> Da NameError: name 'random' is not defined. Con <code>from random import choice</code> solo importas choice, no el módulo completo. Para usar randint también necesitas <code>from random import randint</code> o <code>import random</code>.</p><p><b>3. import random vs from:</b> Usa <code>import random</code> cuando necesitas múltiples funciones del módulo. Usa <code>from random import X</code> cuando necesitas solo una o dos funciones y quieres escribir menos.</p><p><b>Señales de listo:</b> Distingues import random de from random import X · Entiendes por qué shuffle devuelve None · Sabes qué NameError esperar si mezclas los dos estilos</p>`,
+        template:`📆 [Fecha] — F0.2 W4 Día 1
+✅ Hecho: import random, randint, choice, shuffle con contexto farmacia
+🧠 Concepto que más me costó: [import vs from]
+⚠️ Trampa que evité o caí: [...]`,
+        trampa:"Hacer <code>from random import choice</code> y luego intentar <code>random.randint()</code> — NameError garantizado. Regla: si necesitas más de 2 funciones del mismo módulo, usa <code>import random</code> completo.",
+        claude:`Plantilla <b>Tutoría Activa</b>:<pre>[contexto fijo]
+Acabo de aprender import vs from X import Y en CS50P Week 4.
+Quiero entender el tradeoff de cada estilo con un ejemplo concreto
+de farmacia. Hazme 2 preguntas de verificación al final.</pre>`,
+        respaldo:"Notes oficiales CS50P W4: <a href='https://cs50.harvard.edu/python/notes/4/' target='_blank'>cs50.harvard.edu/python/notes/4/</a> — sección 'Libraries' hasta antes de 'statistics'."
+      },
+      {
+        title:"Día 2 · statistics + sys.argv — análisis de precios en CLI",
+        checklist:["✅ Notebook Día 1 accesible en Drive","✅ Entiendo import vs from X import Y","✅ Papel y lápiz al lado para Active Recall","⛔ Si fallaste 2+ preguntas del Día 1, repite ese día primero"],
+        objetivo:"Al final de hoy usarás statistics para analizar precios de medicamentos (media, mediana, stdev), y entenderás cómo sys.argv permite pasar datos desde la línea de comandos.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=MztLZWibctI" target="_blank">https://www.youtube.com/watch?v=MztLZWibctI</a><br>Retoma desde el título <b>"statistics"</b>.<br><b>Stop exacto:</b> cuando aparezca el título <b>"packages"</b> o veas <code>pip install</code> en pantalla, para.</li></ol><p><code>statistics.mean([500, 1200, 800])</code> = 833.3. La diferencia entre media y mediana importa en farmacia: si tienes 9 medicamentos baratos y 1 extremadamente caro, la media se dispara pero la mediana permanece estable.</p>`,
+        ejercicio:`<ol><li>Crea <code>F0.2_W4_dia2_statistics.ipynb</code>.</li><li>Análisis básico de precios:<pre><code>import statistics
+precios_pac = [450, 1200, 680, 3400, 520, 890, 670, 750, 480, 3200]
+print(f"Media:    \${statistics.mean(precios_pac):.0f}")
+print(f"Mediana:  \${statistics.median(precios_pac):.0f}")
+print(f"Stdev:    \${statistics.stdev(precios_pac):.0f}")
+print(f"Mín/Máx:  \${min(precios_pac)} / \${max(precios_pac)}")</code></pre></li><li>Análisis multi-medicamento con dict:<pre><code>inventario_precios = {
+    "Paracetamol": [480, 490, 510, 495, 505],
+    "Ibuprofeno":  [1150, 1200, 1180, 1220, 1190],
+    "Losartán":    [750, 720, 780, 740, 760]
+}
+for med, precios in inventario_precios.items():
+    print(f"{med}: media=\${statistics.mean(precios):.0f} | "
+          f"stdev=\${statistics.stdev(precios):.0f}")</code></pre></li><li>sys.argv — simulado en Colab (sys.argv no funciona nativamente en Colab como en terminal, pero podemos simular el patrón):<pre><code>import sys
+
+# En terminal real sería: python analisis.py 500 1200 800
+# En Colab simulamos los argumentos así:
+def analizar_precios(*precios_str):
+    try:
+        precios = [float(p) for p in precios_str]
+        print(f"Media: \${statistics.mean(precios):.0f}")
+        print(f"Mediana: \${statistics.median(precios):.0f}")
+    except ValueError:
+        print("❌ Todos los argumentos deben ser números")
+    except statistics.StatisticsError:
+        print("❌ Se necesitan al menos 2 precios para stdev")
+
+analizar_precios("500", "1200", "800", "abc")</code></pre>El patrón real de sys.argv lo usarás en F0.3.</li></ol>`,
+        tecnica:"<b>Feynman Inverso con Claude.</b> Al cierre: explícale a Claude en 3 frases la diferencia entre media y mediana, con un ejemplo de tu farmacia donde la mediana da mejor información que la media.",
+        verif:`<ol><li>¿Cuándo es más útil la mediana que la media para analizar precios de farmacia?</li><li>¿Qué hace <code>[float(p) for p in lista_strings]</code>?</li><li>¿Por qué statistics.stdev necesita mínimo 2 valores?</li></ol>`,
+        answers:`<p><b>1. Mediana vs media en farmacia:</b> Cuando hay outliers (medicamentos extremadamente caros o baratos que distorsionan el promedio). Ejemplo: 9 genéricos a $500 + 1 innovador a $50.000 → media $5.450 (irreal), mediana $500 (representativa del stock típico).</p><p><b>2. [float(p) for p in lista]:</b> List comprehension — crea una nueva lista aplicando float() a cada elemento de la lista original. Equivalente a un for loop que hace append, pero en una línea.</p><p><b>3. stdev necesita 2+ valores:</b> La desviación estándar mide la dispersión respecto a la media. Con un solo valor no hay dispersión posible — matemáticamente indefinida.</p><p><b>Señales de listo:</b> Calculas mean/median/stdev sobre una lista real · Entiendes cuándo cada métrica es más informativa · Sabes por qué StatisticsError puede aparecer</p>`,
+        template:`📆 [Fecha] — F0.2 W4 Día 2
+✅ Hecho: statistics sobre precios reales PAC, análisis multi-med, sys.argv patrón
+🧠 Insight: media vs mediana en precios farmacéuticos
+🤖 Feynman con Claude: ✅/❌ [qué detectó]`,
+        trampa:"Usar sys.argv directamente en Colab — devuelve la ruta de Colab, no tus argumentos. En Colab, simula con funciones como en el ejercicio. sys.argv funciona en Python local o en scripts .py ejecutados desde terminal.",
+        claude:`Plantilla <b>Feynman Inverso</b>:<pre>[contexto fijo]
+Te explico cuándo en farmacia la mediana es mejor que la media
+para analizar precios, con un ejemplo real de mi trabajo.
+NO me corrijas hasta que termine. Después díme: partes imprecisas,
+concepto que no mencioné, una pregunta.</pre>`,
+        respaldo:"Notes CS50P W4 — sección statistics: <a href='https://cs50.harvard.edu/python/notes/4/' target='_blank'>cs50.harvard.edu/python/notes/4/</a>"
+      },
+      {
+        title:"Día 3 · pip, PyPI y tu primer módulo propio: farmacia_utils.py",
+        checklist:["✅ Notebooks Días 1 y 2 accesibles","✅ Entiendo import, random, statistics","✅ Drive montado en Colab","⛔ Si no tienes Drive montado, hazlo ahora: from google.colab import drive; drive.mount('/content/drive')"],
+        objetivo:"Al final de hoy instalarás un paquete externo con pip, y crearás <code>farmacia_utils.py</code> — tu primer módulo propio con funciones reutilizables de QF que podrás importar en cualquier notebook.",
+        material:`<ol><li><b>Video:</b> <a href="https://www.youtube.com/watch?v=MztLZWibctI" target="_blank">https://www.youtube.com/watch?v=MztLZWibctI</a><br>Retoma desde el título <b>"packages"</b>.<br><b>Stop exacto:</b> al final del video.</li></ol><p>PyPI es el supermercado de librerías Python: más de 500.000 paquetes gratuitos. <code>pip install nombre</code> descarga e instala cualquiera en segundos. Tu propio módulo <code>farmacia_utils.py</code> es exactamente lo mismo que una librería — solo que la hiciste tú.</p>`,
+        ejercicio:`<ol><li>Instalar paquete con pip en Colab:<pre><code>!pip install cowsay  # el ! ejecuta comandos de terminal en Colab
+import cowsay
+cowsay.cow("Stock crítico: Paracetamol")</code></pre></li><li>Crear <code>farmacia_utils.py</code> en Drive:<pre><code>%%writefile /content/drive/MyDrive/ia-farmacia/00_aprendizaje/F0.2_cs50p/W4/farmacia_utils.py
+# farmacia_utils.py — Módulo de utilidades farmacéuticas
+# Creado: [fecha]
+
+import statistics
+
+def precio_con_margen(costo, margen_pct=30):
+    """Calcula precio de venta con margen. Default 30%."""
+    if costo <= 0:
+        raise ValueError(f"Costo debe ser positivo, recibido: {costo}")
+    return round(costo * (1 + margen_pct / 100), 0)
+
+def estadisticas_precio(lista_precios, nombre="medicamento"):
+    """Devuelve dict con stats básicas de una lista de precios."""
+    if len(lista_precios) < 2:
+        raise ValueError("Se necesitan al menos 2 precios")
+    return {
+        "nombre": nombre,
+        "media":   round(statistics.mean(lista_precios), 0),
+        "mediana": round(statistics.median(lista_precios), 0),
+        "stdev":   round(statistics.stdev(lista_precios), 0),
+        "min":     min(lista_precios),
+        "max":     max(lista_precios)
+    }
+
+def clasificar_stock(unidades):
+    """Clasifica nivel de stock según criterios PAC."""
+    if unidades == 0:    return "SIN STOCK"
+    if unidades < 5:     return "CRÍTICO"
+    if unidades < 20:    return "BAJO"
+    return "SUFICIENTE"</code></pre></li><li>Importar y usar tu módulo:<pre><code>import sys
+sys.path.insert(0, '/content/drive/MyDrive/ia-farmacia/00_aprendizaje/F0.2_cs50p/W4/')
+import farmacia_utils as fu
+
+precio = fu.precio_con_margen(800)
+print(f"Precio venta: \${precio}")
+
+stats = fu.estadisticas_precio([480, 520, 495, 510, 505], "Paracetamol")
+for k, v in stats.items():
+    print(f"  {k}: {v}")</code></pre></li></ol>`,
+        tecnica:"<b>Mini-proyecto de farmacia.</b> Agrega 2 funciones propias a farmacia_utils.py basadas en tu trabajo real en PAC o Curie. Ejemplo: calcular_copago(), verificar_receta_controlada().",
+        verif:`<ol><li>¿Qué hace %%writefile al inicio de una celda de Colab?</li><li>¿Por qué hay que hacer sys.path.insert() para importar tu módulo?</li><li>¿Qué ventaja tiene tener farmacia_utils.py en Drive vs en Colab local?</li></ol>`,
+        answers:`<p><b>1. %%writefile:</b> Es una "magic command" de Colab que escribe el contenido de la celda a un archivo en disco. Es la forma de crear archivos .py desde Colab.</p><p><b>2. sys.path.insert():</b> Python busca módulos en carpetas específicas (sys.path). Tu Drive no está ahí por defecto. sys.path.insert(0, ruta) le dice a Python "busca también aquí". El 0 significa "busca aquí primero".</p><p><b>3. Drive vs Colab local:</b> Colab elimina archivos locales al cerrar la sesión. En Drive, tu farmacia_utils.py persiste entre sesiones, entre computadores, y es tu código de producción.</p><p><b>Señales de listo:</b> Tienes farmacia_utils.py en Drive · Puedes importarlo con sys.path · Tiene al menos 5 funciones útiles para tu trabajo</p>`,
+        template:`📆 [Fecha] — F0.2 W4 Día 3
+✅ Hecho: pip install cowsay, farmacia_utils.py creado en Drive con 5 funciones
+🧠 Módulo propio importado y funcionando
+🤖 Code Review con Claude: ✅/❌ [observaciones]`,
+        trampa:"Usar %%writefile más de una vez para la misma ruta — sobreescribe sin avisar ni hacer merge. Para agregar funciones después: descarga el archivo, edita en local, re-sube. O usa str_replace en Colab.",
+        claude:`Plantilla <b>Code Review Junior</b>:<pre>[contexto fijo]
+Aquí está mi farmacia_utils.py. ¿Qué mejorarías?
+No me reescribas el código. Máximo 3 observaciones sobre:
+estructura, docstrings, manejo de errores.</pre>`,
+        respaldo:"Notes CS50P W4 — sección packages/PyPI: <a href='https://cs50.harvard.edu/python/notes/4/' target='_blank'>cs50.harvard.edu/python/notes/4/</a>"
+      },
+      {
+        title:"Día 4 · Problem Set 4 — Primera mitad",
+        checklist:["✅ Lecture W4 completa (Días 1-3 hechos)","✅ farmacia_utils.py creado en Drive","✅ Timer listo (30 min de pelea solitaria)","✅ Pestaña: <a href='https://cs50.harvard.edu/python/psets/4/' target='_blank'>cs50.harvard.edu/python/psets/4/</a>"],
+        objetivo:"Atacar los primeros 2 ejercicios del Problem Set 4. W4 introduce paquetes externos como emogi o cowsay — asegúrate de leer el enunciado antes de buscar qué instalar.",
+        material:`<p>Lee los ejercicios en <a href="https://cs50.harvard.edu/python/psets/4/" target="_blank">cs50.harvard.edu/python/psets/4/</a>. El pset puede requerir pip install de paquetes mencionados en el enunciado.</p>`,
+        ejercicio:`<p>⛔ <b>LÍNEA ROJA:</b> 30 min solo. Después → Pista no Solución.</p><ol><li>Lee el enunciado completo. Identifica si necesita pip install de algo.</li><li>Pseudocódigo con la estructura import + lógica antes de codear.</li><li>Código, ejecuta con los inputs de ejemplo del enunciado.</li><li>Nuevo error de W4: NameError por import faltante — si aparece, reconócelo y resuélvelo solo.</li><li>Guarda en <code>F0.2_W4_dia4_pset_parte1.ipynb</code>.</li></ol>`,
+        tecnica:"<b>Deliberate practice.</b> W4 introduce la lectura de documentación de paquetes externos. Si el enunciado menciona un paquete que no conoces, lee su README en PyPI antes de instalarlo.",
+        verif:`<ol><li>¿Cuántas veces rompiste la línea roja?</li><li>¿Tuviste un NameError por import faltante? ¿Cómo lo resolviste?</li><li>¿Leíste la doc del paquete antes de usarlo?</li></ol>`,
+        answers:`<p>No hay respuestas correctas — autodiagnóstico.</p><p><b>Señales exitosas:</b> ✅ Al menos 1 ejercicio completo · ✅ 30 min respetados · ✅ NameError resuelto solo si apareció · ✅ Usaste pip install correctamente</p>`,
+        template:`📆 [Fecha] — F0.2 W4 Día 4
+✅ Ejercicios intentados: [cuáles]
+✅ Resueltos solo: [cuáles]
+🤖 Resueltos con pista: [cuáles]
+⛔ Líneas rojas rotas: [0/1/2+]`,
+        trampa:"Buscar '[nombre ejercicio] cs50p solución' en Google. Es la trampa más común de W4 porque los psets son reconocibles. Si lo haces, el aprendizaje no ocurre y F0.3 será mucho más difícil.",
+        claude:`Solo después de 30 min. Plantilla <b>Pista no Solución</b>:<pre>[contexto fijo]
+30 min atascado en pset 4 ejercicio [nombre].
+Mi código: [...] Error o resultado: [...]
+1 pista conceptual, sin código.</pre>`,
+        respaldo:"Si el enunciado menciona un paquete desconocido: ve a pypi.org, busca el nombre del paquete, lee la sección 'Description' (5 min es suficiente)."
+      },
+      {
+        title:"Día 5 · Problem Set 4 — Cierre + Commit + Revisión espaciada W2",
+        checklist:["✅ Notebook Día 4 accesible","✅ farmacia_utils.py en Drive con funciones propias","✅ GitHub conectado desde Colab"],
+        objetivo:"Terminar ejercicios restantes del Pset 4, commitear a GitHub con mensaje descriptivo, auto-evaluar la semana, y hacer revisión espaciada W2 (10 min sobre loops).",
+        material:`<p>No hay material nuevo. Ejecución pura + cierre consciente.</p>`,
+        ejercicio:`<ol><li>Termina ejercicios pendientes (30 min solo).</li><li>Consolida en <code>F0.2_W4_final_pset.ipynb</code>.</li><li>Auto-evaluación:<pre># Auto-evaluación W4
+## Lo que aprendí: [...]
+## Lo que quedó débil: [...]
+## Estado de farmacia_utils.py: [funciones que tiene]
+## Uso de Claude hoy: [respetó línea roja?]</pre></li><li><b>Revisión espaciada W2 (10 min):</b> sin mirar, en papel: (1) while loop que cuente de 1 a 5, (2) for + if sobre dict de stock que imprima los críticos, (3) ¿qué hace continue?</li><li>Commit: <code>F0.2 W4: CS50P Week 4 Libraries pset completado + farmacia_utils.py</code></li><li>Actualiza README: <code>[x] F0.2 W4 — Libraries ← NUEVO</code></li></ol>`,
+        tecnica:"<b>Mini-proyecto integrador + revisión espaciada 2357 sobre W2.</b>",
+        verif:`<ol><li>Sin mirar: escribe la función estadisticas_precio() de farmacia_utils.py.</li><li>¿Diferencia entre <code>import random</code> y <code>from random import choice</code> en 1 frase?</li><li>¿Por qué farmacia_utils.py vive en Drive y no en Colab local?</li></ol>`,
+        answers:`<p><b>1. estadisticas_precio():</b><pre>def estadisticas_precio(lista_precios, nombre="medicamento"):
+    if len(lista_precios) < 2:
+        raise ValueError("Se necesitan al menos 2 precios")
+    return {
+        "media":   round(statistics.mean(lista_precios), 0),
+        "mediana": round(statistics.median(lista_precios), 0),
+        "stdev":   round(statistics.stdev(lista_precios), 0)
+    }</pre>Si no recordabas raise ValueError → repasa W3.</p><p><b>2. import vs from:</b> <code>import random</code> trae el módulo completo (accedes como random.X). <code>from random import choice</code> trae solo choice (accedes directamente como choice).</p><p><b>3. Drive:</b> Colab elimina archivos locales al cerrar. Drive persiste entre sesiones y entre computadores — es tu código de producción real.</p>`,
+        template:`📆 [Fecha] — F0.2 W4 Día 5 (CIERRE W4)
+✅ Ejercicios pset: X de total
+✅ Commit GitHub: hecho
+🧠 Aprendizaje principal: [módulo propio es una librería]
+📋 Revisión espaciada W2: ✅/❌ en [concepto]
+🔜 F0.2 W5 CS50P Week 5 - Unit Tests
+📋 ACCIÓN VIERNES: Cola Notion + pedir F0.2 W5`,
+        trampa:"Saltarte la revisión espaciada W2. Los loops son la base de pandas y de todos los ejercicios de datos que vienen. 10 min hoy = W2 sólido en 3 semanas más.",
+        claude:`Plantilla <b>Code Review Junior</b> sobre farmacia_utils.py completo.<br>Prompt sugerido:<pre>[contexto fijo]
+Aquí está mi farmacia_utils.py con todas las funciones que agregué esta semana.
+Dame un Code Review enfocado en: consistencia de manejo de errores,
+calidad de docstrings, y 1 función que agregarías. Máximo 4 observaciones.</pre>`,
+        respaldo:"Sin respaldo nuevo. Si no resolviste ningún ejercicio: escribe 'necesito pair programming para pset 4, no pistas'."
+      }
+    ]
+  },
+
+  { id:"F0.3", t:"Python sólido (huecos)", tr:"fund", sem:0, days_count:6, pre:["F0.2.W4"] },
+
+  { id:"F1.1", t:"CS50P Semanas 5–7", tr:"fund", sem:1, days_count:16, pre:["F0.3"] },
+  { id:"F1.2", t:"POO básico", tr:"fund", sem:1, days_count:6, pre:["F1.1"] },
+  { id:"F1.3", t:"Git + GitHub avanzado", tr:"fund", sem:1, days_count:4, pre:["F0.1"] },
+
+  { id:"D2.1", t:"Pandas", tr:"data", sem:2, days_count:10, pre:["D0.1","F0.3"], preDone:3, note:"3 días premarcados (Tarea Pandas 1 ya hecha)" },
+  { id:"D2.2", t:"Visualización", tr:"data", sem:2, days_count:7, pre:["D2.1"] },
+  { id:"D2.3", t:"SQL básico", tr:"data", sem:2, days_count:8, pre:["F1.1"] },
+
+  { id:"M3.1", t:"Estadística aplicada", tr:"ml", sem:3, days_count:8, pre:["D2.2"] },
+  { id:"M3.2", t:"Scikit-learn", tr:"ml", sem:3, days_count:10, pre:["M3.1"] },
+  { id:"M3.3", t:"Evaluación de modelos", tr:"ml", sem:3, days_count:6, pre:["M3.2"] },
+  { id:"FA3.1", t:"Dataset farmacia limpio", tr:"farm", sem:3, days_count:8, pre:["D2.1"] },
+  { id:"FA3.2", t:"Verificador de interacciones", tr:"farm", sem:3, days_count:10, pre:["M3.2","FA3.1"] },
+
+  { id:"M4.1", t:"LLMs fundamentos", tr:"ml", sem:4, days_count:8, pre:["F1.2"] },
+  { id:"M4.2", t:"Prompt engineering", tr:"ml", sem:4, days_count:6, pre:["M4.1"] },
+  { id:"M4.3", t:"RAG básico", tr:"ml", sem:4, days_count:10, pre:["M4.2"] },
+  { id:"V4.1", t:"NLP español chileno", tr:"voz", sem:4, days_count:8, pre:["M4.2"] },
+  { id:"FA4.1", t:"Chatbot farmacia prototipo", tr:"farm", sem:4, days_count:10, pre:["M4.3"] },
+  { id:"FA4.2", t:"NLP RCM/IFT MINSAL", tr:"farm", sem:4, days_count:8, pre:["V4.1","M4.2"] },
+
+  { id:"V5.1", t:"Whisper STT", tr:"voz", sem:5, days_count:8, pre:["M4.3","V4.1"] },
+  { id:"V5.2", t:"ElevenLabs/TTS", tr:"voz", sem:5, days_count:6, pre:["V5.1"] },
+  { id:"V5.3", t:"Pipeline de voz end-to-end", tr:"voz", sem:5, days_count:10, pre:["V5.2","FA4.1"] },
+  { id:"FA5.1", t:"Agente farmacia integrado", tr:"farm", sem:5, days_count:12, pre:["FA3.2","FA4.1"] },
+  { id:"FA5.2", t:"PubChem integrado", tr:"farm", sem:5, days_count:8, pre:["FA3.1"] },
+  { id:"FA5.3", t:"Stock IA + PubChem", tr:"farm", sem:5, days_count:12, pre:["FA5.1","FA5.2","M3.3"] },
+  { id:"CAP", t:"Capstone final", tr:"ml", sem:5, days_count:15, pre:["FA5.3","V5.3"] }
+];
+
+// ====== STATE ======
+let state = {};
+
+function dayCount(b) {
+  return b.days ? b.days.length : (b.days_count || 1);
+}
+
+async function loadState() {
+  try {
+    const r = await window.storage.get("malla_v4_state");
+    if (r && r.value) state = JSON.parse(r.value);
+  } catch (e) { state = {}; }
+  BLOCKS.forEach(b => {
+    const n = dayCount(b);
+    if (!state[b.id]) {
+      const days = new Array(n).fill(false);
+      if (b.preDone) for (let i=0;i<b.preDone;i++) days[i]=true;
+      state[b.id] = { days };
+    } else if (state[b.id].days.length !== n) {
+      const old = state[b.id].days;
+      const days = new Array(n).fill(false);
+      for (let i=0;i<Math.min(old.length,days.length);i++) days[i]=old[i];
+      state[b.id].days = days;
+    }
+  });
+}
+async function saveState() {
+  try { await window.storage.set("malla_v4_state", JSON.stringify(state)); }
+  catch (e) { console.error("save failed", e); }
+}
+
+// ====== HELPERS ======
+function blockStatus(b) {
+  const s = state[b.id];
+  if (!s) return "pending";
+  const done = s.days.filter(Boolean).length;
+  if (done === 0) return "pending";
+  if (done === dayCount(b)) return "done";
+  return "in_progress";
+}
+function prereqsMet(b) {
+  if (!b.pre || !b.pre.length) return true;
+  return b.pre.every(pid => {
+    const ps = state[pid];
+    if (!ps) return false;
+    return ps.days.every(Boolean);
+  });
+}
+
+// ====== RENDER GRID ======
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  // Headers
+  const corner = document.createElement("div");
+  corner.className = "grid-header";
+  corner.textContent = "Semestre";
+  grid.appendChild(corner);
+  ["🧱 Fund","📊 Datos","🤖 IA/ML","🎙️ Voz/NLP","💊 Farmacia"].forEach(name => {
+    const h = document.createElement("div");
+    h.className = "grid-header";
+    h.textContent = name;
+    grid.appendChild(h);
+  });
+  // Rows
+  const trackKeys = ["fund","data","ml","voz","farm"];
+  for (let s=0; s<SEMS.length; s++) {
+    const lbl = document.createElement("div");
+    lbl.className = "sem-label";
+    lbl.textContent = SEMS[s];
+    grid.appendChild(lbl);
+    trackKeys.forEach(tkey => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      // Bloques regulares del track
+      BLOCKS.filter(b => b.tr===tkey && b.sem===s).forEach(b => {
+        cell.appendChild(makeBlockEl(b));
+      });
+      // Meta (C0) entra en columna fund S0
+      if (tkey === "fund" && s === 0) {
+        BLOCKS.filter(b => b.tr === "meta" && b.sem === 0).forEach(b => {
+          const el = makeBlockEl(b);
+          el.style.background = "#fef3c7";
+          el.style.border = "1px dashed #f59e0b";
+          cell.appendChild(el);
+        });
+      }
+      grid.appendChild(cell);
+    });
+  }
+  renderStats();
+}
+
+function makeBlockEl(b) {
+  const el = document.createElement("div");
+  const trackCls = (b.tr === "meta") ? "t-meta" : ("t-" + b.tr);
+  el.className = "block " + trackCls;
+  const status = blockStatus(b);
+  if (status === "done") el.classList.add("done");
+  if (b.active) el.classList.add("active");
+  if (b.detailed) el.classList.add("detailed");
+  const done = state[b.id].days.filter(Boolean).length;
+  const total = dayCount(b);
+  el.innerHTML = `
+    <span class="bid">${b.id}${b.active ? " ⭐" : ""}${b.parallel ? " ⇌" : ""}</span>
+    <span class="btitle">${b.t}</span>
+    <span class="bdays">${total} días</span>
+    <span class="prog">${done}/${total}</span>
+  `;
+  el.onclick = () => openModal(b);
+  return el;
+}
+
+function renderStats() {
+  const total = BLOCKS.reduce((a,b)=>a+dayCount(b),0);
+  const done = BLOCKS.reduce((a,b)=>a+state[b.id].days.filter(Boolean).length,0);
+  const blocksDone = BLOCKS.filter(b=>blockStatus(b)==="done").length;
+  const blocksCurso = BLOCKS.filter(b=>blockStatus(b)==="in_progress").length;
+  const blocksAv = BLOCKS.filter(b=>blockStatus(b)!=="done" && prereqsMet(b)).length;
+  document.getElementById("s-prog").textContent = Math.round(done/total*100)+"%";
+  document.getElementById("s-done").textContent = blocksDone;
+  document.getElementById("s-curso").textContent = blocksCurso;
+  document.getElementById("s-av").textContent = blocksAv;
+  let current = 5;
+  for (let s=0; s<6; s++) {
+    const semBlocks = BLOCKS.filter(b=>b.sem===s);
+    if (semBlocks.some(b=>blockStatus(b)!=="done")) { current=s; break; }
+  }
+  document.getElementById("s-sem").textContent = "S"+current;
+}
+
+// ====== MODAL ======
+let currentBlock = null;
+function openModal(b) {
+  currentBlock = b;
+  const trackName = b.tr === "meta" ? "🤖 Meta-aprendizaje" :
+                    b.tr === "fund" ? "🧱 Fundamentos" :
+                    b.tr === "data" ? "📊 Datos" :
+                    b.tr === "ml"   ? "🤖 IA/ML" :
+                    b.tr === "voz"  ? "🎙️ Voz/NLP" :
+                    "💊 Farmacia";
+  document.getElementById("m-title").textContent = `${b.id} · ${b.t}`;
+  const pre = b.pre && b.pre.length ? ` · Prereqs: ${b.pre.join(", ")}` : "";
+  const note = b.note ? ` · ${b.note}` : "";
+  const par = b.parallel ? " · ⇌ EN PARALELO (fuera de hora sagrada)" : "";
+  document.getElementById("m-meta").textContent = `${trackName} · S${b.sem} · ${dayCount(b)} días${pre}${par}${note}`;
+  document.getElementById("m-intro").innerHTML = b.intro || "<i>Plan macro disponible. Para detalle día por día, pídelo el viernes con el prompt de la Cola.</i>";
+
+  const container = document.getElementById("m-days");
+  container.innerHTML = "";
+
+  if (b.detailed && b.days) {
+    b.days.forEach((day, i) => {
+      const acc = document.createElement("div");
+      acc.className = "day-accordion";
+      const checked = state[b.id].days[i];
+      acc.innerHTML = `
+        <div class="day-header ${checked?'checked':''}">
+          <input type="checkbox" ${checked?'checked':''} data-i="${i}">
+          <span class="day-title">${day.title}</span>
+          <span class="toggle-icon">▶</span>
+        </div>
+        <div class="day-body">
+          ${day.checklist ? `<div class="day-section checklist"><h4>🚦 Antes de empezar</h4><ul>${day.checklist.map(c=>'<li>'+c+'</li>').join('')}</ul></div>` : ''}
+          <div class="day-section objetivo">
+            <h4>🎯 Objetivo de la sesión</h4>
+            <p>${day.objetivo}</p>
+          </div>
+          <div class="day-section">
+            <h4>📚 Material principal (≈10-15 min)</h4>
+            ${day.material}
+          </div>
+          <div class="day-section">
+            <h4>✏️ Ejercicio guiado (≈30-35 min)</h4>
+            ${day.ejercicio}
+          </div>
+          <div class="day-section tecnica">
+            <h4>🧠 Técnica de aprendizaje</h4>
+            <p>${day.tecnica}</p>
+          </div>
+          <div class="day-section">
+            <h4>✅ Verificación de comprensión</h4>
+            ${day.verif}
+          </div>
+          ${day.answers ? `<details class="day-answers"><summary>🔐 Respuestas y autocorrección (solo después de intentar)</summary><div class="day-section">${day.answers}</div></details>` : ''}
+          <div class="day-section">
+            <h4>📝 Template Archivo de Sesiones</h4>
+            <div class="template">${day.template}</div>
+          </div>
+          <div class="day-section trampa">
+            <h4>⚠️ Trampa común</h4>
+            <p>${day.trampa}</p>
+          </div>
+          <div class="day-section claude">
+            <h4>🤖 Uso de Claude del día</h4>
+            <p>${day.claude}</p>
+          </div>
+          <div class="day-section">
+            <h4>🔗 Recurso de respaldo</h4>
+            <p>${day.respaldo}</p>
+          </div>
+        </div>
+      `;
+      // Click en header (no checkbox) → expandir
+      const header = acc.querySelector(".day-header");
+      const cb = acc.querySelector("input[type=checkbox]");
+      header.onclick = (e) => {
+        if (e.target === cb) return;
+        acc.classList.toggle("open");
+      };
+      cb.onchange = async (e) => {
+        e.stopPropagation();
+        state[b.id].days[i] = cb.checked;
+        header.classList.toggle("checked", cb.checked);
+        await saveState();
+        renderGrid();
+      };
+      container.appendChild(acc);
+    });
+  } else {
+    // Bloque sin detalle: aviso + prompt
+    const notice = document.createElement("div");
+    notice.className = "no-detail-notice";
+    notice.innerHTML = `
+      <strong>📋 Este bloque aún no tiene detalle día por día</strong>
+      Plan macro: <b>${dayCount(b)} días</b>${b.note ? ` · ${b.note}` : ""}<br><br>
+      Para pedir el detalle el viernes, copia este prompt y pégalo en chat nuevo con Claude Opus dentro del proyecto:
+      <br>
+      <code>Detalla el bloque ${b.id} (${b.t}) siguiendo el formato de D0.1/C0/F0.1 con las 9 secciones por día. Lee la cola en https://www.notion.so/33c9a86ba8ec819ea562d1e4a1f6acd4 para contexto.</code>
+    `;
+    container.appendChild(notice);
+  }
+
+  document.getElementById("modal-bg").classList.add("open");
+  document.getElementById("modal-bg").scrollTop = 0;
+}
+
+function closeModal() {
+  document.getElementById("modal-bg").classList.remove("open");
+}
+document.getElementById("modal-bg").onclick = (e) => {
+  if (e.target.id === "modal-bg") closeModal();
+};
+
+document.getElementById("btn-copy").onclick = () => {
+  if (!currentBlock) return;
+  const b = currentBlock;
+  const total = dayCount(b);
+  const prompt = `Agenda en Google Calendar los ${total} días del bloque ${b.id} (${b.t}) en sub-eventos de 45 min dentro de mi ventana 19:00–19:45 L-V (no duplicar el bloque recurrente 18:30–21:00).`;
+  navigator.clipboard.writeText(prompt).then(()=>{
+    alert("Prompt copiado.");
+  });
+};
+
+// ====== INIT ======
+(async () => {
+  await loadState();
+  renderGrid();
+})();
+</script>
+</body>
+</html>

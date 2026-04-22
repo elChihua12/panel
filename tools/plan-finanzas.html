@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Financiero — Chihua12</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b12;
+  --s1: #0e1221;
+  --s2: #141928;
+  --card: #111522;
+  --border: #1e2640;
+  --border2: #2a3358;
+  --lime: #b8ff3c;
+  --cyan: #22d3ee;
+  --pink: #f472b6;
+  --amber: #fbbf24;
+  --red: #ff4d4d;
+  --green: #34d399;
+  --muted: #5a6485;
+  --text: #dde3f0;
+  --text2: #a0aac0;
+  --mono: 'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  min-height: 100vh;
+}
+
+/* ── LAYOUT ── */
+.shell { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--s1);
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); }
+.sidebar-logo .name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; color: var(--lime); line-height: 1.2; }
+.sidebar-logo .sub { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+.nav { padding: 16px 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px; font-size: 0.8rem; font-weight: 500;
+  color: var(--muted); cursor: pointer; transition: all .15s;
+  border-left: 2px solid transparent;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,.03); }
+.nav-item.active { color: var(--lime); border-left-color: var(--lime); background: rgba(184,255,60,.05); font-weight: 600; }
+.nav-icon { font-size: 1rem; width: 18px; text-align: center; }
+.nav-divider { height: 1px; background: var(--border); margin: 8px 20px; }
+
+/* MAIN */
+.main { flex: 1; padding: 32px 28px; overflow-x: hidden; }
+
+/* SECTIONS */
+.section { display: none; }
+.section.active { display: block; }
+
+/* PAGE HEADER */
+.page-hd { margin-bottom: 28px; }
+.page-hd .eyebrow { font-size: 0.67rem; letter-spacing: .18em; text-transform: uppercase; color: var(--lime); font-weight: 700; margin-bottom: 6px; }
+.page-hd h2 { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; line-height: 1.15; }
+.page-hd p { color: var(--text2); font-size: 0.83rem; margin-top: 6px; max-width: 560px; line-height: 1.6; }
+
+/* GRID */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+@media(max-width:900px) { .sidebar { display: none; } .g3,.g4 { grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px) { .g2,.g3,.g4 { grid-template-columns: 1fr; } .main { padding: 20px 14px; } }
+
+/* CARD */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.card-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+.card-title { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.card-title .ic { font-size: 1.1rem; }
+
+/* KPIS */
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.kpi-lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 6px; }
+.kpi-val { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; line-height: 1; }
+.kpi-sub { font-size: 0.72rem; color: var(--text2); margin-top: 5px; }
+.kpi.accent-lime { border-color: rgba(184,255,60,.3); background: rgba(184,255,60,.04); }
+.kpi.accent-red { border-color: rgba(255,77,77,.3); background: rgba(255,77,77,.04); }
+.kpi.accent-cyan { border-color: rgba(34,211,238,.3); background: rgba(34,211,238,.04); }
+.kpi.accent-amber { border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.04); }
+
+/* TAGS */
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 20px; font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.tag-red { background: rgba(255,77,77,.12); color: var(--red); border: 1px solid rgba(255,77,77,.3); }
+.tag-amber { background: rgba(251,191,36,.12); color: var(--amber); border: 1px solid rgba(251,191,36,.3); }
+.tag-green { background: rgba(52,211,153,.12); color: var(--green); border: 1px solid rgba(52,211,153,.3); }
+.tag-cyan { background: rgba(34,211,238,.12); color: var(--cyan); border: 1px solid rgba(34,211,238,.3); }
+.tag-muted { background: rgba(255,255,255,.06); color: var(--text2); border: 1px solid var(--border); }
+
+/* BADGE PRIO */
+.prio { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.72rem; flex-shrink: 0; }
+
+/* TABLE */
+.tbl { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.tbl th { text-align: left; padding: 9px 12px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 600; }
+.tbl td { padding: 11px 12px; border-bottom: 1px solid rgba(30,38,64,.7); vertical-align: middle; }
+.tbl tr:hover td { background: rgba(255,255,255,.02); }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tfoot td { font-weight: 700; color: var(--lime); background: rgba(184,255,60,.04) !important; border-top: 1px solid var(--border2); }
+
+/* PROGRESS */
+.prog-wrap { background: rgba(255,255,255,.06); border-radius: 6px; height: 6px; overflow: hidden; margin-top: 5px; }
+.prog-fill { height: 100%; border-radius: 6px; transition: width .5s; }
+
+/* ALERT */
+.alert { border-radius: 10px; padding: 12px 15px; font-size: 0.8rem; line-height: 1.6; margin-bottom: 14px; }
+.alert-info { background: rgba(34,211,238,.07); border: 1px solid rgba(34,211,238,.25); }
+.alert-warn { background: rgba(251,191,36,.07); border: 1px solid rgba(251,191,36,.25); }
+.alert-red { background: rgba(255,77,77,.07); border: 1px solid rgba(255,77,77,.25); }
+.alert-lime { background: rgba(184,255,60,.07); border: 1px solid rgba(184,255,60,.25); }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 20px; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 1px; background: var(--border2); }
+.tl-item { position: relative; margin-bottom: 20px; }
+.tl-item::before { content: ''; position: absolute; left: -17px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--border2); border: 2px solid var(--bg); }
+.tl-item.done::before { background: var(--lime); }
+.tl-item.active-now::before { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.tl-item.future::before { background: var(--muted); }
+.tl-date { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-bottom: 3px; }
+.tl-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; }
+.tl-body { font-size: 0.78rem; color: var(--text2); margin-top: 4px; line-height: 1.5; }
+.tl-amount { font-family: var(--mono); font-size: 0.82rem; color: var(--lime); font-weight: 500; }
+
+/* BUDGET ROWS */
+.brow { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(30,38,64,.6); font-size: 0.82rem; }
+.brow:last-child { border-bottom: none; }
+.brow .lbl { color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.brow .amt { font-family: var(--mono); font-weight: 500; }
+.brow.total { font-weight: 700; margin-top: 4px; border-top: 1px solid var(--border2); border-bottom: none; padding-top: 10px; }
+
+/* MONTH TABLE */
+.month-tbl { overflow-x: auto; }
+.month-tbl table { min-width: 700px; }
+.month-tbl .tbl td:first-child { font-weight: 600; font-size: 0.78rem; }
+.month-highlight { background: rgba(184,255,60,.08) !important; }
+.zero { color: var(--muted) !important; font-style: italic; }
+
+/* DONUT CHART via CSS */
+.donut-wrap { display: flex; align-items: center; gap: 20px; }
+.donut { width: 100px; height: 100px; border-radius: 50%; flex-shrink: 0; }
+.legend { display: flex; flex-direction: column; gap: 7px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* COMPARISON CARDS */
+.cmp-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.cmp-card { background: var(--s2); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; position: relative; }
+.cmp-card.best { border-color: var(--lime); }
+.best-ribbon { position: absolute; top: -1px; right: 14px; background: var(--lime); color: #000; font-size: 0.62rem; font-weight: 800; padding: 2px 9px; border-radius: 0 0 8px 8px; text-transform: uppercase; letter-spacing: .05em; }
+@media(max-width:700px) { .cmp-grid { grid-template-columns: 1fr; } }
+
+/* INCOME SOURCES */
+.income-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.income-bar .bar-bg { flex: 1; background: rgba(255,255,255,.06); border-radius: 4px; height: 8px; }
+.income-bar .bar-fg { height: 100%; border-radius: 4px; }
+.income-bar .pct { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); min-width: 36px; text-align: right; }
+
+/* MOBILE NAV */
+.mobile-nav { display: none; background: var(--s1); border-bottom: 1px solid var(--border); padding: 8px 14px; gap: 4px; flex-wrap: wrap; }
+@media(max-width:900px) { .mobile-nav { display: flex; } }
+.mobile-nav button { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.72rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.mobile-nav button.active { background: var(--lime); color: #000; border-color: var(--lime); font-weight: 700; }
+
+.mono { font-family: var(--mono); }
+.sep { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.mt { margin-top: 14px; }
+
+/* SCROLL INDICATOR */
+.scroll-wrap { overflow-x: auto; }
+
+/* chip */
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 8px; font-size: 0.72rem; background: rgba(255,255,255,.05); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="mobile-nav" id="mnav">
+  <button class="active" onclick="nav('resumen',this)">📊 Resumen</button>
+  <button onclick="nav('deudas',this)">💳 Deudas</button>
+  <button onclick="nav('avalancha',this)">🎯 Avalancha</button>
+  <button onclick="nav('presupuesto',this)">💰 Presupuesto</button>
+  <button onclick="nav('50m',this)">🚀 Plan 50M</button>
+</div>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="name">Bastián Gárate</div>
+      <div class="sub">Plan Financiero · Mar 2026</div>
+    </div>
+    <div class="nav">
+      <div class="nav-item active" onclick="nav('resumen',this)"><span class="nav-icon">📊</span>Resumen</div>
+      <div class="nav-item" onclick="nav('deudas',this)"><span class="nav-icon">💳</span>Mis Deudas</div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" onclick="nav('avalancha',this)"><span class="nav-icon">🎯</span>Plan Avalancha</div>
+      <div class="nav-item" onclick="nav('presupuesto',this)"><span class="nav-icon">💰</span>Presupuesto</div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" onclick="nav('50m',this)"><span class="nav-icon">🚀</span>Estrategia $50M</div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ═══════════════════ RESUMEN ═══════════════════ -->
+    <section class="section active" id="s-resumen">
+      <div class="page-hd">
+        <div class="eyebrow">Estado de Cuenta · Febrero 2026</div>
+        <h2>Panel General</h2>
+        <p>Visión ejecutiva de ingresos, compromisos y el camino a libertad financiera.</p>
+      </div>
+
+      <div class="g4" style="margin-bottom:14px">
+        <div class="kpi accent-lime">
+          <div class="kpi-lbl">Ingreso Neto Total</div>
+          <div class="kpi-val" style="color:var(--lime)">$3.964.000</div>
+          <div class="kpi-sub">3 trabajos + arriendo</div>
+        </div>
+        <div class="kpi accent-red">
+          <div class="kpi-lbl">Egresos Comprometidos</div>
+          <div class="kpi-val" style="color:var(--red)">$2.821.706</div>
+          <div class="kpi-sub">71,2% del ingreso</div>
+        </div>
+        <div class="kpi accent-cyan">
+          <div class="kpi-lbl">Margen para Atacar</div>
+          <div class="kpi-val" style="color:var(--cyan)">$1.142.294</div>
+          <div class="kpi-sub">BCI + Santander</div>
+        </div>
+        <div class="kpi accent-amber">
+          <div class="kpi-lbl">Deuda "Cara" Total</div>
+          <div class="kpi-val" style="color:var(--amber)">$5.560.783</div>
+          <div class="kpi-sub">CAE 51–54% · prioridad máxima</div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <!-- INGRESOS -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title"><span class="ic">💼</span>Fuentes de Ingreso</div>
+            <span class="tag tag-green">$3.964.000/mes</span>
+          </div>
+          <div class="income-bar">
+            <div style="font-size:0.78rem;min-width:130px;color:var(--text2)">Farmacia Popular</div>
+            <div class="bar-bg"><div class="bar-fg" style="width:53.2%;background:var(--lime)"></div></div>
+            <div class="pct">53,2%</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:10px;padding-left:130px">$2.110.000 · fijo</div>
+          <div class="income-bar">
+            <div style="font-size:0.78rem;min-width:130px;color:var(--text2)">Farmacias Curie</div>
+            <div class="bar-bg"><div class="bar-fg" style="width:21.8%;background:var(--cyan)"></div></div>
+            <div class="pct">21,8%</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:10px;padding-left:130px">$864.000 · variable</div>
+          <div class="income-bar">
+            <div style="font-size:0.78rem;min-width:130px;color:var(--text2)">FarQFar</div>
+            <div class="bar-bg"><div class="bar-fg" style="width:13.9%;background:var(--pink)"></div></div>
+            <div class="pct">13,9%</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:10px;padding-left:130px">$550.000 · variable</div>
+          <div class="income-bar">
+            <div style="font-size:0.78rem;min-width:130px;color:var(--text2)">HHEE + Arriendo</div>
+            <div class="bar-bg"><div class="bar-fg" style="width:8.6%;background:var(--amber)"></div></div>
+            <div class="pct">8,6%</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-bottom:6px;padding-left:130px">$340.000 · fijo</div>
+          <div class="alert alert-warn" style="margin-top:10px;margin-bottom:0">
+            ⚠️ <strong>Recordatorio SII:</strong> Con 3 empleadores debes hacer Reliquidación Anual. Reserva ~$200.000/mes para diferencias de impuesto.
+          </div>
+        </div>
+
+        <!-- DEUDA STATUS -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title"><span class="ic">📉</span>Estado de Deudas</div>
+            <span class="tag tag-amber">8 productos</span>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(255,77,77,.2);color:var(--red)">1</div>BCI ···7104</div>
+            <div><span class="tag tag-red" style="margin-right:6px">CAE 54,1%</span><span class="mono">$1.095.895</span></div>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(255,77,77,.15);color:var(--red)">2</div>Santander ···4094</div>
+            <div><span class="tag tag-red" style="margin-right:6px">CAE 51,1%</span><span class="mono">$4.464.888</span></div>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(251,191,36,.15);color:var(--amber)">3</div>BE ···8665 (papá)</div>
+            <div><span class="tag tag-amber" style="margin-right:6px">Jun 2026</span><span class="mono">$2.190.019</span></div>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(34,211,238,.1);color:var(--cyan)">4</div>BE ···2716 (papá)</div>
+            <div><span class="tag tag-cyan" style="margin-right:6px">1,59%/mes</span><span class="mono">$2.860.722</span></div>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(90,100,133,.2);color:var(--muted)">5</div>Pie crédito</div>
+            <div><span class="tag tag-muted" style="margin-right:6px">Dic 2027</span><span class="mono">$6.000.000</span></div>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(90,100,133,.2);color:var(--muted)">6</div>Cto. BE 2</div>
+            <div><span class="tag tag-muted" style="margin-right:6px">Sep 2027</span><span class="mono">$6.885.000</span></div>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(90,100,133,.2);color:var(--muted)">7</div>Cto. BE 1</div>
+            <div><span class="tag tag-muted" style="margin-right:6px">Mar 2028</span><span class="mono">$13.485.000</span></div>
+          </div>
+          <div class="brow">
+            <div class="lbl"><div class="prio" style="background:rgba(90,100,133,.2);color:var(--muted)">—</div>Hipoteca</div>
+            <div><span class="tag tag-muted" style="margin-right:6px">2028+</span><span class="mono">$13.200.000</span></div>
+          </div>
+          <hr class="sep">
+          <div class="brow total">
+            <div class="lbl">DEUDA TOTAL</div>
+            <div class="mono" style="color:var(--red)">$50.181.624</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HITOS -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:18px"><span class="ic">🗺️</span>Hitos del Plan — Mar 2026 → Dic 2026</div>
+        <div class="g2">
+          <div>
+            <div class="tl-item active-now">
+              <div class="tl-date">Abr – May 2026</div>
+              <div class="tl-title">Fase 1: Liquidar BCI</div>
+              <div class="tl-body">$700.000/mes → saldo $1.095.895. <span class="tl-amount">Liquidada en 2 meses.</span></div>
+            </div>
+            <div class="tl-item future">
+              <div class="tl-date">Jun 2026</div>
+              <div class="tl-title">BE ···8665 termina cuotas</div>
+              <div class="tl-body">Se libera $422.443/mes. Todo fluye a Santander. <span class="tl-amount">+$422K disponibles.</span></div>
+            </div>
+            <div class="tl-item future">
+              <div class="tl-date">Jun – Nov 2026</div>
+              <div class="tl-title">Fase 2: Demoler Santander</div>
+              <div class="tl-body">$1.007.000–$1.142.294/mes. <span class="tl-amount">Liquidada ~Nov 2026.</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="tl-item future">
+              <div class="tl-date">Oct – Dic 2026</div>
+              <div class="tl-title">Margen libre sube a $2M+</div>
+              <div class="tl-body">Sin tarjetas caras. Destinar a fondo farmacia y fondo propiedad.</div>
+            </div>
+            <div class="tl-item future">
+              <div class="tl-date">Mar 2027</div>
+              <div class="tl-title">BE ···2716 termina</div>
+              <div class="tl-body">Se libera $234.263/mes adicionales. <span class="tl-amount">Margen ~$2.3M/mes.</span></div>
+            </div>
+            <div class="tl-item future">
+              <div class="tl-date">2027–2028</div>
+              <div class="tl-title">Créditos consumo finalizan</div>
+              <div class="tl-body">Pie + BE2 + BE1 terminan en cascada. Queda solo la hipoteca.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ DEUDAS ═══════════════════ -->
+    <section class="section" id="s-deudas">
+      <div class="page-hd">
+        <div class="eyebrow">Análisis de Portafolio · Feb 2026</div>
+        <h2>Tabla de Deudas</h2>
+        <p>Ordenada por prioridad Avalancha: mayor CAE primero. Hipoteca excluida de prepago.</p>
+      </div>
+
+      <div class="alert alert-red">
+        🚨 <strong>BCI ···7104:</strong> Saldo $1.095.895 supera el cupo de $1.000.000. Tasa 3,33%/mes (CAE 54,1%). Cada mes que pasa te cuesta ~$36.500 en intereses puros.
+      </div>
+      <div class="alert alert-warn">
+        ⚠️ <strong>Santander ···4094:</strong> El pago mínimo ($87.100) NO cubre los intereses mensuales ($149.574). El saldo <strong>crece</strong> si solo pagas el mínimo. Mínimo real necesario: ~$150.000.
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">💳</span>Tarjetas — Prioridad de Ataque</div>
+          <span class="tag tag-red">Orden Avalancha</span>
+        </div>
+        <div class="scroll-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Prio.</th><th>Tarjeta</th><th>Saldo Vigente</th><th>Cupo Total</th>
+              <th>Tasa Men.</th><th>CAE Anual</th><th>Pagar hasta</th>
+              <th>Cuota Propuesta</th><th>Meses Liq.</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="prio" style="background:rgba(255,77,77,.2);color:var(--red)">1</div></td>
+              <td><strong>BCI Mastercard ···7104</strong></td>
+              <td class="mono" style="color:var(--red)">$1.095.895</td>
+              <td class="mono">$1.000.000</td>
+              <td class="mono" style="color:var(--red)">3,33%</td>
+              <td class="mono" style="color:var(--red)">54,11%</td>
+              <td>05/03/2026</td>
+              <td class="mono" style="color:var(--lime)"><strong>$700.000</strong></td>
+              <td><strong>2 meses</strong></td>
+              <td><span class="tag tag-red">🚨 Urgente</span></td>
+            </tr>
+            <tr>
+              <td><div class="prio" style="background:rgba(255,77,77,.15);color:var(--red)">2</div></td>
+              <td><strong>Santander VISA ···4094</strong></td>
+              <td class="mono" style="color:var(--red)">$4.464.888</td>
+              <td class="mono">$4.400.000</td>
+              <td class="mono" style="color:var(--amber)">3,35%</td>
+              <td class="mono" style="color:var(--amber)">51,10%</td>
+              <td>10/03/2026</td>
+              <td class="mono" style="color:var(--lime)"><strong>$442.294 → $1.142.294</strong></td>
+              <td><strong>8 meses</strong></td>
+              <td><span class="tag tag-red">⚠️ Crece si pagas mín.</span></td>
+            </tr>
+            <tr>
+              <td><div class="prio" style="background:rgba(251,191,36,.15);color:var(--amber)">3</div></td>
+              <td><strong>BE MC ···8665</strong> (papá)</td>
+              <td class="mono">$2.190.019</td>
+              <td class="mono">$2.000.000</td>
+              <td class="mono">2,56%</td>
+              <td class="mono">37,57%</td>
+              <td>05/03/2026</td>
+              <td class="mono" style="color:var(--lime)"><strong>$422.443</strong></td>
+              <td>2 meses</td>
+              <td><span class="tag tag-amber">⏳ Cuotas fijas</span></td>
+            </tr>
+            <tr>
+              <td><div class="prio" style="background:rgba(34,211,238,.1);color:var(--cyan)">4</div></td>
+              <td><strong>BE VISA ···2716</strong> (papá)</td>
+              <td class="mono">$2.860.722</td>
+              <td class="mono">$3.000.000</td>
+              <td class="mono" style="color:var(--green)">1,59%</td>
+              <td class="mono" style="color:var(--green)">19,08%</td>
+              <td>11/03/2026</td>
+              <td class="mono"><strong>$234.263</strong></td>
+              <td>11 meses</td>
+              <td><span class="tag tag-green">✓ No prepagar</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">TOTAL TARJETAS</td>
+              <td class="mono">$10.611.524</td>
+              <td colspan="4"></td>
+              <td class="mono">$1.799.000/mes máx.</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">📋</span>Créditos — Continuar Cuotas</div>
+          <span class="tag tag-muted">Sin prepago prioritario</span>
+        </div>
+        <div class="scroll-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Crédito</th><th>Cuota Mensual</th><th>Saldo Vigente</th><th>Fin Estimado</th><th>Estrategia</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hipoteca</strong></td>
+              <td class="mono">$400.000</td>
+              <td class="mono">$13.200.000</td>
+              <td>2028+</td>
+              <td><span class="tag tag-muted">Mantener — tasa baja</span></td>
+            </tr>
+            <tr>
+              <td><strong>Crédito BancoEstado 1</strong></td>
+              <td class="mono">$435.000</td>
+              <td class="mono">$13.485.000</td>
+              <td>Mar 2028</td>
+              <td><span class="tag tag-muted">Evaluar prepago con 50M</span></td>
+            </tr>
+            <tr>
+              <td><strong>Crédito BancoEstado 2</strong></td>
+              <td class="mono">$405.000</td>
+              <td class="mono">$6.885.000</td>
+              <td>Sep 2027</td>
+              <td><span class="tag tag-muted">Dejar terminar (~6 cuotas)</span></td>
+            </tr>
+            <tr>
+              <td><strong>Pie (crédito)</strong></td>
+              <td class="mono">$300.000</td>
+              <td class="mono">$6.000.000</td>
+              <td>Dic 2027</td>
+              <td><span class="tag tag-muted">Dejar terminar (~5 cuotas)</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>TOTAL CRÉDITOS</td>
+              <td class="mono">$1.540.000/mes</td>
+              <td class="mono">$39.570.000</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ AVALANCHA ═══════════════════ -->
+    <section class="section" id="s-avalancha">
+      <div class="page-hd">
+        <div class="eyebrow">Método Avalancha · Mayor tasa primero</div>
+        <h2>Plan de Pago Mensual</h2>
+        <p>Distribución óptima mes a mes. Cada cuota liberada se acumula sobre la siguiente deuda.</p>
+      </div>
+
+      <div class="g3" style="margin-bottom:14px">
+        <div class="kpi accent-lime">
+          <div class="kpi-lbl">Interés mensual BCI (ahorrando)</div>
+          <div class="kpi-val" style="color:var(--lime)">~$36.500</div>
+          <div class="kpi-sub">cada mes que no pagas</div>
+        </div>
+        <div class="kpi accent-amber">
+          <div class="kpi-lbl">Interés mensual Santander</div>
+          <div class="kpi-val" style="color:var(--amber)">~$149.600</div>
+          <div class="kpi-sub">pago mínimo no alcanza</div>
+        </div>
+        <div class="kpi accent-cyan">
+          <div class="kpi-lbl">Margen libre desde Oct 2026</div>
+          <div class="kpi-val" style="color:var(--cyan)">~$2.000.000</div>
+          <div class="kpi-sub">por mes hacia metas futuras</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">📅</span>Distribución Mensual Óptima</div>
+          <span class="tag tag-lime" style="background:rgba(184,255,60,.12);color:var(--lime);border:1px solid rgba(184,255,60,.3)">Abr – Dic 2026</span>
+        </div>
+        <div class="month-tbl">
+        <table class="tbl" style="min-width:780px">
+          <thead>
+            <tr>
+              <th>Compromiso</th>
+              <th>Abr 26</th><th>May 26</th><th>Jun 26</th>
+              <th>Jul 26</th><th>Ago 26</th><th>Sep 26</th>
+              <th>Oct 26</th><th>Nov 26</th><th>Dic 26</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:rgba(184,255,60,.03)">
+              <td><strong>INGRESOS</strong></td>
+              <td class="mono">3.964.000</td><td class="mono">3.964.000</td><td class="mono">4.547.000</td>
+              <td class="mono">4.547.000</td><td class="mono">3.947.000</td><td class="mono">4.135.000</td>
+              <td class="mono">4.198.000</td><td class="mono">4.198.000</td><td class="mono">4.102.000</td>
+            </tr>
+            <tr><td colspan="10" style="padding:4px 12px;font-size:0.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.2)">Créditos Fijos</td></tr>
+            <tr>
+              <td>Hipoteca</td>
+              <td class="mono">400.000</td><td class="mono">400.000</td><td class="mono">400.000</td>
+              <td class="mono">400.000</td><td class="mono">400.000</td><td class="mono">400.000</td>
+              <td class="mono">400.000</td><td class="mono">400.000</td><td class="mono">400.000</td>
+            </tr>
+            <tr>
+              <td>Crédito BE 1</td>
+              <td class="mono">435.000</td><td class="mono">435.000</td><td class="mono">435.000</td>
+              <td class="mono">435.000</td><td class="mono">435.000</td><td class="mono">435.000</td>
+              <td class="mono">435.000</td><td class="mono">435.000</td><td class="mono">435.000</td>
+            </tr>
+            <tr>
+              <td>Crédito BE 2</td>
+              <td class="mono">405.000</td><td class="mono">405.000</td><td class="mono">405.000</td>
+              <td class="mono">405.000</td><td class="mono">405.000</td><td class="mono">405.000</td>
+              <td class="mono">405.000</td><td class="mono">405.000</td><td class="mono">405.000</td>
+            </tr>
+            <tr>
+              <td>Pie (crédito)</td>
+              <td class="mono">300.000</td><td class="mono">300.000</td><td class="mono">300.000</td>
+              <td class="mono">300.000</td><td class="mono">300.000</td><td class="mono">300.000</td>
+              <td class="mono">300.000</td><td class="mono">300.000</td><td class="mono">300.000</td>
+            </tr>
+            <tr><td colspan="10" style="padding:4px 12px;font-size:0.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.2)">Tarjetas Comprometidas (papá)</td></tr>
+            <tr>
+              <td>BE ···8665</td>
+              <td class="mono">422.443</td><td class="mono">422.443</td>
+              <td class="mono zero">—</td><td class="mono zero">—</td><td class="mono zero">—</td>
+              <td class="mono zero">—</td><td class="mono zero">—</td><td class="mono zero">—</td><td class="mono zero">—</td>
+            </tr>
+            <tr>
+              <td>BE ···2716</td>
+              <td class="mono">234.263</td><td class="mono">234.263</td><td class="mono">234.263</td>
+              <td class="mono">234.263</td><td class="mono">234.263</td><td class="mono">234.263</td>
+              <td class="mono">234.263</td><td class="mono">234.263</td><td class="mono">234.263</td>
+            </tr>
+            <tr><td colspan="10" style="padding:4px 12px;font-size:0.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.2)">Gastos Fijos</td></tr>
+            <tr>
+              <td>Gym+gatos+auto+etc</td>
+              <td class="mono">625.000</td><td class="mono">625.000</td><td class="mono">625.000</td>
+              <td class="mono">625.000</td><td class="mono">625.000</td><td class="mono">625.000</td>
+              <td class="mono">625.000</td><td class="mono">625.000</td><td class="mono">625.000</td>
+            </tr>
+            <tr><td colspan="10" style="padding:4px 12px;font-size:0.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.2)">Ataque Avalancha</td></tr>
+            <tr style="background:rgba(255,77,77,.04)">
+              <td><strong>🎯 BCI ···7104</strong></td>
+              <td class="mono" style="color:var(--lime)"><strong>700.000</strong></td>
+              <td class="mono" style="color:var(--lime)"><strong>700.000</strong></td>
+              <td class="mono zero">✓ LIQUIDADA</td>
+              <td class="mono zero">—</td><td class="mono zero">—</td><td class="mono zero">—</td>
+              <td class="mono zero">—</td><td class="mono zero">—</td><td class="mono zero">—</td>
+            </tr>
+            <tr style="background:rgba(251,191,36,.04)">
+              <td><strong>🎯 Santander ···4094</strong></td>
+              <td class="mono" style="color:var(--amber)">442.294</td>
+              <td class="mono" style="color:var(--amber)">442.294</td>
+              <td class="mono" style="color:var(--amber)">1.007.000</td>
+              <td class="mono" style="color:var(--lime)"><strong>1.142.294</strong></td>
+              <td class="mono" style="color:var(--lime)"><strong>1.142.294</strong></td>
+              <td class="mono" style="color:var(--lime)"><strong>1.142.294</strong></td>
+              <td class="mono" style="color:var(--lime)"><strong>1.142.294</strong></td>
+              <td class="mono zero">✓ LIQUIDADA</td>
+              <td class="mono zero">—</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td><strong>MARGEN LIBRE</strong></td>
+              <td class="mono">0</td>
+              <td class="mono">22.261</td>
+              <td class="mono" style="color:var(--lime)">940.000</td>
+              <td class="mono" style="color:var(--lime)">1.329.443</td>
+              <td class="mono" style="color:var(--lime)">1.739.443</td>
+              <td class="mono" style="color:var(--lime)">1.927.443</td>
+              <td class="mono" style="color:var(--lime)">1.990.443</td>
+              <td class="mono" style="color:var(--lime)">1.990.443</td>
+              <td class="mono" style="color:var(--lime)">2.302.000</td>
+            </tr>
+          </tfoot>
+        </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">📌</span>Notas Clave del Plan</div>
+        </div>
+        <div class="brow"><div class="lbl">1.</div><div>BCI se liquida en 2 cuotas (abr–may). Desde jun ese presupuesto ($700K) se suma al ataque a Santander.</div></div>
+        <div class="brow"><div class="lbl">2.</div><div>Mayo 2026: terminan gastos Barto → ingresos variables suben $583K/mes (jun en adelante).</div></div>
+        <div class="brow"><div class="lbl">3.</div><div><strong>BE ···2716 NO se prepaga</strong> — tasa 1,59%/mes es la más baja del portafolio. Dejarla terminar sola es la decisión correcta.</div></div>
+        <div class="brow"><div class="lbl">4.</div><div><strong>BE ···8665 período anterior sin pago.</strong> Urgente: no dejar en $0. Riesgo DICOM activo.</div></div>
+        <div class="brow" style="border:none"><div class="lbl">5.</div><div>Desde <strong>octubre 2026</strong> el margen libre sube a ~$2M/mes → destinar a fondo farmacia o propiedad renta corta.</div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ PRESUPUESTO ═══════════════════ -->
+    <section class="section" id="s-presupuesto">
+      <div class="page-hd">
+        <div class="eyebrow">Presupuesto Real · Abril 2026</div>
+        <h2>Flujo Mensual</h2>
+        <p>Distribución de tus $3.964.000 con 3 trabajos + arriendo. Estrategia de asignación por ingreso.</p>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><span class="ic">➡️</span>Egresos Fijos</div><span class="tag tag-red">$2.821.706</span></div>
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">Créditos</div>
+          <div class="brow"><div class="lbl">Hipoteca</div><div class="mono">$400.000</div></div>
+          <div class="brow"><div class="lbl">Crédito BE 1</div><div class="mono">$435.000</div></div>
+          <div class="brow"><div class="lbl">Crédito BE 2</div><div class="mono">$405.000</div></div>
+          <div class="brow"><div class="lbl">Pie (crédito)</div><div class="mono">$300.000</div></div>
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:10px 0 8px">Tarjetas comprometidas</div>
+          <div class="brow"><div class="lbl">BE ···8665 (jun termina)</div><div class="mono">$422.443</div></div>
+          <div class="brow"><div class="lbl">BE ···2716</div><div class="mono">$234.263</div></div>
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:10px 0 8px">Gastos fijos</div>
+          <div class="brow"><div class="lbl">Gym + piscina</div><div class="mono">~$80.000</div></div>
+          <div class="brow"><div class="lbl">Gatos (arenas, comida)</div><div class="mono">~$80.000</div></div>
+          <div class="brow"><div class="lbl">Auto (bencina, TAG)</div><div class="mono">~$150.000</div></div>
+          <div class="brow"><div class="lbl">Gastos comunes / varios</div><div class="mono">~$315.000</div></div>
+          <hr class="sep">
+          <div class="brow total"><div class="lbl">Total Comprometido</div><div class="mono" style="color:var(--red)">$2.821.706</div></div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-hd"><div class="card-title"><span class="ic">✅</span>Margen para Atacar</div><span class="tag tag-green">$1.142.294</span></div>
+            <div class="brow"><div class="lbl">🎯 BCI ···7104 (abr–may)</div><div class="mono" style="color:var(--lime)">$700.000</div></div>
+            <div class="brow"><div class="lbl">⚡ Santander ···4094</div><div class="mono" style="color:var(--amber)">$442.294</div></div>
+            <hr class="sep">
+            <div class="brow total"><div class="lbl">Total Ataque</div><div class="mono" style="color:var(--lime)">$1.142.294</div></div>
+          </div>
+
+          <div class="card mt">
+            <div class="card-hd"><div class="card-title"><span class="ic">🏦</span>Estrategia 3 Sueldos</div></div>
+            <div class="brow">
+              <div class="lbl"><span class="chip">Ingreso 1</span>&nbsp;Farmacia Popular</div>
+              <div class="mono">$2.110.000</div>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text2);padding:4px 0 10px 0;line-height:1.5">→ Cubre hipoteca + BE1 + BE2 + pie + gastos fijos. <strong>Domicilia todos los débitos aquí.</strong></div>
+            <div class="brow">
+              <div class="lbl"><span class="chip">Ingreso 2</span>&nbsp;Curie + FarQFar</div>
+              <div class="mono">$1.414.000</div>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text2);padding:4px 0 10px 0;line-height:1.5">→ Tarjetas comprometidas (papá) + ataque BCI/Santander.</div>
+            <div class="brow">
+              <div class="lbl"><span class="chip">Ingreso 3</span>&nbsp;HHEE + Arriendo</div>
+              <div class="mono">$340.000</div>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text2);padding:4px 0 8px 0;line-height:1.5">→ Reserva SII + fondo emergencia. <strong>No contar para gastos fijos.</strong></div>
+            <div class="alert alert-warn" style="margin-bottom:0">
+              ⚠️ <strong>SII Reliquidación:</strong> Con 3 empleadores reteniendo impuestos por separado, podrías deber hasta $200.000–$400.000 en abril de 2027. Reserva ~$200.000/mes desde ahora.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ PLAN 50M ═══════════════════ -->
+    <section class="section" id="s-50m">
+      <div class="page-hd">
+        <div class="eyebrow">Estrategia de Largo Plazo</div>
+        <h2>Cuando Lleguen los $50M</h2>
+        <p>Estado estimado de deudas a dic 2026 y distribución óptima del capital. Farmacia + propiedad renta corta.</p>
+      </div>
+
+      <div class="alert alert-lime">
+        ✅ <strong>A diciembre 2026</strong>, BCI y Santander ya estarán liquidadas por el plan avalancha. Los $50M se distributen sobre una base de deuda mucho más limpia.
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">📊</span>Estado de Deudas a Dic 2026 (estimado)</div>
+        </div>
+        <div class="scroll-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Crédito</th><th>Saldo Estimado</th><th>Tasa Anual</th><th>Recomendación</th><th>Justificación</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>BCI ···7104</td><td class="mono" style="color:var(--green)">$0</td><td>54,11%</td><td><span class="tag tag-green">✓ Liquidada</span></td><td>Prioridad 0 — 2 meses</td></tr>
+            <tr><td>Santander ···4094</td><td class="mono" style="color:var(--green)">$0</td><td>51,10%</td><td><span class="tag tag-green">✓ Liquidada</span></td><td>Plan avalancha</td></tr>
+            <tr><td>BE ···2716</td><td class="mono" style="color:var(--green)">$0</td><td>19,08%</td><td><span class="tag tag-green">✓ Terminada</span></td><td>Cuotas comprometidas Mar 2027</td></tr>
+            <tr><td>Crédito BE 2</td><td class="mono" style="color:var(--cyan)">$2.430.000</td><td>9,85%</td><td><span class="tag tag-amber">Evaluar prepago parcial</span></td><td>Si tasa &gt; rentabilidad ETF</td></tr>
+            <tr><td>Pie (crédito)</td><td class="mono" style="color:var(--cyan)">$2.100.000</td><td>9,50%</td><td><span class="tag tag-muted">Casi terminado</span></td><td>~5 cuotas — dejar terminar</td></tr>
+            <tr><td>Crédito BE 1</td><td class="mono">$9.135.000</td><td>9,85%</td><td><span class="tag tag-amber">Evaluar prepago parcial</span></td><td>Si tasa &gt; rentabilidad ETF</td></tr>
+            <tr><td>Hipoteca</td><td class="mono">$12.500.000</td><td>7,52%</td><td><span class="tag tag-muted">NO prepagar</span></td><td>Tasa baja, deducible, libera flujo</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">🗂️</span>Distribución Recomendada de los $50M</div>
+          <span class="tag tag-lime" style="background:rgba(184,255,60,.12);color:var(--lime);border:1px solid rgba(184,255,60,.3)">$50.000.000</span>
+        </div>
+        <div class="cmp-grid">
+          <div class="cmp-card best">
+            <div class="best-ribbon">Alta Prioridad</div>
+            <div style="font-size:1.5rem;margin-bottom:8px">🏡</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">Pie Propiedad Renta Corta</div>
+            <div class="kpi-val" style="color:var(--lime);font-size:1.3rem;margin:10px 0">$18.000.000</div>
+            <div style="font-size:0.75rem;color:var(--text2);line-height:1.5">36% del total. Pie 30–40% de propiedad ~$45–50M zona RM. Retorno 15%+ si ocupación &gt;60%.</div>
+          </div>
+          <div class="cmp-card best">
+            <div class="best-ribbon">Alta Prioridad</div>
+            <div style="font-size:1.5rem;margin-bottom:8px">💊</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">Capital Inicial Farmacia</div>
+            <div class="kpi-val" style="color:var(--lime);font-size:1.3rem;margin:10px 0">$12.000.000</div>
+            <div style="font-size:0.75rem;color:var(--text2);line-height:1.5">24% del total. Stock + habilitación + patente + capital de trabajo inicial.</div>
+          </div>
+          <div class="cmp-card best">
+            <div class="best-ribbon">Alta Prioridad</div>
+            <div style="font-size:1.5rem;margin-bottom:8px">🛡️</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">Fondo de Emergencia</div>
+            <div class="kpi-val" style="color:var(--cyan);font-size:1.3rem;margin:10px 0">$6.000.000</div>
+            <div style="font-size:0.75rem;color:var(--text2);line-height:1.5">12% del total. 6 meses de gastos fijos. <strong>Construir antes de invertir.</strong></div>
+          </div>
+          <div class="cmp-card">
+            <div style="font-size:1.5rem;margin-bottom:8px">📈</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">ETF / Inversión LP</div>
+            <div class="kpi-val" style="color:var(--amber);font-size:1.3rem;margin:10px 0">$7.000.000</div>
+            <div style="font-size:0.75rem;color:var(--text2);line-height:1.5">14% del total. Fintual / XTB S&amp;P500 largo plazo. Retorno histórico ~10,5%.</div>
+          </div>
+          <div class="cmp-card">
+            <div style="font-size:1.5rem;margin-bottom:8px">🏦</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">Prepago Hipoteca Parcial</div>
+            <div class="kpi-val" style="color:var(--text);font-size:1.3rem;margin:10px 0">$5.000.000</div>
+            <div style="font-size:0.75rem;color:var(--text2);line-height:1.5">10% del total. Opcional — reduce dividendo mensual. Solo si tasa &gt; retorno ETF.</div>
+          </div>
+          <div class="cmp-card">
+            <div style="font-size:1.5rem;margin-bottom:8px">🏪</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">Colchón Operacional Farmacia</div>
+            <div class="kpi-val" style="color:var(--text);font-size:1.3rem;margin:10px 0">$2.000.000</div>
+            <div style="font-size:0.75rem;color:var(--text2);line-height:1.5">4% del total. Reserva meses 1–3 antes de que sea rentable.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">⚖️</span>Prepago vs ETF — Análisis Costo-Beneficio</div>
+        </div>
+        <div class="scroll-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Opción</th><th>Retorno / Tasa</th><th>Riesgo</th><th>Horizonte</th><th>Veredicto</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Prepagar Hipoteca</td><td class="mono">7,52%</td><td><span class="tag tag-green">Bajo</span></td><td>Permanente</td><td>Solo si tasa &gt; retorno ETF neto</td></tr>
+            <tr><td>Prepagar BE-1 (consumo)</td><td class="mono">9,85%</td><td><span class="tag tag-green">Bajo</span></td><td>~24 meses</td><td><strong>Rentabilidad garantizada — atractivo</strong></td></tr>
+            <tr style="background:rgba(184,255,60,.04)"><td><strong>ETF S&amp;P500 (LP)</strong></td><td class="mono" style="color:var(--lime)">~10,5%</td><td><span class="tag tag-amber">Medio</span></td><td>10+ años</td><td><strong>Supera crédito consumo en largo plazo</strong></td></tr>
+            <tr style="background:rgba(184,255,60,.04)"><td><strong>Renta Corta (arriendo)</strong></td><td class="mono" style="color:var(--lime)">~15%+</td><td><span class="tag tag-amber">Medio</span></td><td>Desde año 1</td><td><strong>El mejor retorno si ocupación &gt;60%</strong></td></tr>
+            <tr><td>ETF Nasdaq QQQ</td><td class="mono">~13%</td><td><span class="tag tag-red">Medio-alto</span></td><td>10+ años</td><td>Mayor retorno, mayor volatilidad</td></tr>
+            <tr><td>Fondo Money Market</td><td class="mono">~6%</td><td><span class="tag tag-green">Muy bajo</span></td><td>Corto plazo</td><td>Solo para fondo emergencia</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><span class="ic">🏠</span>Elegibilidad Crédito Hipotecario (para propiedad renta corta)</div>
+        </div>
+        <div class="scroll-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Factor</th><th>Tu Situación</th><th>Requerimiento</th><th>Estado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ingresos mensuales</td><td>$3.964.000 (3 empleadores)</td><td>Mín $1,5M–$2M</td><td><span class="tag tag-green">✓ Cumple</span></td></tr>
+            <tr><td>Estabilidad laboral</td><td>Múltiples trabajos estables</td><td>Antigüedad &gt;1 año</td><td><span class="tag tag-green">✓ Cumple</span></td></tr>
+            <tr><td>Dividendo/Ingreso</td><td>~30–35% con pie 30%</td><td>Máx 25–30%</td><td><span class="tag tag-amber">⚠ Borderline</span></td></tr>
+            <tr><td>Deudas activas</td><td>4 créditos + 2 tarjetas</td><td>Carga máx 50%</td><td><span class="tag tag-amber">⚠ Verificar DICOM</span></td></tr>
+            <tr><td>Historial de pago</td><td>Tarjetas al límite/sobrepasadas</td><td>Sin morosidades</td><td><span class="tag tag-amber">⚠ Riesgo actual</span></td></tr>
+            <tr><td>Pie disponible</td><td>$18M+ de los 50M</td><td>Mín 20–25%</td><td><span class="tag tag-green">✓ Con 50M cumple</span></td></tr>
+            <tr><td>DICOM / Score</td><td>Revisar antes de postular</td><td>Sin deudas impagas</td><td><span class="tag tag-cyan">🔍 Verificar</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="alert alert-info" style="margin-top:14px;margin-bottom:0">
+          💡 <strong>Clave:</strong> Ejecutar el plan avalancha primero (liquida BCI + Santander antes de dic 2026) mejora radicalmente tu perfil de riesgo para el banco. En el estado actual, la tarjeta BCI supera el cupo — eso afecta el score. A diciembre estarás en posición mucho más fuerte.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function nav(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .mobile-nav button').forEach(n => n.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  // sync sidebar
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+  });
+  document.querySelectorAll('.mobile-nav button').forEach(n => {
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+  });
+}
+</script>
+</body>
+</html>
