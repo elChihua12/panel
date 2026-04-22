@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c9956f">
+<title>Panel · Bastián</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     PALETA V3 EARTHY MINIMALISTA
+     ═══════════════════════════════════════════════════════════ */
+  :root {
+    --cream: #f5f0e8;
+    --cream-soft: #fdfaf3;
+    --beige: #ede4d3;
+    --beige-deep: #e3d6bd;
+    --terracota: #c9956f;
+    --terracota-deep: #b07a52;
+    --ocre: #b8864a;
+    --ocre-soft: #d4a861;
+    --ink: #2d2418;
+    --ink-soft: #5a4a37;
+    --muted: #8a7860;
+    --moss: #7a8d5c;
+    --shadow-sm: 0 2px 8px rgba(45, 36, 24, 0.06);
+    --shadow-md: 0 8px 24px rgba(45, 36, 24, 0.08);
+    --shadow-lg: 0 16px 48px rgba(45, 36, 24, 0.12);
+    --radius-sm: 12px;
+    --radius-md: 18px;
+    --radius-lg: 28px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Poppins', -apple-system, sans-serif;
+    background:
+      radial-gradient(ellipse at top right, rgba(201, 149, 111, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom left, rgba(184, 134, 74, 0.08) 0%, transparent 50%),
+      var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.5;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    padding: 24px 20px 80px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     LAYOUT
+     ═══════════════════════════════════════════════════════════ */
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════════════════ */
+  .hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--beige-deep);
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .brand {
+    font-family: 'Geist', sans-serif;
+    font-weight: 700;
+    font-size: 2.2rem;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    line-height: 0.9;
+  }
+  .brand .dot {
+    color: var(--terracota);
+  }
+  .brand-sub {
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 6px;
+  }
+
+  .greeting {
+    text-align: right;
+    font-family: 'Geist', sans-serif;
+  }
+  .greeting-time {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+  }
+  .greeting-date {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     TABS
+     ═══════════════════════════════════════════════════════════ */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+    background: var(--beige);
+    padding: 5px;
+    border-radius: 999px;
+    width: fit-content;
+    animation: fadeInUp 0.6s ease-out 0.1s both;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-family: 'Geist', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+  }
+  .tab:hover {
+    color: var(--ink);
+  }
+  .tab.active {
+    background: var(--ink);
+    color: var(--cream-soft);
+    box-shadow: var(--shadow-sm);
+  }
+  .tab .badge {
+    font-size: 0.6rem;
+    margin-left: 4px;
+    opacity: 0.6;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     SECCIONES
+     ═══════════════════════════════════════════════════════════ */
+  .section {
+    display: none;
+    animation: fadeInUp 0.4s ease-out;
+  }
+  .section.active {
+    display: block;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    margin-top: 8px;
+  }
+  .section-title {
+    font-family: 'Geist', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .section-count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     NÚCLEO — Tarjetas grandes
+     ═══════════════════════════════════════════════════════════ */
+  .core-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+
+  .core-card {
+    background: var(--cream-soft);
+    border: 1px solid var(--beige-deep);
+    border-radius: var(--radius-md);
+    padding: 22px 22px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 170px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s ease-out backwards;
+  }
+  .core-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--card-tint, transparent) 0%, transparent 50%);
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .core-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--terracota);
+  }
+  .core-card:hover::before {
+    opacity: 0.9;
+  }
+  .core-card:nth-child(1) { animation-delay: 0.15s; --card-tint: rgba(201, 149, 111, 0.18); }
+  .core-card:nth-child(2) { animation-delay: 0.2s;  --card-tint: rgba(184, 134, 74, 0.18); }
+  .core-card:nth-child(3) { animation-delay: 0.25s; --card-tint: rgba(122, 141, 92, 0.18); }
+  .core-card:nth-child(4) { animation-delay: 0.3s;  --card-tint: rgba(176, 122, 82, 0.18); }
+
+  .core-card.disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+  .core-card.disabled:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+    border-color: var(--beige-deep);
+  }
+
+  .core-icon {
+    font-size: 2.1rem;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .core-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    z-index: 1;
+  }
+  .core-name {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 1.08rem;
+    color: var(--ink);
+    letter-spacing: -0.015em;
+  }
+  .core-desc {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  .core-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    position: relative;
+    z-index: 1;
+  }
+  .core-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .core-arrow {
+    font-family: 'Geist', sans-serif;
+    font-size: 1.1rem;
+    color: var(--terracota);
+    transition: transform 0.25s;
+  }
+  .core-card:hover .core-arrow {
+    transform: translateX(4px);
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     TODAS LAS HERRAMIENTAS — Lista compacta
+     ═══════════════════════════════════════════════════════════ */
+  .tools-cat {
+    margin-bottom: 32px;
+  }
+  .tools-cat-label {
+    font-family: 'Geist', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--terracota-deep);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tools-cat-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--beige-deep), transparent);
+  }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+  }
+
+  .tool-row {
+    background: var(--cream-soft);
+    border: 1px solid var(--beige-deep);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+  }
+  .tool-row:hover {
+    border-color: var(--ocre-soft);
+    background: var(--cream-soft);
+    transform: translateX(2px);
+  }
+  .tool-row.external::after {
+    content: '↗';
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-left: auto;
+  }
+  .tool-row.disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+  .tool-row.disabled:hover {
+    transform: none;
+    border-color: var(--beige-deep);
+  }
+  .tool-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .tool-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .tool-name {
+    font-family: 'Geist', sans-serif;
+    font-weight: 500;
+    font-size: 0.86rem;
+    color: var(--ink);
+    margin-bottom: 1px;
+  }
+  .tool-desc {
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tool-status {
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: var(--beige);
+    padding: 2px 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     PLACEHOLDER (para tabs aún no construidas)
+     ═══════════════════════════════════════════════════════════ */
+  .placeholder {
+    background: var(--cream-soft);
+    border: 1px dashed var(--beige-deep);
+    border-radius: var(--radius-md);
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .placeholder-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+  .placeholder-title {
+    font-family: 'Geist', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .placeholder-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════ */
+  .foot {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--beige-deep);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     ANIMACIONES
+     ═══════════════════════════════════════════════════════════ */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     MOBILE
+     ═══════════════════════════════════════════════════════════ */
+  @media (max-width: 640px) {
+    body { padding: 18px 14px 60px; }
+    .hdr {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .greeting { text-align: left; }
+    .brand { font-size: 1.85rem; }
+    .tabs {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab { padding: 8px 14px; font-size: 0.78rem; }
+    .core-grid {
+      grid-template-columns: 1fr;
+    }
+    .core-card { min-height: 140px; padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="hdr">
+    <div>
+      <h1 class="brand">panel<span class="dot">.</span></h1>
+      <div class="brand-sub">Centro de operaciones</div>
+    </div>
+    <div class="greeting">
+      <div class="greeting-time" id="greetTime">Hola</div>
+      <div class="greeting-date" id="greetDate">—</div>
+    </div>
+  </header>
+
+  <!-- ═══ TABS ═══ -->
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-section="inicio" role="tab">🏠 Inicio</button>
+    <button class="tab" data-section="todas" role="tab">🛠️ Todas</button>
+    <button class="tab" data-section="agenda" role="tab">📅 Agenda <span class="badge">v2</span></button>
+    <button class="tab" data-section="inbox" role="tab">📥 Inbox <span class="badge">v2</span></button>
+  </nav>
+
+  <!-- ═══ SECCIÓN: INICIO ═══ -->
+  <section class="section active" id="sec-inicio">
+    <div class="section-header">
+      <div class="section-title">Núcleo · 1 click a lo que más uso</div>
+      <div class="section-count" id="coreCount"></div>
+    </div>
+    <div class="core-grid" id="coreGrid"></div>
+
+    <div class="section-header">
+      <div class="section-title">Vista rápida · todas mis herramientas</div>
+    </div>
+    <div id="quickTools"></div>
+  </section>
+
+  <!-- ═══ SECCIÓN: TODAS ═══ -->
+  <section class="section" id="sec-todas">
+    <div class="section-header">
+      <div class="section-title">Catálogo completo · todo lo que tengo construido</div>
+      <div class="section-count" id="allCount"></div>
+    </div>
+    <div id="allTools"></div>
+  </section>
+
+  <!-- ═══ SECCIÓN: AGENDA (placeholder) ═══ -->
+  <section class="section" id="sec-agenda">
+    <div class="placeholder">
+      <div class="placeholder-icon">📅</div>
+      <div class="placeholder-title">Agenda — próximamente</div>
+      <div class="placeholder-text">
+        Vista orientativa con tus eventos. Llegará en la Entrega 2 con lectura de Google Calendar (link ICS público) + recordatorios locales.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECCIÓN: INBOX (placeholder) ═══ -->
+  <section class="section" id="sec-inbox">
+    <div class="placeholder">
+      <div class="placeholder-icon">📥</div>
+      <div class="placeholder-title">Inbox — próximamente</div>
+      <div class="placeholder-text">
+        Captura rápida → distribución por categorías → exportar al Inbox de Notion.
+        Llegará en la Entrega 2.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="foot">
+    <span>v1.0 · entrega 1</span>
+    <span id="lastUpdate">—</span>
+  </footer>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURACIÓN MODULAR
+   Para agregar una herramienta nueva en el futuro:
+   1. Agregá un objeto al array CORE (núcleo) o ALL_TOOLS (todas).
+   2. Listo. Se renderiza solo.
+   ═══════════════════════════════════════════════════════════ */
+
+// — NÚCLEO: 4 tarjetas grandes que se ven primero —
+const CORE = [
+  {
+    icon: '🧠',
+    name: 'Centro de Comando IA',
+    desc: 'Antes de cada idea: qué modelo uso, qué flujo sigo, qué prompt funciona.',
+    href: 'tools/guia-ia.html',
+    tag: 'Diario · pre-tarea',
+    status: 'live'
+  },
+  {
+    icon: '🗺️',
+    name: 'Malla Aprendizaje',
+    desc: 'IA aplicada a farmacia, día por día. Lo que toca hoy 19:00.',
+    href: 'tools/malla.html',
+    tag: 'Diario L-V · 19:00',
+    status: 'live'
+  },
+  {
+    icon: '💸',
+    name: 'Plan Financiero',
+    desc: 'Deudas, ingresos, proyección y asignación lump-sum.',
+    href: 'tools/plan-finanzas.html',
+    tag: 'Semanal',
+    status: 'live'
+  },
+  {
+    icon: '🎲',
+    name: 'Selector Tiempo Libre',
+    desc: 'Decisión en frío para sábado/domingo desde tu DB de actividades.',
+    href: '#',
+    tag: 'Próximamente · v2',
+    status: 'soon'
+  }
+];
+
+// — TODAS: catálogo completo agrupado por categoría —
+const ALL_TOOLS = [
+  {
+    cat: '🤖 IA y aprendizaje',
+    items: [
+      { icon: '🧠', name: 'Guía IA', desc: 'Modelos · herramientas · flujos por área', href: 'tools/guia-ia.html', status: 'live' },
+      { icon: '⚙️', name: 'Orquestador IA', desc: 'Idea → modelo → flujo → prompts listos', href: 'tools/orquestador.html', status: 'live' },
+      { icon: '🗺️', name: 'Malla Aprendizaje v4', desc: 'Curriculum día por día', href: 'tools/malla.html', status: 'live' },
+      { icon: '🛤️', name: 'Roadmap IA Farmacia', desc: 'Mapa de 5 fases · 12-18 meses', href: 'tools/roadmap.html', status: 'live' }
+    ]
+  },
+  {
+    cat: '💸 Finanzas',
+    items: [
+      { icon: '💸', name: 'Plan Financiero', desc: 'Dashboard deudas + ingresos + proyección', href: 'tools/plan-finanzas.html', status: 'live' },
+      { icon: '📋', name: '15 Opciones de Trabajo', desc: 'Catálogo de ingresos extra', href: 'tools/15-opciones.html', status: 'live' },
+      { icon: '✅', name: 'Opciones Filtrado', desc: '8 opciones con plan de 7 días', href: 'tools/opciones-filtrado.html', status: 'live' }
+    ]
+  },
+  {
+    cat: '💊 Farmacia y trabajo QF',
+    items: [
+      { icon: '💊', name: 'Calculadora Dispensación v3', desc: 'Cálculo de dosificación · 6 pestañas', href: 'https://www.notion.so/32e9a86ba8ec8114943ad7620464eb00', status: 'notion', external: true },
+      { icon: '📐', name: 'Posología de contador (PDF)', desc: 'Inhaladores, gotas, insulina · A5', href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
+      { icon: '📊', name: 'Proyección Utilidades Top 20', desc: 'Excel · márgenes y delta por producto', href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
+      { icon: '✓', name: 'Checklist Mensual PAC', desc: 'Actividades del mes con progreso', href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true }
+    ]
+  },
+  {
+    cat: '🐍 Scrapers Python (requieren Colab)',
+    items: [
+      { icon: '🔍', name: 'Scraper 4 cadenas', desc: 'Cruz Verde · Salco · Ahumada · Simi', href: '#', status: 'soon' },
+      { icon: '🔍', name: 'Scraper Farmacia Meki', desc: 'Sistema precios + alertas Excel', href: '#', status: 'soon' },
+      { icon: '🔍', name: 'Scraper Curie Búho', desc: 'Comparación BuhoChile', href: '#', status: 'soon' },
+      { icon: '🔍', name: 'Comparador Precios Curie', desc: 'Análisis comparativo de precios', href: '#', status: 'soon' }
+    ]
+  },
+  {
+    cat: '📚 Referencias en Notion',
+    items: [
+      { icon: '🏠', name: 'Mi Base de Operaciones', desc: 'Hub principal de Notion', href: 'https://www.notion.so/32d9a86ba8ec81fdadb9cde81071fed4', status: 'notion', external: true },
+      { icon: '📊', name: 'Dashboard Vista Rápida', desc: 'Estado por área + accesos rápidos', href: 'https://www.notion.so/33b9a86ba8ec81268ebccc6986bbf2b3', status: 'notion', external: true },
+      { icon: '📚', name: 'Archivo de Sesiones Claude', desc: 'Bitácora de cada sesión', href: 'https://www.notion.so/32e9a86ba8ec811797b9c3117983fa2c', status: 'notion', external: true }
+    ]
+  }
+];
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER
+   ═══════════════════════════════════════════════════════════ */
+
+// Saludo dinámico según hora
+function renderGreeting() {
+  const now = new Date();
+  const h = now.getHours();
+  let greet = 'Hola';
+  if (h < 12) greet = 'Buenos días';
+  else if (h < 19) greet = 'Buenas tardes';
+  else greet = 'Buenas noches';
+
+  const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fecha = `${dias[now.getDay()]} ${now.getDate()} de ${meses[now.getMonth()]}`;
+
+  document.getElementById('greetTime').textContent = greet;
+  document.getElementById('greetDate').textContent = fecha;
+}
+
+// Núcleo (4 tarjetas grandes)
+function renderCore() {
+  const grid = document.getElementById('coreGrid');
+  grid.innerHTML = CORE.map(c => {
+    const disabled = c.status !== 'live';
+    const tag = c.tag || '';
+    const arrow = disabled ? '' : '<span class="core-arrow">→</span>';
+    return `
+      <a href="${disabled ? '#' : c.href}"
+         class="core-card ${disabled ? 'disabled' : ''}"
+         ${disabled ? '' : 'target="_blank" rel="noopener"'}
+         ${disabled ? 'onclick="return false;"' : ''}>
+        <div class="core-icon">${c.icon}</div>
+        <div class="core-body">
+          <div class="core-name">${c.name}</div>
+          <div class="core-desc">${c.desc}</div>
+        </div>
+        <div class="core-foot">
+          <div class="core-tag">${tag}</div>
+          ${arrow}
+        </div>
+      </a>
+    `;
+  }).join('');
+
+  document.getElementById('coreCount').textContent = `${CORE.filter(c=>c.status==='live').length}/${CORE.length} activos`;
+}
+
+// Vista rápida en Inicio (lista compacta de las herramientas top fuera del núcleo)
+function renderQuickTools() {
+  const cont = document.getElementById('quickTools');
+  // Filtramos: las primeras 2 categorías (IA + Finanzas) sin las del núcleo
+  const coreNames = new Set(CORE.map(c => c.name));
+  const cats = ALL_TOOLS.slice(0, 2).map(g => ({
+    cat: g.cat,
+    items: g.items.filter(i => !coreNames.has(i.name))
+  })).filter(g => g.items.length);
+
+  cont.innerHTML = cats.map(g => `
+    <div class="tools-cat">
+      <div class="tools-cat-label">${g.cat}</div>
+      <div class="tools-grid">${renderToolRows(g.items)}</div>
+    </div>
+  `).join('');
+}
+
+// Catálogo completo (tab Todas)
+function renderAllTools() {
+  const cont = document.getElementById('allTools');
+  const total = ALL_TOOLS.reduce((s,g) => s + g.items.length, 0);
+  document.getElementById('allCount').textContent = `${total} herramientas`;
+
+  cont.innerHTML = ALL_TOOLS.map(g => `
+    <div class="tools-cat">
+      <div class="tools-cat-label">${g.cat}</div>
+      <div class="tools-grid">${renderToolRows(g.items)}</div>
+    </div>
+  `).join('');
+}
+
+function renderToolRows(items) {
+  return items.map(t => {
+    const disabled = t.status === 'soon';
+    const external = t.external ? 'external' : '';
+    const statusLabel = {
+      live: '',
+      notion: 'Notion',
+      soon: 'Pronto'
+    }[t.status] || '';
+    return `
+      <a href="${disabled ? '#' : t.href}"
+         class="tool-row ${disabled ? 'disabled' : ''} ${external}"
+         ${disabled ? 'onclick="return false;"' : 'target="_blank" rel="noopener"'}>
+        <div class="tool-icon">${t.icon}</div>
+        <div class="tool-text">
+          <div class="tool-name">${t.name}</div>
+          <div class="tool-desc">${t.desc}</div>
+        </div>
+        ${statusLabel ? `<span class="tool-status">${statusLabel}</span>` : ''}
+      </a>
+    `;
+  }).join('');
+}
+
+// Cambio de tab
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('sec-' + btn.dataset.section).classList.add('active');
+    });
+  });
+}
+
+// Última actualización (build time del HTML, hardcoded)
+function setLastUpdate() {
+  document.getElementById('lastUpdate').textContent = 'build · 22 abr 2026';
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  renderGreeting();
+  renderCore();
+  renderQuickTools();
+  renderAllTools();
+  setupTabs();
+  setLastUpdate();
+});
+</script>
+
+</body>
+</html>
