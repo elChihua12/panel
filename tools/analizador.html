@@ -539,7 +539,8 @@ const LOAD_STEPS = [
 window.onload = () => {
   const ak=document.getElementById('apiKeyInput'); if(ak&&apiKey) ak.value=apiKey;
   const fk=document.getElementById('fmpKeyInput'); if(fk&&fmpKey) fk.value=fmpKey;
-  if(!apiKey) document.getElementById('settingsPanel').style.display='block';
+  // Abre Ajustes si falta la key de Claude (obligatoria) o la de FMP (datos en vivo)
+  if(!apiKey || !fmpKey) document.getElementById('settingsPanel').style.display='block';
   showLanding();
 };
 
@@ -710,6 +711,7 @@ async function fmpSeries(ticker) {
 /* ─── DATOS DE MERCADO — FMP directo, con fallback a proxy Vercel→Yahoo ─── */
 async function fetchMarketData(ticker) {
   if (fmpKey) { const fmp = await fetchMarketDataFMP(ticker); if (fmp && fmp.ok) return fmp; }
+  if (!API_BASE) return { ok:false, error:'sin-fuente' }; // sin FMP y sin proxy → no hay datos en vivo, cae a estimaciones
   try {
     const res = await fetch(`${API_BASE}/api/quote?ticker=${ticker}`, { signal: AbortSignal.timeout(10000) });
     if (!res.ok) throw new Error(`Error ${res.status}`);
@@ -754,6 +756,7 @@ async function fetchTechnicalData(ticker) {
       const s = await fmpSeries(ticker);
       closes = s.closes; volumes = s.volumes; highs = s.highs; lows = s.lows;
     } else {
+      if (!API_BASE) throw new Error('sin-fuente');
       const res = await fetch(`${API_BASE}/api/history?ticker=${ticker}`, { signal: AbortSignal.timeout(12000) });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const json = await res.json();
