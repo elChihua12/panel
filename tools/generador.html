@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Qué hacemos hoy? — Panel Bastián</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream:          #f5f0e8;
+  --cream-soft:     #fdfaf3;
+  --paper:          #fbf6ec;
+  --beige:          #ede4d3;
+  --beige-deep:     #e3d6bd;
+  --line:           #d8c9aa;
+  --line-soft:      #e8dcc4;
+  --terracota:      #c9956f;
+  --terracota-deep: #b07a52;
+  --ocre:           #b8864a;
+  --ocre-soft:      #d4a861;
+  --moss:           #7a8d5c;
+  --rust:           #a4492c;
+  --ink:            #2d2418;
+  --ink-soft:       #5a4a37;
+  --muted:          #8a7860;
+  --muted-soft:     #a89880;
+  --r-xs: 8px; --r-sm: 12px; --r-md: 14px; --r-lg: 20px; --r-btn: 11px;
+  --shadow-xs: 0 1px 2px rgba(45,36,24,.05);
+  --shadow-sm: 0 2px 10px rgba(45,36,24,.06);
+  --shadow-md: 0 10px 30px rgba(45,36,24,.09);
+  --f-ui:   'Geist', system-ui, sans-serif;
+  --f-read: 'Geist', system-ui, sans-serif;
+  --f-data: 'Geist Mono', monospace;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 70% 45% at 85% -5%, rgba(201,149,111,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at -5% 105%, rgba(184,134,74,.07) 0%, transparent 60%),
+    var(--cream);
+  color: var(--ink);
+  font-family: var(--f-read);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: 2rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+::selection { background: var(--terracota); color: var(--cream-soft); }
+
+.container {
+  width: 100%;
+  max-width: 760px;
+}
+.back { display:inline-block; font-family: var(--f-data); font-size: .68rem; color: var(--muted); text-decoration: none; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 1rem; }
+.back:hover { color: var(--terracota-deep); }
+
+/* ── API SETUP ── */
+.api-setup {
+  background: var(--cream-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--shadow-xs);
+}
+.api-setup summary {
+  font-family: var(--f-ui);
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.api-setup summary::-webkit-details-marker { display: none; }
+.api-icon {
+  width: 24px; height: 24px;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.api-body {
+  margin-top: .85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.api-note {
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.api-note a { color: var(--ink-soft); }
+.api-row { display: flex; gap: 7px; }
+.api-input {
+  flex: 1;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: .78rem;
+  font-family: var(--f-data);
+}
+.api-input:focus { outline: none; border-color: var(--terracota); }
+.btn-xs {
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: var(--cream-soft);
+  color: var(--ink-soft);
+  font-size: .78rem;
+  font-family: var(--f-ui);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .15s, background .15s;
+}
+.btn-xs:hover { border-color: var(--terracota); background: var(--paper); }
+.api-status {
+  font-size: .72rem;
+  font-family: var(--f-data);
+  padding: 5px 9px;
+  border-radius: var(--r-xs);
+  display: none;
+}
+.api-status.ok  { background: rgba(122,141,92,.12); color: var(--moss); display: block; }
+.api-status.err { background: rgba(164,73,44,.10);  color: var(--rust); display: block; }
+
+/* ── HEADER ── */
+.app-header { margin-bottom: 1.75rem; }
+.eyebrow {
+  font-family: var(--f-ui);
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.app-title {
+  font-family: var(--f-ui);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -.025em;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.app-sub {
+  font-size: .85rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+/* ── MODO TABS ── */
+.mode-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 1.1rem;
+}
+
+.mode-btn {
+  flex-shrink: 0;
+  padding: 7px 15px;
+  border-radius: 20px;
+  border: 1px solid var(--line-soft);
+  background: var(--cream-soft);
+  font-family: var(--f-ui);
+  font-size: .82rem;
+  font-weight: 400;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mode-btn:hover { border-color: var(--terracota); color: var(--ink-soft); background: var(--paper); }
+.mode-btn.active {
+  background: var(--ink);
+  color: var(--cream-soft);
+  border-color: var(--ink);
+  font-weight: 500;
+}
+
+/* ── FILTROS ── */
+.filter-wrap { margin-bottom: 1rem; }
+.filter-label {
+  font-family: var(--f-ui);
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line-soft);
+  background: transparent;
+  font-family: var(--f-ui);
+  font-size: .78rem;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all .12s;
+}
+.chip:hover { border-color: var(--terracota); color: var(--ink-soft); background: var(--paper); }
+.chip.active {
+  background: var(--cream-soft);
+  border-color: var(--line);
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+/* ── BOTÓN TIRAR ── */
+.spin-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--r-btn);
+  border: none;
+  background: var(--ink);
+  color: var(--cream-soft);
+  font-family: var(--f-ui);
+  font-size: .95rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: background .15s, transform .1s;
+  letter-spacing: -.01em;
+}
+.spin-btn:hover { background: var(--terracota-deep); }
+.spin-btn:active { transform: scale(0.985); }
+.spin-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.spin-icon { font-size: 17px; display: inline-block; }
+.spin-icon.spinning { animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── STATUS ── */
+.status {
+  text-align: center;
+  font-size: .82rem;
+  color: var(--muted);
+  padding: 1rem;
+  display: none;
+  font-family: var(--f-data);
+}
+.status.visible { display: block; }
+
+/* ── RESULT CARD ── */
+.result-card {
+  background: var(--cream-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  padding: 1.25rem;
+  display: none;
+  box-shadow: var(--shadow-sm);
+  animation: secIn .22s ease;
+  position: relative;
+  overflow: hidden;
+}
+.result-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; right: -20px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: var(--terracota);
+  opacity: .04;
+  filter: blur(32px);
+  pointer-events: none;
+}
+.result-card.visible { display: block; }
+
+@keyframes secIn { from { transform: translateY(8px); } to { transform: translateY(0); } }
+
+.res-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--f-data);
+  font-size: .6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--line-soft);
+  background: var(--paper);
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.res-name {
+  font-family: var(--f-ui);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+  letter-spacing: -.02em;
+  line-height: 1.25;
+}
+
+.res-meta {
+  font-size: .85rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.res-nota {
+  font-size: .82rem;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border-radius: var(--r-sm);
+  padding: 9px 13px;
+  margin-bottom: 12px;
+  border-left: 2px solid var(--terracota);
+  line-height: 1.5;
+  display: none;
+}
+
+.res-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .78rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  margin-bottom: 12px;
+  padding: 5px 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 20px;
+  transition: border-color .12s, background .12s;
+  font-family: var(--f-ui);
+}
+.res-link:hover { border-color: var(--terracota); background: var(--paper); }
+
+.res-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  padding-top: 11px;
+  border-top: 1px solid var(--line-soft);
+  margin-top: 4px;
+}
+
+.btn-ghost {
+  padding: 6px 13px;
+  border-radius: var(--r-btn);
+  border: 1px solid var(--line-soft);
+  background: var(--cream-soft);
+  color: var(--ink-soft);
+  font-family: var(--f-ui);
+  font-size: .78rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color .12s, background .12s;
+}
+.btn-ghost:hover { border-color: var(--terracota); background: var(--paper); }
+
+/* Botón Asignar — preparado para handoff, pendiente de integración */
+.btn-assign {
+  padding: 6px 13px;
+  border-radius: var(--r-btn);
+  border: 1px solid var(--terracota);
+  background: transparent;
+  color: var(--terracota-deep);
+  font-family: var(--f-ui);
+  font-size: .78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .15s;
+}
+.btn-assign:hover { background: var(--terracota); color: var(--cream-soft); }
+
+/* ── ERROR ── */
+.error-box {
+  background: rgba(164,73,44,.08);
+  color: var(--rust);
+  border: 1px solid rgba(164,73,44,.2);
+  border-radius: var(--r-sm);
+  padding: 11px 14px;
+  font-size: .82rem;
+  line-height: 1.5;
+  display: none;
+  margin-top: 1rem;
+}
+.error-box.visible { display: block; }
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 2.5rem;
+  text-align: center;
+  font-family: var(--f-data);
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted-soft);
+  line-height: 1.8;
+}
+
+@media (max-width: 480px) {
+  body { padding: 1.25rem .75rem 3rem; }
+  .app-title { font-size: 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <a class="back" href="../index.html">← Panel</a>
+
+  <!-- API KEY -->
+  <details class="api-setup" id="apiSetup">
+    <summary>
+      <span class="api-icon">🔑</span>
+      API Key de Anthropic
+    </summary>
+    <div class="api-body">
+      <p class="api-note">
+        Crea tu key en <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>.
+        Se guarda en localStorage de este navegador — nunca sale de tu equipo.
+      </p>
+      <div class="api-row">
+        <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+        <button class="btn-xs" onclick="saveKey()">Guardar</button>
+        <button class="btn-xs" onclick="clearKey()">Borrar</button>
+      </div>
+      <div class="api-status" id="apiStatus"></div>
+    </div>
+  </details>
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="eyebrow">Generador · Panel Bastián</div>
+    <div class="app-title">¿Qué hacemos hoy?</div>
+    <div class="app-sub">Selecciona una categoría y te sugiero algo al azar desde tu Notion</div>
+  </div>
+
+  <!-- MODOS -->
+  <div class="mode-scroll" id="modeTabs">
+    <button class="mode-btn active" data-mode="lugares"  onclick="setMode('lugares')">📍 Lugares</button>
+    <button class="mode-btn"        data-mode="comida"   onclick="setMode('comida')">🍳 Comida</button>
+    <button class="mode-btn"        data-mode="ocio"     onclick="setMode('ocio')">🎮 Ocio</button>
+    <button class="mode-btn"        data-mode="mias"     onclick="setMode('mias')">💡 Ideas mías</button>
+    <button class="mode-btn"        data-mode="melin"    onclick="setMode('melin')">👶 Guagua Melín-Zayd</button>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filter-wrap" id="filterWrap"></div>
+
+  <!-- BOTÓN -->
+  <button class="spin-btn" id="spinBtn" onclick="tirar()">
+    <span class="spin-icon" id="spinIcon">🎲</span>
+    Tirar al azar
+  </button>
+
+  <!-- STATUS -->
+  <div class="status" id="statusMsg"></div>
+
+  <!-- ERROR -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- RESULTADO -->
+  <div class="result-card" id="resultCard">
+    <div class="res-badge" id="resBadge"></div>
+    <div class="res-name"  id="resName"></div>
+    <div class="res-meta"  id="resMeta"></div>
+    <div class="res-nota"  id="resNota"></div>
+    <div id="resLink"></div>
+    <div class="res-actions">
+      <button class="btn-ghost"  onclick="tirar()">🔀 Otro</button>
+      <button class="btn-ghost"  id="notionBtn" style="display:none">📋 Ver en Notion</button>
+      <!-- HANDOFF: botón preparado — integración pendiente en chat de Design -->
+      <button class="btn-assign" id="assignBtn" onclick="prepareHandoff()" style="display:none">📅 Asignar a momento</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Panel Bastián · Módulo Generador v1.0 · Claude Haiku via API
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  FUENTES DE DATOS — NOTION COLLECTIONS
+// ═══════════════════════════════════════════
+const MODES = {
+  lugares: {
+    label: 'Lugar', emoji: '📍',
+    collection: 'collection://3359a86b-a8ec-8058-9b3d-000bbb083025',
+    filterOptions: ['Comida','Comida Region','Delivery o Retiro','Extranjero','Paseo','Naturaleza','Weas Baratas'],
+    fields: ['Nombre','Descripcion','Comuna','Horario','Nota','Link','Select','url'],
+    nameField: 'Nombre', notaField: 'Nota', linkField: 'Link',
+    ratingField: 'Select',
+    ratingMap: { 'WenoWeno':'⭐ WenoWeno', 'Ahi nomas':'✓ Ahí nomás', 'Malo':'✗ Malo' }
+  },
+  comida: {
+    label: 'Comida', emoji: '🍳',
+    multiSource: true,
+    sources: {
+      ideas: {
+        collection: 'collection://3509a86b-a8ec-8025-9111-000b8bb658ee',
+        fields: ['Nombre','Categoria','Nota','RRSS','Link','url'],
+        nameField: 'Nombre', notaField: 'Nota', linkField: 'Link'
+      },
+      recetas: {
+        collection: 'collection://34c9a86b-a8ec-8090-907f-000b9cdf1fbb',
+        fields: ['Name','Categoria','Link','url'],
+        nameField: 'Name', notaField: null, linkField: 'Link'
+      }
+    },
+    filterGroups: [
+      { source: 'ideas',   options: ['Ideas sin receta','Especificos','Como comprar xd','como comer Tutorial','Como almacenar'] },
+      { source: 'recetas', options: ['Salado','Dulce','Cocktail'] }
+    ],
+    notaField: 'Nota', linkField: 'Link', ratingField: null
+  },
+  ocio: {
+    label: 'Ocio', emoji: '🎮',
+    collection: 'collection://3519a86b-a8ec-80bf-be17-000b0584b979',
+    filterOptions: ['Juegos','Musica','Juego Mesa','Libros Practicos','Libros','Manga','Anime','Serie','Peliculas','Juegos con melin'],
+    fields: ['Nombre','Categoria','Plataforma1','Gracia','Veredicto','Link','url'],
+    nameField: 'Nombre', notaField: 'Gracia', linkField: 'Link',
+    ratingField: 'Veredicto',
+    ratingMap: { 'Wena':'⭐ Wena', 'Mala':'✗ Mala' }
+  },
+  mias: {
+    label: 'Idea mía', emoji: '💡',
+    collection: 'collection://3419a86b-a8ec-80dd-897d-000b244fccee',
+    filterOptions: ['Ejercicio','Laborales','Invertir','Aprender otros','Aprender Farma','Comprar'],
+    fields: ['Nombre','Categoria','Nota','Otro','Link','url'],
+    nameField: 'Nombre', notaField: 'Nota', linkField: 'Link', ratingField: null
+  },
+  melin: {
+    label: 'Guagua Melín-Zayd', emoji: '👶',
+    collection: 'collection://33e9a86b-a8ec-80d8-8800-000b9a7e5a4d',
+    filterOptions: ['Eventos','Cosas que se hacen','Cosas que se compran','Cosas para ver','Cosas para aprender','Cosas a tener en mente'],
+    fields: ['Nombre','Categoria','Texto','Nota','Link','url'],
+    nameField: 'Nombre', notaField: 'Texto', linkField: 'Link', ratingField: null
+  }
+};
+
+// ═══════════════════════════════════════════
+//  ESTADO
+// ═══════════════════════════════════════════
+let currentMode    = 'lugares';
+let selectedFilter = '';
+let selectedSource = null;
+let isLoading      = false;
+let lastItem       = null;   // persiste el resultado para el handoff
+
+// ═══════════════════════════════════════════
+//  API KEY
+// ═══════════════════════════════════════════
+const KEY_STORAGE = 'panel.v5.api_key';
+function getKey() { return localStorage.getItem(KEY_STORAGE) || ''; }
+
+function saveKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val.startsWith('sk-ant-')) { showApiStatus('Debe empezar con sk-ant-...', false); return; }
+  localStorage.setItem(KEY_STORAGE, val);
+  showApiStatus('✓ Guardada', true);
+  document.getElementById('apiSetup').removeAttribute('open');
+}
+function clearKey() {
+  localStorage.removeItem(KEY_STORAGE);
+  document.getElementById('apiKeyInput').value = '';
+  showApiStatus('Key borrada', false);
+}
+function showApiStatus(msg, ok) {
+  const el = document.getElementById('apiStatus');
+  el.textContent = msg;
+  el.className = 'api-status ' + (ok ? 'ok' : 'err');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = getKey();
+  if (saved) {
+    document.getElementById('apiKeyInput').value = saved;
+    showApiStatus('✓ Key cargada', true);
+  } else {
+    document.getElementById('apiSetup').setAttribute('open', '');
+  }
+  renderFilters();
+});
+
+// ═══════════════════════════════════════════
+//  MODO Y FILTROS
+// ═══════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode; selectedFilter = ''; selectedSource = null;
+  document.querySelectorAll('.mode-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.mode === mode)
+  );
+  renderFilters();
+  hideResult();
+  document.getElementById('errorBox').classList.remove('visible');
+}
+
+function renderFilters() {
+  const m = MODES[currentMode];
+  let html = `<div class="filter-label">Filtrar por categoría</div><div class="chips">`;
+  if (m.multiSource && m.filterGroups) {
+    html += `<button class="chip active" onclick="selectChipSource(this,'',null)">Todo</button>`;
+    m.filterGroups.forEach(g =>
+      g.options.forEach(o =>
+        html += `<button class="chip" onclick="selectChipSource(this,'${o}','${g.source}')">${o}</button>`
+      )
+    );
+  } else {
+    html += `<button class="chip active" onclick="selectChip(this,'')">Todo</button>`;
+    m.filterOptions.forEach(o =>
+      html += `<button class="chip" onclick="selectChip(this,'${o}')">${o}</button>`
+    );
+  }
+  html += `</div>`;
+  document.getElementById('filterWrap').innerHTML = html;
+}
+
+function selectChip(el, val) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedFilter = val; selectedSource = null;
+}
+function selectChipSource(el, val, source) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedFilter = val; selectedSource = source;
+}
+
+// ═══════════════════════════════════════════
+//  TIRAR AL AZAR
+// ═══════════════════════════════════════════
+async function tirar() {
+  if (isLoading) return;
+  const key = getKey();
+  if (!key) { document.getElementById('apiSetup').setAttribute('open',''); showApiStatus('Ingresa tu API key primero', false); return; }
+
+  const m = MODES[currentMode];
+  isLoading = true; hideResult(); hideError();
+  showStatus('Consultando Notion...'); setSpinning(true);
+
+  try {
+    let activeCollection, activeNameField, activeFields, activeNotaField;
+
+    if (m.multiSource && m.sources) {
+      const srcKey = selectedSource || (Math.random() < .5 ? 'ideas' : 'recetas');
+      const src = m.sources[srcKey];
+      activeCollection = src.collection;
+      activeNameField  = src.nameField || 'Nombre';
+      activeFields     = src.fields;
+      activeNotaField  = src.notaField;
+    } else {
+      activeCollection = m.collection;
+      activeNameField  = m.nameField || 'Nombre';
+      activeFields     = m.fields;
+      activeNotaField  = m.notaField;
+    }
+
+    const nullCheck   = activeNameField === 'Name' ? '"Name" IS NOT NULL' : '"Nombre" IS NOT NULL';
+    const finalFilter = selectedFilter
+      ? `WHERE "Categoria" = '${selectedFilter}' AND ${nullCheck}`
+      : `WHERE ${nullCheck}`;
+    const fieldsStr   = activeFields.join(', ');
+
+    const prompt = `You have access to the Notion MCP. Query the data source: ${activeCollection}
+SELECT ${fieldsStr} FROM the collection ${finalFilter} LIMIT 60.
+Return ONLY a valid JSON array, no markdown, no explanation.
+Each object must include: ${fieldsStr}.
+Use null for missing fields.
+Example: [{"${activeNameField}":"Example","Categoria":"Cat","url":"https://..."}]`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'mcp-client-2025-04-04'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4000,
+        mcp_servers: [{ type: 'url', url: 'https://mcp.notion.com/mcp', name: 'notion-mcp', authorization_token: key }],
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const e = await response.json().catch(() => ({}));
+      throw new Error(`API ${response.status}: ${e?.error?.message || response.statusText}`);
+    }
+
+    const data  = await response.json();
+    const items = extractItems(data);
+    if (!items?.length) { showStatus('Sin resultados. Prueba con otro filtro.'); return; }
+
+    hideStatus();
+    const random = items[Math.floor(Math.random() * items.length)];
+    lastItem = { ...random, _mode: currentMode, _nameField: activeNameField, _notaField: activeNotaField };
+    showResult(random, m, activeNameField, activeNotaField);
+
+  } catch(err) {
+    hideStatus();
+    showError(err.message || 'Error. Abre la consola (F12) para más detalle.');
+    console.error('[Generador]', err);
+  } finally {
+    isLoading = false; setSpinning(false);
+  }
+}
+
+function extractItems(data) {
+  for (const block of (data?.content || [])) {
+    if (block.type === 'text' && block.text) {
+      const t = block.text.trim();
+      const m = t.match(/\[[\s\S]*?\]/);
+      if (m) { try { return JSON.parse(m[0]); } catch(e){} }
+      try { const p = JSON.parse(t); if (Array.isArray(p)) return p; } catch(e){}
+    }
+    if (block.type === 'mcp_tool_result') {
+      const inner = block?.content?.[0]?.text;
+      if (inner) {
+        try { const p = JSON.parse(inner); if (Array.isArray(p)) return p; } catch(e){}
+        const m = inner.match(/\[[\s\S]*?\]/);
+        if (m) { try { return JSON.parse(m[0]); } catch(e){} }
+      }
+    }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════
+//  MOSTRAR RESULTADO
+// ═══════════════════════════════════════════
+function showResult(item, m, nameField, notaField) {
+  const nombre    = item?.[nameField] || 'Sin nombre';
+  const categoria = item?.Categoria || '';
+  const nota      = notaField ? (item?.[notaField] || null) : null;
+  const link      = m.linkField ? (item?.[m.linkField] || null) : null;
+  const notionUrl = item?.url || null;
+
+  document.getElementById('resBadge').textContent = `${m.emoji} ${categoria || m.label}`;
+  document.getElementById('resName').textContent  = nombre;
+
+  let meta = '';
+  if (currentMode === 'lugares') {
+    if (item?.Comuna)    meta += item.Comuna;
+    if (item?.Horario)   meta += (meta ? ' · ' : '') + item.Horario;
+    if (item?.Descripcion) meta += (meta ? '\n' : '') + item.Descripcion;
+    if (m.ratingField && item?.[m.ratingField] && m.ratingMap)
+      meta += (meta ? ' · ' : '') + (m.ratingMap[item[m.ratingField]] || item[m.ratingField]);
+  } else if (currentMode === 'ocio') {
+    if (item?.Plataforma1) meta += item.Plataforma1;
+    if (m.ratingField && item?.[m.ratingField] && m.ratingMap)
+      meta += (meta ? ' · ' : '') + (m.ratingMap[item[m.ratingField]] || item[m.ratingField]);
+  } else if (currentMode === 'comida') {
+    if (item?.RRSS) meta += item.RRSS;
+  }
+  const metaEl = document.getElementById('resMeta');
+  metaEl.textContent   = meta;
+  metaEl.style.display = meta ? 'block' : 'none';
+
+  const notaEl = document.getElementById('resNota');
+  if (nota?.trim()) { notaEl.textContent = nota; notaEl.style.display = 'block'; }
+  else { notaEl.style.display = 'none'; }
+
+  document.getElementById('resLink').innerHTML = link
+    ? `<a href="${link}" target="_blank" class="res-link">🔗 Ver referencia</a>` : '';
+
+  const notionBtn = document.getElementById('notionBtn');
+  if (notionUrl) { notionBtn.style.display = 'flex'; notionBtn.onclick = () => window.open(notionUrl, '_blank'); }
+  else { notionBtn.style.display = 'none'; }
+
+  // Botón Asignar — siempre visible cuando hay resultado
+  document.getElementById('assignBtn').style.display = 'flex';
+
+  document.getElementById('resultCard').classList.add('visible');
+}
+
+// ═══════════════════════════════════════════
+//  HANDOFF — PENDIENTE DE INTEGRACIÓN
+//  Este bloque escribe en localStorage el item seleccionado
+//  para que el Planificador de Salidas lo recoja al abrirse.
+//  Clave: 'panel.v5.pendingActivity'
+//  Integración definitiva: chat de Design del Dashboard Final
+// ═══════════════════════════════════════════
+function prepareHandoff() {
+  if (!lastItem) return;
+  const payload = {
+    nombre:     lastItem[lastItem._nameField] || 'Sin nombre',
+    categoria:  lastItem.Categoria || '',
+    modo:       lastItem._mode,
+    notionUrl:  lastItem.url || null,
+    link:       lastItem.Link || null,
+    timestamp:  new Date().toISOString()
+  };
+  localStorage.setItem('panel.v5.pendingActivity', JSON.stringify(payload));
+
+  // Feedback visual temporal
+  const btn = document.getElementById('assignBtn');
+  const orig = btn.textContent;
+  btn.textContent = '✓ Guardado — abre el Planificador';
+  btn.style.background = 'var(--moss)';
+  btn.style.color = 'var(--cream-soft)';
+  btn.style.borderColor = 'var(--moss)';
+  setTimeout(() => {
+    btn.textContent = orig;
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }, 2500);
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function setSpinning(on) {
+  const icon = document.getElementById('spinIcon');
+  const btn  = document.getElementById('spinBtn');
+  icon.classList.toggle('spinning', on);
+  btn.disabled = on;
+  icon.textContent = on ? '⟳' : '🎲';
+}
+function showStatus(msg) { const el = document.getElementById('statusMsg'); el.innerHTML = msg; el.classList.add('visible'); }
+function hideStatus()    { document.getElementById('statusMsg').classList.remove('visible'); }
+function hideResult()    { document.getElementById('resultCard').classList.remove('visible'); }
+function showError(msg)  { const el = document.getElementById('errorBox'); el.textContent = '⚠ ' + msg; el.classList.add('visible'); }
+function hideError()     { document.getElementById('errorBox').classList.remove('visible'); }
+</script>
+</body>
+</html>

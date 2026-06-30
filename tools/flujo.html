@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c9956f"><title>Flujo · Panel Bastián</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#f5f0e8;--cream-soft:#fdfaf3;--paper:#fbf6ec;--beige:#ede4d3;--beige-deep:#e3d6bd;--line:#d8c9aa;--line-soft:#e8dcc4;--terracota:#c9956f;--terracota-deep:#b07a52;--ocre:#b8864a;--ocre-soft:#d4a861;--moss:#7a8d5c;--rust:#a4492c;--ink:#2d2418;--ink-soft:#5a4a37;--muted:#8a7860;--muted-soft:#a89880;--shadow-xs:0 1px 2px rgba(45,36,24,.05);--shadow-sm:0 2px 10px rgba(45,36,24,.06);--shadow-md:0 10px 30px rgba(45,36,24,.09);--shadow-lg:0 22px 56px rgba(45,36,24,.15);--r-xs:8px;--r-sm:12px;--r-md:14px;--r-lg:20px;--r-btn:11px;--radius-sm:12px;--radius-md:14px;--radius-lg:20px;--f-ui:'Geist',-apple-system,sans-serif;--f-read:'Geist',-apple-system,sans-serif;--f-data:'Geist Mono',ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f-read);background:radial-gradient(ellipse 70% 45% at 85% -5%,rgba(201,149,111,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at -5% 105%,rgba(184,134,74,.07) 0%,transparent 60%),var(--cream);color:var(--ink);min-height:100vh;line-height:1.5;font-weight:400;-webkit-font-smoothing:antialiased;padding:22px 16px 70px}
+.wrap{max-width:760px;margin:0 auto}
+.back{font-family:var(--f-data);font-size:.68rem;color:var(--muted);text-decoration:none;text-transform:uppercase;letter-spacing:.12em}
+.back:hover{color:var(--terracota-deep)}
+.hdr{margin:10px 0 26px;padding-bottom:18px;border-bottom:1px solid var(--beige-deep)}
+.title-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:10px;flex-wrap:wrap}
+.brand{font-family:var(--f-ui);font-weight:700;font-size:2rem;letter-spacing:-.04em;line-height:.9}
+.brand .dot{color:var(--terracota)}
+.brand-sub{font-family:var(--f-data);font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-top:8px}
+.month-sel{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:.9rem;font-weight:500;color:var(--ink);background:var(--cream-soft);border:1px solid var(--beige-deep);border-radius:var(--r-btn);padding:8px 16px;cursor:pointer;outline:none}
+.month-sel:hover{border-color:var(--terracota)}
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.scard{background:var(--cream-soft);border:1px solid var(--beige-deep);border-radius:var(--radius-md);padding:15px 16px}
+.scard .lab{font-family:var(--f-data);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}
+.scard .num{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:1.45rem;font-weight:600;letter-spacing:-.02em}
+.ops .scard{background:var(--beige);border-color:var(--beige-deep)}
+.ops .scard .num{font-size:1.15rem;font-weight:500}
+.pos{color:var(--moss)}.neg{color:var(--terracota-deep)}
+.panel{background:var(--cream-soft);border:1px solid var(--beige-deep);border-radius:var(--radius-lg);padding:20px 22px;margin-top:14px}
+.panel-h{font-family:var(--f-ui);font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.16em;margin-bottom:14px}
+.drop{border:1.5px dashed var(--beige-deep);border-radius:var(--radius-md);padding:20px;text-align:center;color:var(--muted);font-size:.82rem;background:var(--cream);cursor:pointer;transition:all .2s}
+.drop:hover{border-color:var(--terracota);color:var(--ink-soft)}
+.drop b{color:var(--terracota-deep);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center}
+.chip{font-family:var(--f-data);font-size:.58rem;padding:3px 9px;border-radius:var(--r-xs);background:var(--beige);color:var(--ink-soft)}
+.settings{margin-top:12px}
+.settings summary{font-family:var(--f-data);font-size:.64rem;color:var(--muted);cursor:pointer;text-transform:uppercase;letter-spacing:.1em}
+.settings input{width:100%;margin-top:8px;padding:8px 10px;border:1px solid var(--beige-deep);border-radius:var(--radius-sm);font-family:var(--f-data);font-size:.75rem;background:var(--cream);color:var(--ink);outline:none}
+.btn{font-family:var(--f-ui);font-size:.78rem;font-weight:500;padding:8px 16px;border-radius:var(--r-btn);border:1px solid var(--ink);cursor:pointer;background:var(--ink);color:var(--cream-soft);margin-top:8px;transition:all .2s}
+.btn.ghost{background:var(--cream-soft);color:var(--ink-soft);border-color:var(--line-soft)}
+.btn:hover{background:var(--terracota-deep);border-color:var(--terracota-deep)}
+.btn.ghost:hover{background:var(--cream-soft);border-color:var(--terracota);color:var(--ink)}
+.res{background:var(--cream);border:1px solid var(--ocre-soft);border-radius:var(--radius-md);padding:12px 14px;margin-top:10px;font-size:.8rem}
+.res .row2{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.res select{font-family:var(--f-ui);font-size:.78rem;padding:6px 10px;border:1px solid var(--beige-deep);border-radius:var(--radius-sm);background:var(--cream-soft);color:var(--ink)}
+.grp{font-family:var(--f-ui);font-size:.66rem;font-weight:600;color:var(--terracota-deep);text-transform:uppercase;letter-spacing:.13em;margin:18px 0 4px;display:flex;align-items:center;gap:10px}
+.grp::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--beige-deep),transparent)}
+.row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--beige)}
+.row:last-child{border-bottom:none}
+.tick{width:23px;height:23px;border-radius:7px;border:1.5px solid var(--beige-deep);background:var(--cream);cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;transition:all .15s}
+.tick.on{background:var(--moss);border-color:var(--moss)}
+.tcell{flex:1;min-width:0}
+.rname{font-family:var(--f-ui);font-weight:500;font-size:.9rem;color:var(--ink)}
+.rr{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.ramt{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-weight:400;font-size:.9rem;color:var(--ink)}
+.est{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:.66rem;color:var(--muted)}
+.real{width:104px;border:1px solid var(--beige-deep);background:var(--cream);border-radius:var(--radius-sm);padding:5px 8px;font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:.66rem;color:var(--ink);outline:none}
+.real:focus{border-color:var(--terracota)}
+.sel{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.opt{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:.66rem;padding:4px 9px;border-radius:var(--radius-sm);border:1px solid var(--beige-deep);background:var(--cream);cursor:pointer;color:var(--muted)}
+.opt.act{border:1.5px solid var(--terracota);color:var(--terracota-deep);background:rgba(201,149,111,.1)}
+.opt input{width:70px;border:none;background:transparent;font-family:var(--f-data);font-size:.66rem;color:inherit;outline:none}
+.paid .rname,.paid .ramt,.paid .est{color:var(--muted);text-decoration:line-through}
+.foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--beige-deep);display:flex;justify-content:space-between;font-family:var(--f-data);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+@media(max-width:560px){.cards3{grid-template-columns:1fr 1fr}.ops{grid-template-columns:1fr 1fr}.scard .num{font-size:1.25rem}}
+</style></head><body>
+<div class="wrap">
+ <a class="back" href="../index.html">← Panel</a>
+ <header class="hdr">
+  <div class="title-row"><h1 class="brand">flujo<span class="dot">.</span></h1><select id="monthSel" class="month-sel"></select></div>
+ </header>
+ <div class="cards3" id="summary"></div>
+ <div class="cards3 ops" id="ops"></div>
+ <section class="panel">
+  <div class="panel-h">Subir estado de cuenta</div>
+  <div class="drop" id="drop">Arrastra los PDF aquí o <b>selecciona</b><br>Leo banco, total facturado y pago mínimo, y los aplico a la tarjeta.
+   <div class="chips"><span class="chip">BCI</span><span class="chip">Santander</span><span class="chip">Estado Mía</span><span class="chip">Estado Papá 1</span><span class="chip">Estado Papá 2</span></div>
+  </div>
+  <input type="file" id="file" accept="application/pdf,image/*" multiple style="display:none">
+  <div id="analysis"></div>
+  <details class="settings"><summary>⚙️ Clave API de Anthropic (para leer los PDF)</summary>
+   <input type="password" id="apikey" placeholder="sk-ant-..."><button class="btn ghost" id="saveKey">Guardar clave</button>
+   <div style="font-size:.66rem;color:var(--muted);margin-top:6px">Se guarda solo en este navegador. Sin clave, igual puedes ingresar los montos a mano abajo.</div>
+  </details>
+ </section>
+ <section class="panel">
+  <div class="panel-h">Pagos del mes</div>
+  <div id="list"></div>
+ </section>
+ <footer class="foot"><span>flujo · v1</span><span>Panel Bastián</span></footer>
+</div>
+<script>
+const DATA={"mes": [{"key": "2026-07", "label": "Julio 2026", "ingresos": [["Farmacia Popular", 2015000], ["HHEE", 140000], ["Bono desempeño", 755000], ["Farmacias Curie", 972000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 409200.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 73000, true], ["Piscina", 45000, false]]}, {"key": "2026-08", "label": "Agosto 2026", "ingresos": [["Farmacia Popular", 2015000], ["HHEE", 140000], ["Bono desempeño", 0], ["Farmacias Curie", 972000], ["FarQFar", 550000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 410500.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 77000, true], ["Piscina", 45000, false]]}, {"key": "2026-09", "label": "Septiembre 2026", "ingresos": [["Farmacia Popular", 2015000], ["HHEE", 140000], ["Bono desempeño", 0], ["Farmacias Curie", 1080000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 411800.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 61000, true], ["Piscina", 45000, false]]}, {"key": "2026-10", "label": "Octubre 2026", "ingresos": [["Farmacia Popular", 2015000], ["HHEE", 140000], ["Bono desempeño", 755000], ["Farmacias Curie", 756000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 413100.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 77000, true], ["Piscina", 45000, false]]}, {"key": "2026-11", "label": "Noviembre 2026", "ingresos": [["Farmacia Popular", 2015000], ["HHEE", 140000], ["Bono desempeño", 0], ["Farmacias Curie", 1080000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 414400.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 71000, true], ["Piscina", 45000, false]]}, {"key": "2026-12", "label": "Diciembre 2026", "ingresos": [["Farmacia Popular", 2015000], ["HHEE", 140000], ["Bono desempeño", 0], ["Farmacias Curie", 972000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 415700.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 71000, true], ["Piscina", 45000, false]]}, {"key": "2027-01", "label": "Enero 2027", "ingresos": [["Farmacia Popular", 2015000], ["HHEE", 140000], ["Bono desempeño", 755000], ["Farmacias Curie", 972000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 416900.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 76000, true], ["Piscina", 45000, false]]}, {"key": "2027-02", "label": "Febrero 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 1080000], ["FarQFar", 500000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 418200.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 65000, true], ["Piscina", 45000, false]]}, {"key": "2027-03", "label": "Marzo 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 864000], ["FarQFar", 500000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 419500.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 73000, true], ["Piscina", 45000, false]]}, {"key": "2027-04", "label": "Abril 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 972000], ["FarQFar", 550000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 420900.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 67000, true], ["Piscina", 45000, false]]}, {"key": "2027-05", "label": "Mayo 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 785000], ["Farmacias Curie", 864000], ["FarQFar", 550000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 422200.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 76000, true], ["Piscina", 45000, false]]}, {"key": "2027-06", "label": "Junio 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 1080000], ["FarQFar", 500000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 423500.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 76000, true], ["Piscina", 45000, false]]}, {"key": "2027-07", "label": "Julio 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 785000], ["Farmacias Curie", 1080000], ["FarQFar", 500000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 424800.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 77000, true], ["Piscina", 45000, false]]}, {"key": "2027-08", "label": "Agosto 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 1080000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 405259], ["Hipotecario (Papá)", 426100.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 73000, true], ["Piscina", 45000, false]]}, {"key": "2027-09", "label": "Septiembre 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 972000], ["FarQFar", 550000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 0], ["Hipotecario (Papá)", 427400.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 61000, true], ["Piscina", 45000, false]]}, {"key": "2027-10", "label": "Octubre 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 785000], ["Farmacias Curie", 756000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 0], ["Hipotecario (Papá)", 428800.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 81000, true], ["Piscina", 45000, false]]}, {"key": "2027-11", "label": "Noviembre 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 1188000], ["FarQFar", 500000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 0], ["Hipotecario (Papá)", 430100.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 71000, true], ["Piscina", 45000, false]]}, {"key": "2027-12", "label": "Diciembre 2027", "ingresos": [["Farmacia Popular", 2230000], ["HHEE", 145000], ["Bono desempeño", 0], ["Farmacias Curie", 972000], ["FarQFar", 525000], ["Arriendo pieza", 200000], ["Extras 2 (ocasional)", 0]], "creditos": [["Consumo Banco Estado 1", 430591], ["Consumo Banco Estado 2", 0], ["Hipotecario (Papá)", 431400.0], ["Pie (Papá)", 300000]], "fijos": [["Gimnasio", 182000, false], ["Gastos comunes", 175000, true], ["Gatos", 195000, true], ["Auto", 67000, true], ["Piscina", 45000, false]]}]};
+const MODEL='claude-sonnet-4-6';
+const CARDS=[['k0','Tarjeta BCI'],['k1','Tarjeta Santander'],['k2','Tarjeta Estado (Mía)'],['k3','Tarjeta Estado Papá 1'],['k4','Tarjeta Estado Papá 2']];
+const fmt=n=>'$'+Math.round(n||0).toLocaleString('es-CL');
+let S=JSON.parse(localStorage.getItem('flujo_v1')||'{}');
+S.apikey=S.apikey||'';S.cards=S.cards||{};S.month=S.month||{};
+S.apikey=localStorage.getItem('panel.v5.api_key')||S.apikey;
+CARDS.forEach(([id])=>{S.cards[id]=S.cards[id]||{total:0,min:0}});
+function save(){localStorage.setItem('flujo_v1',JSON.stringify(S))}
+let CUR=DATA.mes.find(m=>{const d=new Date();const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return m.key===k})?DATA.mes.find(m=>{const d=new Date();const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return m.key===k}).key:DATA.mes[0].key;
+function mst(){S.month[CUR]=S.month[CUR]||{paid:{},real:{},mode:{},otro:{}};return S.month[CUR]}
+function cardAmt(id){const st=mst();const m=st.mode[id]||'total';const c=S.cards[id]||{};if(m==='min')return c.min||0;if(m==='otro')return parseInt(st.otro[id])||0;return c.total||0}
+function rows(){
+ const M=DATA.mes.find(x=>x.key===CUR);const st=mst();const out=[];
+ M.creditos.forEach((c,i)=>{if(c[1]>0)out.push({id:'c'+i,name:c[0],amt:c[1]})});
+ CARDS.forEach(([id,name])=>out.push({id,name,card:true}));
+ M.fijos.forEach((g,i)=>out.push({id:'f'+i,name:g[0],est:g[1],variable:g[2]}));
+ return out;
+}
+function amount(r){const st=mst();if(r.card)return cardAmt(r.id);if(r.variable&&st.real[r.id]!==undefined&&st.real[r.id]!=='')return parseInt(st.real[r.id])||0;return r.est!==undefined?r.est:r.amt}
+function entra(){return DATA.mes.find(x=>x.key===CUR).ingresos.reduce((s,i)=>s+i[1],0)}
+function recompute(){
+ const st=mst();let debo=0,pag=0;rows().forEach(r=>{const a=amount(r);debo+=a;if(st.paid[r.id])pag+=a});
+ const E=entra();
+ sc('s-entra',fmt(E));sc('s-debo',fmt(debo));
+ const q=E-debo;const qe=document.getElementById('s-queda');qe.textContent=fmt(q);qe.className='num '+(q>=0?'pos':'neg');
+ sc('o-pag',fmt(pag));sc('o-disp',fmt(E-pag));sc('o-falta',fmt(debo-pag));
+}
+function sc(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+function buildSummary(){
+ document.getElementById('summary').innerHTML=
+  card('Ingresos','s-entra')+card('Egresos','s-debo')+card('Sobrante','s-queda');
+ document.getElementById('ops').innerHTML=
+  card('Pagado','o-pag')+card('Libre','o-disp')+card('Faltante','o-falta');
+}
+function card(lab,id){return '<div class="scard"><div class="lab">'+lab+'</div><div class="num" id="'+id+'"></div></div>'}
+function render(){
+ const L=document.getElementById('list');L.innerHTML='';const st=mst();
+ let groups=[['Créditos fijos',r=>r.id[0]==='c'],['Tarjetas',r=>r.card],['Gastos fijos',r=>r.id[0]==='f']];
+ const all=rows();
+ groups.forEach(([gname,test])=>{
+  const items=all.filter(test);if(!items.length)return;
+  const h=document.createElement('div');h.className='grp';h.textContent=gname;L.appendChild(h);
+  items.forEach(r=>{
+   const row=document.createElement('div');row.className='row'+(st.paid[r.id]?' paid':'');
+   const t=document.createElement('div');t.className='tick'+(st.paid[r.id]?' on':'');t.textContent=st.paid[r.id]?'✓':'';
+   t.onclick=()=>{st.paid[r.id]=!st.paid[r.id];save();render();recompute()};row.appendChild(t);
+   const cell=document.createElement('div');cell.className='tcell';
+   const nm=document.createElement('div');nm.className='rname';nm.textContent=r.name;cell.appendChild(nm);
+   if(r.card){
+    const c=S.cards[r.id]||{};const sel=document.createElement('div');sel.className='sel';const mode=st.mode[r.id]||'total';
+    const mk=(m,lab)=>{const b=document.createElement('div');b.className='opt'+(mode===m?' act':'');b.textContent=lab;b.onclick=()=>{st.mode[r.id]=m;save();render();recompute()};return b};
+    sel.appendChild(mk('total','Total '+fmt(c.total)));
+    sel.appendChild(mk('min','Mínimo '+fmt(c.min)));
+    const otro=document.createElement('div');otro.className='opt'+(mode==='otro'?' act':'');otro.append('Otro $');
+    const inp=document.createElement('input');inp.type='number';inp.placeholder='0';inp.value=st.otro[r.id]||'';
+    inp.oninput=e=>{st.otro[r.id]=e.target.value;save();recompute();const a=row.querySelector('.ramt');if(a)a.textContent=fmt(amount(r))};
+    inp.onfocus=()=>{st.mode[r.id]='otro';save()};otro.appendChild(inp);
+    otro.onclick=e=>{if(e.target!==inp){st.mode[r.id]='otro';save();render();recompute()}};
+    sel.appendChild(otro);cell.appendChild(sel);
+   }
+   row.appendChild(cell);
+   const rr=document.createElement('div');rr.className='rr';
+   if(r.variable){
+    const est=document.createElement('span');est.className='est';est.textContent='Aprox '+fmt(r.est);rr.appendChild(est);
+    const ri=document.createElement('input');ri.className='real';ri.type='number';ri.placeholder='$';ri.value=st.real[r.id]!==undefined?st.real[r.id]:'';
+    ri.oninput=e=>{st.real[r.id]=e.target.value;save();const a=row.querySelector('.ramt');if(a)a.textContent=fmt(amount(r));recompute()};rr.appendChild(ri);
+   }
+   const a=document.createElement('div');a.className='ramt';a.textContent=fmt(amount(r));rr.appendChild(a);
+   row.appendChild(rr);L.appendChild(row);
+  });
+ });
+}
+// month selector
+const ms=document.getElementById('monthSel');
+DATA.mes.forEach(m=>{const o=document.createElement('option');o.value=m.key;o.textContent=m.label;ms.appendChild(o)});
+ms.value=CUR;ms.onchange=()=>{CUR=ms.value;buildSummary();render();recompute()};
+// api key
+document.getElementById('apikey').value=S.apikey;
+document.getElementById('saveKey').onclick=()=>{S.apikey=document.getElementById('apikey').value.trim();localStorage.setItem('panel.v5.api_key',S.apikey);save();alert('Clave guardada')};
+// upload
+const drop=document.getElementById('drop'),file=document.getElementById('file');
+drop.onclick=()=>file.click();
+drop.ondragover=e=>{e.preventDefault();drop.style.borderColor='var(--terracota)'};
+drop.ondragleave=()=>drop.style.borderColor='';
+drop.ondrop=e=>{e.preventDefault();drop.style.borderColor='';handle(e.dataTransfer.files)};
+file.onchange=()=>handle(file.files);
+function handle(files){if(!S.apikey){alert('Primero guarda tu clave API en ⚙️, o ingresa los montos a mano.');return}[...files].forEach(analyze)}
+async function analyze(f){
+ const A=document.getElementById('analysis');
+ const box=document.createElement('div');box.className='res';box.textContent='Leyendo '+f.name+'…';A.appendChild(box);
+ try{
+  const b64=await toB64(f);const isPdf=f.type==='application/pdf';
+  const source=isPdf?{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}}:{type:'image',source:{type:'base64',media_type:f.type,data:b64}};
+  const prompt='Lee este estado de cuenta de tarjeta de crédito chilena. Devuelve SOLO un JSON, sin texto ni markdown, con: banco (string), total_facturado (entero CLP sin puntos), pago_minimo (entero CLP sin puntos). Ejemplo: {"banco":"BCI","total_facturado":352000,"pago_minimo":87000}';
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':S.apikey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MODEL,max_tokens:300,messages:[{role:'user',content:[source,{type:'text',text:prompt}]}]})});
+  const j=await res.json();if(j.error){box.textContent='Error: '+j.error.message;return}
+  let txt=j.content[0].text.trim().replace(/^```json?/,'').replace(/```$/,'').trim();
+  const d=JSON.parse(txt);
+  box.innerHTML='<b>'+f.name+'</b><br>Banco: '+d.banco+' · Total '+fmt(d.total_facturado)+' · Mínimo '+fmt(d.pago_minimo);
+  const r2=document.createElement('div');r2.className='row2';
+  const sl=document.createElement('select');CARDS.forEach(([id,nm])=>{const o=document.createElement('option');o.value=id;o.textContent=nm;sl.appendChild(o)});
+  const guess=CARDS.find(([id,nm])=>nm.toLowerCase().includes((d.banco||'').toLowerCase().slice(0,4)));if(guess)sl.value=guess[0];
+  const ap=document.createElement('button');ap.className='btn';ap.textContent='Aplicar';
+  ap.onclick=()=>{S.cards[sl.value]={total:d.total_facturado,min:d.pago_minimo};mst().mode[sl.value]='total';save();render();recompute();box.style.borderColor='var(--moss)';ap.textContent='✓ Aplicado'};
+  r2.append('Asignar a: ',sl,ap);box.appendChild(r2);
+ }catch(e){box.textContent='No pude leer '+f.name+': '+e.message}
+}
+function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f)})}
+buildSummary();render();recompute();
+</script></body></html>

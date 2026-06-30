@@ -4,565 +4,744 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#c9956f">
-<title>Panel · Bastián</title>
+<title>Panel · V5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* ═══════════════════════════════════════════════════════════
-     PALETA V3 EARTHY MINIMALISTA
-     ═══════════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════
+     TOKENS · earthy
+     ═══════════════════════════════════════════════ */
   :root {
-    --cream: #f5f0e8;
-    --cream-soft: #fdfaf3;
-    --beige: #ede4d3;
-    --beige-deep: #e3d6bd;
-    --terracota: #c9956f;
-    --terracota-deep: #b07a52;
-    --ocre: #b8864a;
-    --ocre-soft: #d4a861;
-    --ink: #2d2418;
-    --ink-soft: #5a4a37;
-    --muted: #8a7860;
-    --moss: #7a8d5c;
-    --shadow-sm: 0 2px 8px rgba(45, 36, 24, 0.06);
-    --shadow-md: 0 8px 24px rgba(45, 36, 24, 0.08);
-    --shadow-lg: 0 16px 48px rgba(45, 36, 24, 0.12);
-    --radius-sm: 12px;
-    --radius-md: 18px;
-    --radius-lg: 28px;
+    --cream:        #f5f0e8;
+    --cream-soft:   #fdfaf3;
+    --paper:        #fbf6ec;
+    --beige:        #ede4d3;
+    --beige-deep:   #e3d6bd;
+    --line:         #d8c9aa;
+    --line-soft:    #e8dcc4;
+
+    --terracota:        #c9956f;
+    --terracota-deep:   #b07a52;
+    --ocre:             #b8864a;
+    --ocre-soft:        #d4a861;
+    --moss:             #7a8d5c;
+    --rust:             #a4492c;
+
+    --ink:        #2d2418;
+    --ink-soft:   #5a4a37;
+    --muted:      #8a7860;
+    --muted-soft: #a89880;
+
+    --shadow-xs: 0 1px 2px rgba(45,36,24,.05);
+    --shadow-sm: 0 2px 10px rgba(45,36,24,.06);
+    --shadow-md: 0 10px 30px rgba(45,36,24,.09);
+    --shadow-lg: 0 22px 56px rgba(45,36,24,.15);
+
+    --r-xs: 8px;
+    --r-sm: 12px;
+    --r-md: 14px;
+    --r-lg: 20px;
+    /* radio unificado para botones (rectángulos redondeados) */
+    --r-btn: 11px;
+
+    --pad-card: 20px 20px 18px;
+    --gap-grid: 13px;
+    --gap-section: 42px;
+
+    /* ─── SISTEMA TIPOGRÁFICO · 3 roles configurables en Ajustes ───
+       --f-ui   → marca, títulos, nombres, botones, pestañas
+       --f-read → descripciones, saludo, texto de lectura
+       --f-data → reloj, fechas, horas, contadores, estados
+       Default V5: limpio (Geist en UI y cuerpo, Geist Mono en datos)    */
+    --f-ui:   'Geist', -apple-system, sans-serif;
+    --f-read: 'Geist', -apple-system, sans-serif;
+    --f-data: 'Geist Mono', monospace;
+  }
+
+  /* densidad compacta (default V5) */
+  body.density-compact {
+    --pad-card: 15px 16px 14px;
+    --gap-grid: 9px;
+    --gap-section: 32px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'Poppins', -apple-system, sans-serif;
+    font-family: var(--f-read);
     background:
-      radial-gradient(ellipse at top right, rgba(201, 149, 111, 0.12) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom left, rgba(184, 134, 74, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 45% at 85% -5%, rgba(201,149,111,.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at -5% 105%, rgba(184,134,74,.07) 0%, transparent 60%),
       var(--cream);
     color: var(--ink);
     min-height: 100vh;
     line-height: 1.5;
-    font-weight: 400;
     -webkit-font-smoothing: antialiased;
-    padding: 24px 20px 80px;
+    padding: 26px 22px 90px;
   }
 
-  /* ═══════════════════════════════════════════════════════════
-     LAYOUT
-     ═══════════════════════════════════════════════════════════ */
-  .wrap {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
+  ::selection { background: var(--terracota); color: var(--cream-soft); }
+  .data { font-family: var(--f-data); font-feature-settings: "tnum"; }
+  .wrap { max-width: 1140px; margin: 0 auto; }
 
-  /* ═══════════════════════════════════════════════════════════
+  /* ═══════════════════════════════════════════════
+     BOTONES · base unificada — rectángulos redondeados
+     ═══════════════════════════════════════════════ */
+  .btn {
+    font-family: var(--f-ui); font-size: .86rem; font-weight: 500;
+    border-radius: var(--r-btn); cursor: pointer; border: 1px solid transparent;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all .2s; white-space: nowrap; padding: 10px 18px; line-height: 1;
+  }
+  .btn .plus { font-size: 1.15rem; line-height: 1; transform: translateY(-1px); }
+  .btn-solid { background: var(--ink); color: var(--cream-soft); border-color: var(--ink); }
+  .btn-solid:hover { background: var(--terracota-deep); border-color: var(--terracota-deep); }
+  .btn-ghost { background: var(--cream-soft); color: var(--ink-soft); border-color: var(--line-soft); }
+  .btn-ghost:hover { border-color: var(--terracota); color: var(--ink); }
+  .btn-icon { padding: 10px 12px; }
+  .btn-icon svg { width: 17px; height: 17px; }
+
+  /* ═══════════════════════════════════════════════
+     SECTION EYEBROW — Geist (sin símbolos)
+     ═══════════════════════════════════════════════ */
+  .row-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: var(--gap-section) 0 14px; }
+  .row-h:first-child { margin-top: 6px; }
+  .row-h-left { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .row-h-title { font-family: var(--f-ui); font-size: .76rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .16em; }
+  .row-h-sub { font-family: var(--f-ui); font-size: .76rem; font-weight: 400; color: var(--muted-soft); letter-spacing: .01em; }
+  .row-h-actions { display: flex; gap: 6px; align-items: center; }
+  .row-h-actions > button {
+    font-family: var(--f-ui); font-size: .75rem; color: var(--ink-soft); cursor: pointer;
+    padding: 7px 12px; border-radius: var(--r-btn); border: 1px solid var(--line-soft); background: var(--cream-soft); transition: all .15s;
+  }
+  .row-h-actions > button:hover { color: var(--ink); border-color: var(--terracota); }
+  /* segmento (Semana/Mes) como rectángulos redondeados */
+  .seg-mini { display: flex; gap: 3px; background: var(--beige); border-radius: var(--r-btn); padding: 3px; }
+  .seg-mini button { border: none; border-radius: 8px; padding: 6px 14px; font-family: var(--f-ui); font-size: .75rem; color: var(--ink-soft); cursor: pointer; transition: all .15s; }
+  .seg-mini button:hover { color: var(--ink); }
+  .seg-mini button.on { background: var(--ink); color: var(--cream-soft); }
+
+  /* ═══════════════════════════════════════════════
      HEADER
-     ═══════════════════════════════════════════════════════════ */
-  .hdr {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 36px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--beige-deep);
-    animation: fadeIn 0.6s ease-out;
-  }
+     ═══════════════════════════════════════════════ */
+  .hdr { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; padding: 4px 2px 22px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 11px; background: var(--ink); position: relative; flex-shrink: 0; }
+  .brand-mark::before { content: ''; position: absolute; inset: 8px 8px auto auto; width: 9px; height: 9px; border-radius: 50%; background: var(--terracota); }
+  .brand-name { font-family: var(--f-ui); font-weight: 700; font-size: 1.74rem; letter-spacing: -0.035em; color: var(--ink); line-height: 1; }
+  .brand-name .dot { color: var(--terracota); }
+  .brand-sub { font-family: var(--f-ui); font-size: .58rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .18em; margin-top: 5px; }
+  .greeting { text-align: center; font-family: var(--f-read); color: var(--ink-soft); font-size: .96rem; }
+  .greeting strong { color: var(--ink); font-weight: 600; }
+  .clock { display: flex; align-items: center; gap: 14px; font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+  .clock-time { font-size: 1.5rem; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; }
+  .clock-time .sep { color: var(--muted); }
+  .clock-meta { text-align: right; font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: .14em; line-height: 1.5; }
+  .clock-meta .week { color: var(--ink-soft); }
 
-  .brand {
-    font-family: 'Geist', sans-serif;
-    font-weight: 700;
-    font-size: 2.2rem;
-    letter-spacing: -0.04em;
-    color: var(--ink);
-    line-height: 0.9;
+  /* ═══════════════════════════════════════════════
+     AHORA strip — foco · próximo · CAPTURAR
+     ═══════════════════════════════════════════════ */
+  .now-strip {
+    background: var(--cream-soft); border: 1px solid var(--line); border-radius: var(--r-md);
+    padding: 14px 16px 14px 18px; display: grid; grid-template-columns: 1.6fr 1px 1.2fr 1px auto;
+    gap: 18px; align-items: stretch; margin-bottom: 24px; box-shadow: var(--shadow-xs); position: relative; overflow: hidden;
   }
-  .brand .dot {
-    color: var(--terracota);
+  .now-strip::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--terracota); }
+  .now-cell { display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0; }
+  .now-cell .label { font-family: var(--f-ui); font-size: .62rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .14em; display: flex; align-items: center; gap: 7px; }
+  .now-cell .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--terracota); animation: pulse 1.9s ease-out infinite; }
+  .now-cell .value { font-family: var(--f-ui); font-size: 1.04rem; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .now-cell .value.dim { color: var(--ink); }
+  /* meta pequeña en Title Case legible (no mayúsculas/mono) */
+  .now-cell .meta { font-family: var(--f-data); font-size: .72rem; color: var(--muted); display: flex; align-items: center; gap: 7px; min-width: 0; }
+  .now-cell .meta .m-block { font-family: var(--f-ui); font-weight: 600; color: var(--terracota-deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .now-cell .meta .m-sep { color: var(--muted-soft); flex-shrink: 0; }
+  .now-cell .meta .m-est { font-family: var(--f-data); color: var(--ink-soft); white-space: nowrap; flex-shrink: 0; }
+  a.now-cell { text-decoration: none; color: inherit; cursor: pointer; margin: -6px -10px; padding: 6px 10px; border-radius: var(--r-sm); transition: background .2s; }
+  a.now-cell:hover { background: var(--paper); }
+  .now-divider { background: var(--line-soft); }
+  /* botón capturar grande dentro de la barra */
+  .now-capture {
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px;
+    background: var(--ink); color: var(--cream-soft); border: 1px solid var(--ink); border-radius: var(--r-btn);
+    padding: 0 22px; min-width: 168px; cursor: pointer; transition: all .2s; font-family: var(--f-ui);
   }
-  .brand-sub {
-    font-family: 'Geist Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-top: 6px;
-  }
+  .now-capture:hover { background: var(--terracota-deep); border-color: var(--terracota-deep); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .now-capture .cap-title { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 9px; }
+  .now-capture .cap-title .plus { font-size: 1.3rem; line-height: 1; transform: translateY(-1px); }
+  .now-capture .cap-sub { font-family: var(--f-data); font-size: .58rem; text-transform: uppercase; letter-spacing: .12em; opacity: .65; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(201,149,111,.55); } 70% { box-shadow: 0 0 0 9px rgba(201,149,111,0); } 100% { box-shadow: 0 0 0 0 rgba(201,149,111,0); } }
 
-  .greeting {
-    text-align: right;
-    font-family: 'Geist', sans-serif;
+  /* ═══════════════════════════════════════════════
+     TABS — subrayado, contador, lupa al borde derecho
+     ═══════════════════════════════════════════════ */
+  .tabs { display: flex; align-items: center; gap: 2px; margin-bottom: 30px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .tabs::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  #navCats { display: contents; }
+  .tab { flex-shrink: 0; }
+  .tab-search { margin-left: auto; flex-shrink: 0; display: flex; align-items: center; gap: 2px; padding-bottom: 4px; }
+  .tab-search input {
+    width: 0; opacity: 0; padding: 0; border: 1px solid transparent; background: transparent;
+    font-family: var(--f-read); font-size: .86rem; color: var(--ink); outline: none; border-radius: var(--r-btn);
+    transition: width .25s ease, opacity .2s ease, padding .25s ease;
   }
-  .greeting-time {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-weight: 500;
+  .tabs.searching .tab-search input {
+    width: 220px; opacity: 1; padding: 8px 12px; background: var(--paper); border-color: var(--terracota);
+    box-shadow: 0 0 0 3px rgba(201,149,111,.12); margin-right: 4px;
   }
-  .greeting-date {
-    font-size: 0.95rem;
-    color: var(--ink-soft);
-    font-weight: 500;
-    margin-top: 4px;
-  }
+  .tab-search input::placeholder { color: var(--muted-soft); }
+  .tab-search-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 8px; border-radius: var(--r-btn); display: grid; place-items: center; transition: all .15s; }
+  .tab-search-btn:hover { color: var(--ink); background: var(--paper); }
+  .tab-search-btn svg { width: 17px; height: 17px; }
+  .tabs.searching .tab-search-btn { display: none; }
+  .tab-search-clr { display: none; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1.1rem; line-height: 1; padding: 5px 8px; border-radius: var(--r-btn); }
+  .tab-search-clr:hover { color: var(--ink); background: var(--paper); }
+  .tabs.searching .tab-search-clr { display: block; }
+  .tab { background: transparent; border: none; padding: 11px 16px 13px; font-family: var(--f-ui); font-size: .92rem; font-weight: 500; color: var(--muted); cursor: pointer; position: relative; white-space: nowrap; transition: color .2s; display: flex; align-items: center; gap: 8px; }
+  .tab:hover { color: var(--ink-soft); }
+  .tab.active { color: var(--ink); }
+  .tab.active::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 2px; background: var(--terracota); border-radius: 2px; }
+  .tab-count { font-family: var(--f-data); font-size: .68rem; color: var(--muted-soft); }
+  .tab.active .tab-count { color: var(--terracota-deep); }
 
-  /* ═══════════════════════════════════════════════════════════
-     TABS
-     ═══════════════════════════════════════════════════════════ */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 32px;
-    background: var(--beige);
-    padding: 5px;
-    border-radius: 999px;
-    width: fit-content;
-    animation: fadeInUp 0.6s ease-out 0.1s both;
-  }
-  .tab {
-    background: transparent;
-    border: none;
-    padding: 9px 18px;
-    border-radius: 999px;
-    font-family: 'Geist', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--ink-soft);
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-  }
-  .tab:hover {
-    color: var(--ink);
-  }
-  .tab.active {
-    background: var(--ink);
-    color: var(--cream-soft);
-    box-shadow: var(--shadow-sm);
-  }
-  .tab .badge {
-    font-size: 0.6rem;
-    margin-left: 4px;
-    opacity: 0.6;
-  }
+  .section { display: none; animation: secIn .35s ease-out; }
+  .section.active { display: block; }
 
-  /* ═══════════════════════════════════════════════════════════
-     SECCIONES
-     ═══════════════════════════════════════════════════════════ */
-  .section {
-    display: none;
-    animation: fadeInUp 0.4s ease-out;
-  }
-  .section.active {
-    display: block;
-  }
+  /* ═══════════════════════════════════════════════
+     CORE GRID
+     ═══════════════════════════════════════════════ */
+  .core-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(244px, 1fr)); gap: var(--gap-grid); }
+  .core-card { background: var(--cream-soft); border: 1px solid var(--line-soft); border-radius: var(--r-md); padding: var(--pad-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 12px; min-height: 166px; position: relative; overflow: hidden; transition: all .28s cubic-bezier(.4,0,.2,1); cursor: pointer; }
+  .core-card::before { content: ''; position: absolute; inset: auto -35% -45% auto; width: 130px; height: 130px; background: var(--card-tint, transparent); border-radius: 50%; filter: blur(42px); opacity: .5; transition: opacity .3s; pointer-events: none; }
+  .core-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--terracota); }
+  .core-card:hover::before { opacity: .85; }
+  .core-card:nth-child(4n+1) { --card-tint: rgba(201,149,111,.5); }
+  .core-card:nth-child(4n+2) { --card-tint: rgba(184,134,74,.45); }
+  .core-card:nth-child(4n+3) { --card-tint: rgba(122,141,92,.42); }
+  .core-card:nth-child(4n+4) { --card-tint: rgba(176,122,82,.45); }
+  .core-card.disabled { cursor: default; opacity: .58; }
+  .core-card.disabled:hover { transform: none; box-shadow: none; border-color: var(--line-soft); }
+  .core-glyph { width: 46px; height: 46px; border-radius: 13px; background: var(--paper); border: 1px solid var(--line-soft); display: grid; place-items: center; font-size: 1.5rem; position: relative; z-index: 1; }
+  .core-name { font-family: var(--f-ui); font-weight: 600; font-size: 1.08rem; letter-spacing: -.015em; color: var(--ink); position: relative; z-index: 1; }
+  .core-desc { font-family: var(--f-read); font-size: .85rem; color: var(--ink-soft); line-height: 1.45; flex: 1; position: relative; z-index: 1; }
+  .core-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; position: relative; z-index: 1; }
+  .core-tag { font-family: var(--f-data); font-size: .61rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .core-tag.soon { color: var(--ocre); }
+  .pin-toggle { position: absolute; top: 13px; right: 13px; width: 27px; height: 27px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--muted-soft); cursor: pointer; display: grid; place-items: center; font-size: .88rem; transition: all .15s; z-index: 2; opacity: 0; }
+  .core-card:hover .pin-toggle, .pin-toggle.pinned { opacity: 1; }
+  .pin-toggle:hover { border-color: var(--line); background: var(--cream-soft); color: var(--terracota); }
+  .pin-toggle.pinned { color: var(--terracota); background: var(--paper); border-color: var(--line-soft); }
 
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 18px;
-    margin-top: 8px;
+  /* menú ⋯ (desfijar) + arrastrar para reordenar módulos fijados */
+  .core-card.dragging { opacity: .32; }
+  .card-menu-btn {
+    position: absolute; top: 11px; right: 11px; width: 30px; height: 26px; border-radius: 8px;
+    background: var(--paper); border: 1px solid var(--line); color: var(--ink-soft);
+    cursor: pointer; display: grid; place-items: center; font-size: 1.05rem; line-height: 1;
+    letter-spacing: .04em; transition: all .15s; z-index: 4; opacity: 0;
   }
-  .section-title {
-    font-family: 'Geist', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
+  .core-card:hover .card-menu-btn { opacity: 1; }
+  .card-menu-btn:hover { background: var(--cream-soft); border-color: var(--terracota); color: var(--ink); }
+  .card-menu {
+    position: absolute; top: 42px; right: 11px; min-width: 154px;
+    background: var(--cream-soft); border: 1px solid var(--line); border-radius: var(--r-sm);
+    box-shadow: var(--shadow-md); padding: 5px; z-index: 6; display: none;
   }
-  .section-count {
-    font-family: 'Geist Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
+  .card-menu.open { display: block; animation: fadeUp .14s ease-out; }
+  .card-menu button {
+    width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+    font-family: var(--f-ui); font-size: .82rem; font-weight: 500; color: var(--ink-soft);
+    padding: 9px 11px; border-radius: 8px; display: flex; align-items: center; gap: 9px;
+    transition: background .12s, color .12s;
   }
+  .card-menu button:hover { background: var(--paper); color: var(--rust); }
+  .card-menu button .mi { font-size: .92rem; line-height: 1; opacity: .85; }
 
-  /* ═══════════════════════════════════════════════════════════
-     NÚCLEO — Tarjetas grandes
-     ═══════════════════════════════════════════════════════════ */
-  .core-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px;
-    margin-bottom: 48px;
-  }
+  /* ═══════════════════════════════════════════════
+     TOOL ROWS
+     ═══════════════════════════════════════════════ */
+  .tools-cat { margin-bottom: 26px; }
+  .tools-cat-label { font-family: var(--f-ui); font-size: .72rem; font-weight: 600; color: var(--terracota-deep); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .tools-cat-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, var(--line-soft), transparent); }
+  .tools-cat-count { font-family: var(--f-data); font-size: .61rem; color: var(--muted-soft); font-weight: 400; }
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 9px; }
+  .tool-row { background: var(--cream-soft); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 12px 14px; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; transition: all .15s; position: relative; }
+  .tool-row:hover { border-color: var(--terracota); background: var(--paper); transform: translateX(2px); }
+  .tool-row.disabled { opacity: .5; cursor: default; }
+  .tool-row.disabled:hover { transform: none; border-color: var(--line-soft); background: var(--cream-soft); }
+  .tool-glyph { width: 32px; height: 32px; border-radius: 9px; background: var(--paper); border: 1px solid var(--line-soft); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+  .tool-text { flex: 1; min-width: 0; }
+  .tool-name { font-family: var(--f-ui); font-weight: 500; font-size: .88rem; color: var(--ink); }
+  .tool-desc { font-family: var(--f-read); font-size: .74rem; color: var(--muted); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tool-status { font-family: var(--f-data); font-size: .55rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; padding: 3px 8px; border-radius: var(--r-xs); flex-shrink: 0; background: var(--beige); }
+  .tool-status.notion { background: rgba(45,36,24,.06); }
+  .tool-status.soon { color: var(--ocre); background: rgba(184,134,74,.12); }
+  .tool-status.live { color: var(--moss); background: rgba(122,141,92,.14); }
+  .tool-status.drive { color: var(--ocre); background: rgba(184,134,74,.13); }
+  .tool-row.external .tool-status::after { content: ' ↗'; }
+  .tool-row .pin-toggle { position: static; opacity: 0; flex-shrink: 0; }
+  .tool-row:hover .pin-toggle, .tool-row .pin-toggle.pinned { opacity: 1; }
 
-  .core-card {
-    background: var(--cream-soft);
-    border: 1px solid var(--beige-deep);
-    border-radius: var(--radius-md);
-    padding: 22px 22px 20px;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    min-height: 170px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: fadeInUp 0.5s ease-out backwards;
-  }
-  .core-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--card-tint, transparent) 0%, transparent 50%);
-    opacity: 0.5;
-    pointer-events: none;
-    transition: opacity 0.3s;
-  }
-  .core-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--terracota);
-  }
-  .core-card:hover::before {
-    opacity: 0.9;
-  }
-  .core-card:nth-child(1) { animation-delay: 0.15s; --card-tint: rgba(201, 149, 111, 0.18); }
-  .core-card:nth-child(2) { animation-delay: 0.2s;  --card-tint: rgba(184, 134, 74, 0.18); }
-  .core-card:nth-child(3) { animation-delay: 0.25s; --card-tint: rgba(122, 141, 92, 0.18); }
-  .core-card:nth-child(4) { animation-delay: 0.3s;  --card-tint: rgba(176, 122, 82, 0.18); }
+  /* archivos (no-web) bajo cada categoría */
+  .tools-files { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+  .files-label { font-family: var(--f-ui); font-size: .62rem; font-weight: 600; color: var(--muted-soft); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 3px; }
+  .file-row { display: flex; align-items: center; gap: 12px; padding: 9px 13px; background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--r-sm); text-decoration: none; color: inherit; transition: all .15s; }
+  .file-row:hover { border-color: var(--ocre); background: var(--cream-soft); transform: translateX(2px); }
+  .file-kind { font-family: var(--f-data); font-size: .58rem; font-weight: 500; letter-spacing: .06em; padding: 4px 7px; border-radius: var(--r-xs); flex-shrink: 0; width: 42px; text-align: center; background: var(--beige); color: var(--ink-soft); }
+  .file-kind.zip { background: rgba(184,134,74,.16); color: var(--ocre); }
+  .file-kind.py  { background: rgba(122,141,92,.16); color: var(--moss); }
+  .file-kind.jsx { background: rgba(201,149,111,.18); color: var(--terracota-deep); }
+  .file-kind.svg { background: rgba(176,122,82,.16); color: var(--rust); }
+  .file-kind.md, .file-kind.xlsx { background: var(--beige); color: var(--muted); }
+  .file-text { flex: 1; min-width: 0; }
+  .file-name { font-family: var(--f-ui); font-weight: 500; font-size: .85rem; color: var(--ink); }
+  .file-desc { font-family: var(--f-read); font-size: .72rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-ext { font-family: var(--f-data); font-size: .6rem; color: var(--muted-soft); text-transform: uppercase; letter-spacing: .08em; flex-shrink: 0; }
+  .file-row:hover .file-ext { color: var(--ocre); }
 
-  .core-card.disabled {
-    cursor: default;
-    opacity: 0.55;
-  }
-  .core-card.disabled:hover {
-    transform: none;
-    box-shadow: var(--shadow-sm);
-    border-color: var(--beige-deep);
-  }
+  /* ═══════════════════════════════════════════════
+     CREACIONES — bitácora
+     ═══════════════════════════════════════════════ */
+  /* sub-pestañas de categoría en Herramientas */
+  .cat-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+  .cat-tab { font-family: var(--f-ui); font-size: .8rem; font-weight: 500; color: var(--ink-soft); background: var(--cream-soft); border: 1px solid var(--line-soft); border-radius: var(--r-btn); padding: 8px 14px; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 8px; }
+  .cat-tab:hover { border-color: var(--terracota); color: var(--ink); }
+  .cat-tab.on { background: var(--ink); color: var(--cream-soft); border-color: var(--ink); }
+  .cat-tab .ct-count { font-family: var(--f-data); font-size: .64rem; color: var(--muted-soft); }
+  .cat-tab.on .ct-count { color: rgba(253,250,243,.6); }
+  /* en búsqueda se muestran todas las categorías */
+  #allTools .tools-cat { display: none; }
+  #allTools .tools-cat.on { display: block; }
+  #allTools.searching .tools-cat { display: block; }
 
-  .core-icon {
-    font-size: 2.1rem;
-    line-height: 1;
-    position: relative;
-    z-index: 1;
-  }
+  /* sello última actualización bitácora */
+  .bitacora-stamp { font-family: var(--f-data); font-size: .68rem; color: var(--muted); margin: -4px 0 16px; display: flex; align-items: center; gap: 8px; }
+  .bitacora-stamp b { color: var(--ink-soft); font-weight: 500; }
+  .bitacora-stamp .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--moss); }
+  .log-row { display: grid; grid-template-columns: 92px 1fr auto 18px; align-items: center; gap: 16px; padding: 11px 16px; border-bottom: 1px solid var(--line-soft); text-decoration: none; color: inherit; transition: background .15s; }
+  .log-row:last-child { border-bottom: none; }
+  .log-row:hover { background: var(--paper); }
+  .log-date { font-family: var(--f-data); font-size: .72rem; color: var(--muted); }
+  .log-name { font-family: var(--f-ui); font-size: .9rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-tag { font-family: var(--f-data); font-size: .58rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; padding: 3px 8px; border: 1px solid var(--line-soft); border-radius: var(--r-xs); }
+  .log-ext { font-size: .85rem; color: var(--muted-soft); text-align: center; }
+  .log-row:hover .log-ext { color: var(--terracota); }
 
-  .core-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    position: relative;
-    z-index: 1;
-  }
-  .core-name {
-    font-family: 'Geist', sans-serif;
-    font-weight: 600;
-    font-size: 1.08rem;
-    color: var(--ink);
-    letter-spacing: -0.015em;
-  }
-  .core-desc {
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-    line-height: 1.4;
-  }
+  /* ═══════════════════════════════════════════════
+     AGENDA HOY
+     ═══════════════════════════════════════════════ */
+  .agenda-hoy { background: var(--cream-soft); border: 1px solid var(--line-soft); border-radius: var(--r-md); overflow: hidden; }
+  .agenda-row { display: grid; grid-template-columns: 88px 1fr auto; align-items: center; gap: 16px; padding: 13px 18px; border-bottom: 1px solid var(--line-soft); transition: background .15s; cursor: pointer; text-decoration: none; color: inherit; }
+  .agenda-row:last-child { border-bottom: none; }
+  .agenda-row:hover { background: var(--paper); }
+  .agenda-row.done { opacity: .5; }
+  .agenda-row.done .agenda-name { text-decoration: line-through; text-decoration-color: var(--muted-soft); }
+  .agenda-row.now { background: linear-gradient(90deg, rgba(201,149,111,.12), transparent 60%); }
+  .agenda-row.now .agenda-time { color: var(--terracota-deep); font-weight: 600; }
+  .agenda-time { font-family: var(--f-data); font-variant-numeric: tabular-nums; font-size: .84rem; color: var(--ink-soft); display: flex; align-items: center; gap: 9px; }
+  .agenda-time .marker { width: 7px; height: 7px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
+  .agenda-row.now .agenda-time .marker { background: var(--terracota); box-shadow: 0 0 0 3px rgba(201,149,111,.25); }
+  .agenda-row.done .agenda-time .marker { background: var(--moss); }
+  .agenda-name { font-family: var(--f-ui); font-size: .92rem; font-weight: 500; color: var(--ink); }
+  .agenda-meta { font-family: var(--f-data); font-size: .66rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .agenda-meta b { color: var(--terracota-deep); font-weight: 600; }
+  .agenda-check { width: 24px; height: 24px; border-radius: var(--r-xs); background: transparent; border: 1px solid var(--line); color: var(--muted); cursor: pointer; display: grid; place-items: center; font-size: .82rem; transition: all .15s; }
+  .agenda-check:hover { border-color: var(--moss); color: var(--moss); }
+  .agenda-row.done .agenda-check { background: var(--moss); color: var(--cream-soft); border-color: var(--moss); }
 
-  .core-foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-    position: relative;
-    z-index: 1;
-  }
-  .core-tag {
-    font-family: 'Geist Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-  .core-arrow {
-    font-family: 'Geist', sans-serif;
-    font-size: 1.1rem;
-    color: var(--terracota);
-    transition: transform 0.25s;
-  }
-  .core-card:hover .core-arrow {
-    transform: translateX(4px);
-  }
+  /* ═══════════════════════════════════════════════
+     AGENDA SEMANA
+     ═══════════════════════════════════════════════ */
+  .week-grid { background: var(--cream-soft); border: 1px solid var(--line-soft); border-radius: var(--r-md); overflow: hidden; }
+  .week-day { display: grid; grid-template-columns: 118px 1fr; border-bottom: 1px solid var(--line-soft); }
+  .week-day:last-child { border-bottom: none; }
+  .week-day.today { background: var(--paper); }
+  .week-day-label { padding: 15px 16px; border-right: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 3px; }
+  .wd-name { font-family: var(--f-ui); font-weight: 600; font-size: .94rem; color: var(--ink); text-transform: capitalize; }
+  .week-day.today .wd-name { color: var(--terracota-deep); }
+  .wd-num { font-family: var(--f-data); font-size: .68rem; color: var(--muted); }
+  .week-day-blocks { display: flex; flex-wrap: wrap; gap: 7px; padding: 13px 16px; align-items: center; }
+  .week-block { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--r-btn); font-family: var(--f-ui); font-size: .79rem; color: var(--ink-soft); }
+  .week-block .t { font-family: var(--f-data); font-size: .68rem; color: var(--muted); }
+  .week-block.empty { opacity: .5; font-family: var(--f-data); font-size: .65rem; text-transform: uppercase; letter-spacing: .14em; }
 
-  /* ═══════════════════════════════════════════════════════════
-     TODAS LAS HERRAMIENTAS — Lista compacta
-     ═══════════════════════════════════════════════════════════ */
-  .tools-cat {
-    margin-bottom: 32px;
-  }
-  .tools-cat-label {
-    font-family: 'Geist', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--terracota-deep);
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .tools-cat-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, var(--beige-deep), transparent);
-  }
+  /* ═══════════════════════════════════════════════
+     AGENDA MES
+     ═══════════════════════════════════════════════ */
+  .month-head { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--paper); border: 1px solid var(--line-soft); border-bottom: none; border-radius: var(--r-md) var(--r-md) 0 0; }
+  .m-head { font-family: var(--f-ui); font-size: .66rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; text-align: center; padding: 11px 0; }
+  .month-cells { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid var(--line-soft); border-radius: 0 0 var(--r-md) var(--r-md); overflow: hidden; }
+  .m-cell { min-height: 86px; padding: 9px 10px; border-right: 1px solid var(--line-soft); border-top: 1px solid var(--line-soft); position: relative; display: flex; flex-direction: column; gap: 6px; background: var(--cream-soft); }
+  .m-cell:nth-child(7n) { border-right: none; }
+  .m-cell.out { background: var(--cream); }
+  .m-cell.today { background: var(--paper); box-shadow: inset 0 0 0 2px var(--terracota); }
+  .m-num { font-family: var(--f-data); font-size: .82rem; color: var(--ink-soft); }
+  .m-cell.today .m-num { color: var(--terracota-deep); font-weight: 600; }
+  .m-cell.out .m-num { color: var(--muted-soft); }
+  .m-dots { display: flex; gap: 3px; flex-wrap: wrap; }
+  .m-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--terracota); opacity: .8; }
+  .m-count { position: absolute; bottom: 8px; right: 10px; font-family: var(--f-data); font-size: .62rem; color: var(--muted); }
+  .month-foot { font-family: var(--f-read); font-size: .76rem; color: var(--muted); margin-top: 12px; display: flex; align-items: center; gap: 8px; }
+  .month-foot .m-dot { display: inline-block; }
 
-  .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 10px;
-  }
+  /* ═══════════════════════════════════════════════
+     INBOX
+     ═══════════════════════════════════════════════ */
+  .inbox-capture { background: var(--cream-soft); border: 1px solid var(--line); border-radius: var(--r-md); padding: 20px; margin-bottom: 24px; }
+  .inbox-form { display: grid; gap: 12px; }
+  .inbox-form textarea { width: 100%; background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 13px 15px; font-family: var(--f-read); font-size: .93rem; color: var(--ink); resize: vertical; min-height: 64px; outline: none; transition: border-color .15s; }
+  .inbox-form textarea:focus { border-color: var(--terracota); }
+  .inbox-form textarea::placeholder { color: var(--muted-soft); }
+  .inbox-form-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cat-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+  .cat-chip { background: transparent; border: 1px solid var(--line-soft); border-radius: var(--r-btn); padding: 6px 12px; font-family: var(--f-ui); font-size: .78rem; color: var(--ink-soft); cursor: pointer; transition: all .15s; }
+  .cat-chip:hover { border-color: var(--terracota); }
+  .cat-chip.on { background: var(--ink); color: var(--cream-soft); border-color: var(--ink); }
+  .inbox-list { display: flex; flex-direction: column; gap: 7px; }
+  .inbox-item { display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 12px; padding: 13px 15px; background: var(--cream-soft); border: 1px solid var(--line-soft); border-radius: var(--r-sm); }
+  .inbox-cat-pill { font-family: var(--f-data); font-size: .58rem; text-transform: uppercase; letter-spacing: .12em; padding: 3px 8px; border-radius: var(--r-xs); background: var(--beige); color: var(--ink-soft); margin-top: 2px; white-space: nowrap; }
+  .inbox-cat-pill.idea { background: rgba(201,149,111,.18); color: var(--terracota-deep); }
+  .inbox-cat-pill.tarea { background: rgba(122,141,92,.18); color: var(--moss); }
+  .inbox-cat-pill.compra { background: rgba(184,134,74,.18); color: var(--ocre); }
+  .inbox-cat-pill.ref { background: rgba(176,122,82,.18); color: var(--rust); }
+  .inbox-cat-pill.misc { background: var(--beige); color: var(--muted); }
+  .inbox-text { font-family: var(--f-read); font-size: .91rem; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+  .inbox-time { font-family: var(--f-data); font-size: .62rem; color: var(--muted); margin-top: 3px; }
+  .inbox-del { background: none; border: none; color: var(--muted-soft); cursor: pointer; font-size: 1.1rem; padding: 4px 7px; border-radius: var(--r-xs); transition: all .15s; }
+  .inbox-del:hover { color: var(--rust); background: var(--paper); }
 
-  .tool-row {
-    background: var(--cream-soft);
-    border: 1px solid var(--beige-deep);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.2s;
-  }
-  .tool-row:hover {
-    border-color: var(--ocre-soft);
-    background: var(--cream-soft);
-    transform: translateX(2px);
-  }
-  .tool-row.external::after {
-    content: '↗';
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin-left: auto;
-  }
-  .tool-row.disabled {
-    opacity: 0.55;
-    cursor: default;
-  }
-  .tool-row.disabled:hover {
-    transform: none;
-    border-color: var(--beige-deep);
-  }
-  .tool-icon {
-    font-size: 1.2rem;
-    flex-shrink: 0;
-  }
-  .tool-text {
-    flex: 1;
-    min-width: 0;
-  }
-  .tool-name {
-    font-family: 'Geist', sans-serif;
-    font-weight: 500;
-    font-size: 0.86rem;
-    color: var(--ink);
-    margin-bottom: 1px;
-  }
-  .tool-desc {
-    font-size: 0.7rem;
-    color: var(--muted);
-    line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .tool-status {
-    font-family: 'Geist Mono', monospace;
-    font-size: 0.55rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background: var(--beige);
-    padding: 2px 7px;
-    border-radius: 999px;
-    flex-shrink: 0;
-  }
+  .empty-rail { background: var(--paper); border: 1px dashed var(--line); border-radius: var(--r-sm); padding: 20px; text-align: center; font-family: var(--f-read); font-size: .82rem; color: var(--muted); }
 
-  /* ═══════════════════════════════════════════════════════════
-     PLACEHOLDER (para tabs aún no construidas)
-     ═══════════════════════════════════════════════════════════ */
-  .placeholder {
-    background: var(--cream-soft);
-    border: 1px dashed var(--beige-deep);
-    border-radius: var(--radius-md);
-    padding: 60px 30px;
-    text-align: center;
-    color: var(--muted);
+  /* ═══════════════════════════════════════════════
+     AJUSTES panel
+     ═══════════════════════════════════════════════ */
+  .prefs { position: fixed; top: 84px; right: 22px; width: 296px; max-height: calc(100vh - 106px); overflow-y: auto; background: var(--cream-soft); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-lg); padding: 18px; z-index: 901; }
+  .prefs-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line-soft); }
+  .prefs-h .t { font-family: var(--f-ui); font-size: .84rem; font-weight: 600; color: var(--ink); }
+  .prefs-h .x { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1.2rem; line-height: 1; padding: 2px 6px; border-radius: var(--r-xs); }
+  .prefs-h .x:hover { background: var(--paper); color: var(--ink); }
+  .prefs-group-label { font-family: var(--f-ui); font-size: .64rem; font-weight: 600; color: var(--terracota-deep); text-transform: uppercase; letter-spacing: .14em; margin: 4px 0 12px; display: flex; align-items: center; gap: 8px; }
+  .prefs-group-label::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+  .prefs-row { margin-bottom: 13px; }
+  .prefs-row:last-child { margin-bottom: 0; }
+  .prefs-label { font-family: var(--f-ui); font-size: .68rem; font-weight: 500; color: var(--ink-soft); margin-bottom: 7px; display: flex; justify-content: space-between; align-items: baseline; }
+  .prefs-label .role { font-family: var(--f-data); font-size: .56rem; color: var(--muted-soft); text-transform: uppercase; letter-spacing: .1em; }
+  .fsel { position: relative; }
+  .fsel select {
+    width: 100%; appearance: none; -webkit-appearance: none;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-btn);
+    padding: 9px 32px 9px 12px; font-family: var(--f-ui); font-size: .82rem; color: var(--ink);
+    cursor: pointer; outline: none; transition: border-color .15s;
   }
-  .placeholder-icon {
-    font-size: 2.5rem;
-    margin-bottom: 16px;
-    opacity: 0.5;
-  }
-  .placeholder-title {
-    font-family: 'Geist', sans-serif;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--ink-soft);
-    margin-bottom: 8px;
-  }
-  .placeholder-text {
-    font-size: 0.85rem;
-    line-height: 1.5;
-    max-width: 360px;
-    margin: 0 auto;
-  }
+  .fsel select:hover { border-color: var(--terracota); }
+  .fsel::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .7rem; pointer-events: none; }
+  .prefs-hint { font-family: var(--f-read); font-size: .7rem; color: var(--muted); margin: 10px 0 0; line-height: 1.5; }
+  .prefs-reset { margin-top: 12px; width: 100%; font-family: var(--f-ui); font-size: .74rem; color: var(--ink-soft); background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--r-btn); padding: 8px; cursor: pointer; transition: all .15s; }
+  .prefs-reset:hover { border-color: var(--terracota); color: var(--ink); }
+  /* API key central — la comparten todos los módulos (Selector · Flujo · Planificador · futuros) */
+  .prefs-api-input { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--r-btn); background: var(--paper); color: var(--ink); font-family: var(--f-data); font-size: .78rem; outline: none; transition: border-color .15s; }
+  .prefs-api-input:focus { border-color: var(--terracota); }
+  .prefs-api-input::placeholder { color: var(--muted-soft); }
+  .prefs-api-row { display: flex; gap: 6px; margin-top: 7px; }
+  .prefs-api-btn { flex: 1; font-family: var(--f-ui); font-size: .76rem; font-weight: 500; color: var(--cream-soft); background: var(--ink); border: 1px solid var(--ink); border-radius: var(--r-btn); padding: 8px; cursor: pointer; transition: all .15s; }
+  .prefs-api-btn:hover { background: var(--terracota-deep); border-color: var(--terracota-deep); }
+  .prefs-api-btn.ghost { color: var(--ink-soft); background: var(--paper); border-color: var(--line-soft); }
+  .prefs-api-btn.ghost:hover { border-color: var(--terracota); color: var(--ink); background: var(--cream-soft); }
+  .prefs-api-status { font-family: var(--f-data); font-size: .66rem; margin-top: 8px; line-height: 1.45; display: none; }
+  .prefs-api-status.ok { color: var(--moss); display: block; }
+  .prefs-api-status.err { color: var(--rust); display: block; }
+  .prefs-hint a { color: var(--terracota-deep); }
+  .prefs-divider { height: 1px; background: var(--line-soft); margin: 16px 0; }
+  .seg { display: flex; background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--r-btn); padding: 3px; }
+  .seg button { flex: 1; background: transparent; border: none; padding: 7px 8px; font-family: var(--f-ui); font-size: .78rem; color: var(--ink-soft); cursor: pointer; border-radius: 8px; transition: all .15s; }
+  .seg button.on { background: var(--ink); color: var(--cream-soft); }
 
-  /* ═══════════════════════════════════════════════════════════
+  /* ═══════════════════════════════════════════════
      FOOTER
-     ═══════════════════════════════════════════════════════════ */
-  .foot {
-    margin-top: 56px;
-    padding-top: 20px;
-    border-top: 1px solid var(--beige-deep);
-    display: flex;
-    justify-content: space-between;
-    font-family: 'Geist Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
+     ═══════════════════════════════════════════════ */
+  .foot { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-family: var(--f-data); font-size: .62rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .foot-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+  .foot-stats span b { color: var(--ink-soft); font-weight: 500; }
+  .foot-link { cursor: pointer; transition: color .15s; border-bottom: 1px dotted var(--muted-soft); }
+  .foot-link:hover { color: var(--ink-soft); border-bottom-color: var(--terracota); }
+  /* Ajustes · API key, tipografía y densidad (permanente) */
+  .foot-prefs { font-family: var(--f-ui); font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted-soft); background: none; border: 1px dashed var(--line); border-radius: var(--r-btn); padding: 6px 11px; cursor: pointer; transition: all .15s; }
+  .foot-prefs:hover { color: var(--ink-soft); border-color: var(--terracota); }
 
-  /* ═══════════════════════════════════════════════════════════
-     ANIMACIONES
-     ═══════════════════════════════════════════════════════════ */
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  /* entrada de sección: solo desliza, nunca parte invisible (evita quedar en blanco si la animación se pausa) */
+  @keyframes secIn { from { transform: translateY(8px); } to { transform: translateY(0); } }
 
-  /* ═══════════════════════════════════════════════════════════
+  /* ═══════════════════════════════════════════════
      MOBILE
-     ═══════════════════════════════════════════════════════════ */
-  @media (max-width: 640px) {
-    body { padding: 18px 14px 60px; }
-    .hdr {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 14px;
-    }
-    .greeting { text-align: left; }
-    .brand { font-size: 1.85rem; }
-    .tabs {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .tab { padding: 8px 14px; font-size: 0.78rem; }
-    .core-grid {
-      grid-template-columns: 1fr;
-    }
-    .core-card { min-height: 140px; padding: 18px; }
+     ═══════════════════════════════════════════════ */
+  @media (max-width: 760px) {
+    body { padding: 16px 14px 80px; }
+    .hdr { grid-template-columns: 1fr auto; gap: 12px; }
+    .greeting { display: none; }
+    .now-strip { grid-template-columns: 1fr; gap: 14px; }
+    .now-divider { display: none; }
+    .now-capture { min-width: 0; padding: 14px 22px; flex-direction: row; justify-content: center; }
+    .now-capture .cap-sub { display: none; }
+    .core-grid { grid-template-columns: 1fr; }
+    .agenda-row { grid-template-columns: 72px 1fr auto; gap: 12px; padding: 12px 14px; }
+    .week-day { grid-template-columns: 96px 1fr; }
+    .log-row { grid-template-columns: 78px 1fr auto; }
+    .log-row .log-ext { display: none; }
+    .m-cell { min-height: 60px; padding: 6px; }
+    .m-count { display: none; }
+    .prefs { width: calc(100vw - 28px); right: 14px; }
   }
 </style>
 </head>
-<body>
+<body class="density-compact">
 
 <div class="wrap">
 
   <!-- ═══ HEADER ═══ -->
   <header class="hdr">
-    <div>
-      <h1 class="brand">panel<span class="dot">.</span></h1>
-      <div class="brand-sub">Centro de operaciones</div>
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="brand-name">panel<span class="dot">.</span></div>
+        <div class="brand-sub">Centro de operaciones</div>
+      </div>
     </div>
-    <div class="greeting">
-      <div class="greeting-time" id="greetTime">Hola</div>
-      <div class="greeting-date" id="greetDate">—</div>
+    <div class="greeting" id="greeting">—</div>
+    <div class="clock">
+      <div class="clock-time" id="clockTime">—</div>
+      <div class="clock-meta">
+        <div id="clockDate">—</div>
+        <div class="week" id="clockWeek">—</div>
+      </div>
     </div>
   </header>
 
-  <!-- ═══ TABS ═══ -->
-  <nav class="tabs" role="tablist">
-    <button class="tab active" data-section="inicio" role="tab">🏠 Inicio</button>
-    <button class="tab" data-section="todas" role="tab">🛠️ Todas</button>
-    <button class="tab" data-section="agenda" role="tab">📅 Agenda <span class="badge">v2</span></button>
-    <button class="tab" data-section="inbox" role="tab">📥 Inbox <span class="badge">v2</span></button>
-  </nav>
-
-  <!-- ═══ SECCIÓN: INICIO ═══ -->
-  <section class="section active" id="sec-inicio">
-    <div class="section-header">
-      <div class="section-title">Núcleo · 1 click a lo que más uso</div>
-      <div class="section-count" id="coreCount"></div>
+  <!-- ═══ AHORA STRIP ═══ -->
+  <section class="now-strip">
+    <a class="now-cell" id="nowFocus" href="#">
+      <div class="label"><span class="pulse"></span>Ahora · foco sugerido</div>
+      <div class="value">—</div>
+      <div class="meta">—</div>
+    </a>
+    <div class="now-divider"></div>
+    <div class="now-cell">
+      <div class="label">Próximo bloque</div>
+      <div class="value dim" id="nowNext">—</div>
+      <div class="meta" id="nowNextTime">—</div>
     </div>
-    <div class="core-grid" id="coreGrid"></div>
-
-    <div class="section-header">
-      <div class="section-title">Vista rápida · todas mis herramientas</div>
-    </div>
-    <div id="quickTools"></div>
+    <div class="now-divider"></div>
+    <button class="now-capture" id="captureBtn">
+      <span class="cap-title"><span class="plus">+</span> Capturar</span>
+      <span class="cap-sub">idea · tarea · nota</span>
+    </button>
   </section>
 
-  <!-- ═══ SECCIÓN: TODAS ═══ -->
+  <!-- ═══ TABS (con lupa al borde derecho) ═══ -->
+  <nav class="tabs" id="cmdBar" role="tablist">
+    <button class="tab active" data-section="inicio">Inicio</button>
+    <span id="navCats"></span>
+    <div class="tab-search">
+      <input type="text" id="cmdSearch" placeholder="Buscar herramienta…">
+      <button class="tab-search-btn" id="searchToggle" title="Buscar (/)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+      </button>
+      <button class="tab-search-clr" id="searchClose" title="Cerrar">×</button>
+    </div>
+  </nav>
+
+  <!-- ═══ INICIO ═══ -->
+  <section class="section active" id="sec-inicio">
+
+    <div class="core-grid" id="coreGrid" style="margin-top:6px"></div>
+
+    <div class="row-h">
+      <div class="row-h-left">
+        <div class="row-h-title">Agenda</div>
+      </div>
+      <div class="row-h-actions">
+        <button onclick="goToTab('agenda')">Ver semana →</button>
+      </div>
+    </div>
+    <div id="agendaHoySlot"></div>
+
+  </section>
+
+  <!-- ═══ HERRAMIENTAS ═══ -->
   <section class="section" id="sec-todas">
-    <div class="section-header">
-      <div class="section-title">Catálogo completo · todo lo que tengo construido</div>
-      <div class="section-count" id="allCount"></div>
+    <div class="row-h">
+      <div class="row-h-left">
+        <div class="row-h-title" id="toolCatTitle">—</div>
+        <div class="row-h-sub" id="toolCatSub">—</div>
+      </div>
     </div>
     <div id="allTools"></div>
   </section>
 
-  <!-- ═══ SECCIÓN: AGENDA (placeholder) ═══ -->
+  <!-- ═══ AGENDA ═══ -->
   <section class="section" id="sec-agenda">
-    <div class="placeholder">
-      <div class="placeholder-icon">📅</div>
-      <div class="placeholder-title">Agenda — próximamente</div>
-      <div class="placeholder-text">
-        Vista orientativa con tus eventos. Llegará en la Entrega 2 con lectura de Google Calendar (link ICS público) + recordatorios locales.
+    <div class="row-h">
+      <div class="row-h-left">
+        <div class="row-h-title">Agenda</div>
+        <div class="row-h-sub" id="weekSub">—</div>
       </div>
+      <div class="row-h-actions">
+        <div class="seg-mini">
+          <button class="on" id="agViewWeek">Semana</button>
+          <button id="agViewMonth">Mes</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="weekWrap">
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+
+    <div id="monthWrap" style="display:none">
+      <div class="row-h" style="margin-top:0">
+        <div class="row-h-left">
+          <div class="row-h-sub" id="monthSub" style="font-family:var(--f-ui);font-weight:600;color:var(--ink-soft);text-transform:capitalize;font-size:.95rem"></div>
+        </div>
+        <div class="row-h-actions">
+          <button id="monthPrev">←</button>
+          <button id="monthToday">Hoy</button>
+          <button id="monthNext">→</button>
+        </div>
+      </div>
+      <div id="monthGrid"></div>
+      <div class="month-foot"><span class="m-dot"></span> cada punto = un bloque recurrente ese día · el número a la derecha es el total</div>
     </div>
   </section>
 
-  <!-- ═══ SECCIÓN: INBOX (placeholder) ═══ -->
+  <!-- ═══ INBOX ═══ -->
   <section class="section" id="sec-inbox">
-    <div class="placeholder">
-      <div class="placeholder-icon">📥</div>
-      <div class="placeholder-title">Inbox — próximamente</div>
-      <div class="placeholder-text">
-        Captura rápida → distribución por categorías → exportar al Inbox de Notion.
-        Llegará en la Entrega 2.
+    <div class="row-h">
+      <div class="row-h-left">
+        <div class="row-h-title">Captura rápida</div>
+        <div class="row-h-sub">⌘ + Enter para guardar</div>
       </div>
     </div>
+    <div class="inbox-capture">
+      <div class="inbox-form">
+        <textarea id="inboxText" placeholder="¿Qué pasa por tu cabeza? Una idea, una tarea, un link, algo que comprar…"></textarea>
+        <div class="inbox-form-bottom">
+          <div class="cat-chips" id="catChips">
+            <button class="cat-chip on" data-cat="idea">💡 Idea</button>
+            <button class="cat-chip" data-cat="tarea">✓ Tarea</button>
+            <button class="cat-chip" data-cat="compra">🛒 Compra</button>
+            <button class="cat-chip" data-cat="ref">🔖 Referencia</button>
+            <button class="cat-chip" data-cat="misc">… Otro</button>
+          </div>
+          <button class="btn btn-solid" id="inboxSave"><span class="plus">+</span> Guardar</button>
+        </div>
+      </div>
+    </div>
+    <div class="row-h">
+      <div class="row-h-left">
+        <div class="row-h-title">Bandeja</div>
+        <div class="row-h-sub" id="inboxSub">—</div>
+      </div>
+      <div class="row-h-actions">
+        <button id="inboxExport">Copiar todo</button>
+      </div>
+    </div>
+    <div class="inbox-list" id="inboxList"></div>
+  </section>
+
+  <!-- ═══ BITÁCORA (vista secundaria, desde el pie) ═══ -->
+  <section class="section" id="sec-bitacora">
+    <div class="row-h">
+      <div class="row-h-left">
+        <div class="row-h-title">Bitácora · Creaciones</div>
+        <div class="row-h-sub" id="creationsCount">—</div>
+      </div>
+      <div class="row-h-actions">
+        <button onclick="goToTab('todas')">← Volver a Herramientas</button>
+      </div>
+    </div>
+    <div class="bitacora-stamp" id="creationsUpdated">—</div>
+    <div class="log" id="creationsList"></div>
   </section>
 
   <!-- ═══ FOOTER ═══ -->
   <footer class="foot">
-    <span>v1.0 · entrega 1</span>
-    <span id="lastUpdate">—</span>
+    <span>panel · v5 · final</span>
+    <div class="foot-stats">
+      <span class="foot-link" id="footBitacora" title="Ver bitácora de creaciones">herramientas · <b id="footT">—</b></span>
+      <span>fijados · <b id="footP">—</b></span>
+      <span>inbox · <b id="footI">—</b></span>
+    </div>
+    <button class="foot-prefs" id="prefsBtn" title="API key · tipografía · densidad">⚙ Ajustes</button>
   </footer>
 
 </div>
 
-<script>
-/* ═══════════════════════════════════════════════════════════
-   CONFIGURACIÓN MODULAR
-   Para agregar una herramienta nueva en el futuro:
-   1. Agregá un objeto al array CORE (núcleo) o ALL_TOOLS (todas).
-   2. Listo. Se renderiza solo.
-   ═══════════════════════════════════════════════════════════ */
+<!-- ═══ AJUSTES ═══ -->
+<div class="prefs" id="prefsPanel" style="display:none">
+  <div class="prefs-h">
+    <div class="t">Ajustes</div>
+    <button class="x" id="prefsClose">×</button>
+  </div>
 
-// — NÚCLEO: 4 tarjetas grandes que se ven primero —
+  <div class="prefs-group-label">API · Anthropic</div>
+  <div class="prefs-row">
+    <input type="password" class="prefs-api-input" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+    <div class="prefs-api-row">
+      <button class="prefs-api-btn" id="apiKeySave">Guardar</button>
+      <button class="prefs-api-btn ghost" id="apiKeyClear">Borrar</button>
+    </div>
+    <div class="prefs-api-status" id="apiKeyStatus"></div>
+    <p class="prefs-hint">Tu key de <a href="https://console.anthropic.com/keys" target="_blank" rel="noopener">console.anthropic.com/keys</a>. Se guarda solo en este navegador y la comparten todos los módulos — Selector, Flujo, Planificador y los que se integren después.</p>
+  </div>
+
+  <div class="prefs-divider"></div>
+
+  <div class="prefs-group-label">Tipografía · experimenta</div>
+  <div class="prefs-row">
+    <div class="prefs-label">Títulos e interfaz <span class="role">f-ui</span></div>
+    <div class="fsel"><select id="fontUI"></select></div>
+  </div>
+  <div class="prefs-row">
+    <div class="prefs-label">Cuerpo y descripciones <span class="role">f-read</span></div>
+    <div class="fsel"><select id="fontRead"></select></div>
+  </div>
+  <div class="prefs-row">
+    <div class="prefs-label">Datos y números <span class="role">f-data</span></div>
+    <div class="fsel"><select id="fontData"></select></div>
+  </div>
+  <p class="prefs-hint">Cambia cada rol por separado y observa el panel en vivo hasta dar con la combinación que más te guste. Se guarda automáticamente.</p>
+  <button class="prefs-reset" id="fontReset">Restablecer fuentes</button>
+
+  <div class="prefs-divider"></div>
+
+  <div class="prefs-group-label">Densidad</div>
+  <div class="prefs-row">
+    <div class="seg" data-pref="density">
+      <button data-val="comfy">Cómoda</button>
+      <button class="on" data-val="compact">Compacta</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═════════════════════════════════════════════════
+   DATA · panel · inventario real (Registro Unificado de Herramientas, Notion)
+   Estructura por categoría:
+     items[]  → web abrible (HTML local, Notion o HTML en Drive)  → tarjetas arriba
+     files[]  → archivos no-web (ZIP · PY · JSX · SVG · MD · XLSX) → lista abajo, link a Drive
+   Para añadir algo nuevo: mete un objeto en items[] o files[] y se renderiza solo.
+   ═════════════════════════════════════════════════ */
+
+// helper de links Drive
+const DRIVE = id => `https://drive.google.com/file/d/${id}/view`;
+
+// ─── NÚCLEO: 4 tarjetas grandes ──────────────────
 const CORE = [
   {
+    id: 'comando-ia',
     icon: '🧠',
     name: 'Centro de Comando IA',
     desc: 'Antes de cada idea: qué modelo uso, qué flujo sigo, qué prompt funciona.',
@@ -571,209 +750,1011 @@ const CORE = [
     status: 'live'
   },
   {
+    id: 'malla',
     icon: '🗺️',
     name: 'Malla Aprendizaje',
     desc: 'IA aplicada a farmacia, día por día. Lo que toca hoy 19:00.',
     href: 'tools/malla.html',
-    tag: 'Diario L-V · 19:00',
+    tag: 'L–V · 19:00',
     status: 'live'
   },
   {
+    id: 'finanzas',
     icon: '💸',
     name: 'Plan Financiero',
     desc: 'Deudas, ingresos, proyección y asignación lump-sum.',
     href: 'tools/plan-finanzas.html',
-    tag: 'Semanal',
+    tag: 'Semanal · domingo',
     status: 'live'
   },
   {
+    id: 'tiempo-libre',
     icon: '🎲',
     name: 'Selector Tiempo Libre',
-    desc: 'Decisión en frío para sábado/domingo desde tu DB de actividades.',
-    href: '#',
-    tag: 'Próximamente · v2',
-    status: 'soon'
+    desc: 'Tira al azar un panorama desde tus bases de Notion. Guárdalo y pásalo a Salidas.',
+    href: 'tools/generador.html',
+    tag: 'Finde',
+    status: 'live'
   }
 ];
 
-// — TODAS: catálogo completo agrupado por categoría —
+// ─── TODAS las herramientas · inventario completo ──
 const ALL_TOOLS = [
   {
-    cat: '🤖 IA y aprendizaje',
+    cat: 'IA y aprendizaje',
+    short: 'IA y aprendizaje',
     items: [
-      { icon: '🧠', name: 'Guía IA', desc: 'Modelos · herramientas · flujos por área', href: 'tools/guia-ia.html', status: 'live' },
-      { icon: '⚙️', name: 'Orquestador IA', desc: 'Idea → modelo → flujo → prompts listos', href: 'tools/orquestador.html', status: 'live' },
-      { icon: '🗺️', name: 'Malla Aprendizaje v4', desc: 'Curriculum día por día', href: 'tools/malla.html', status: 'live' },
-      { icon: '🛤️', name: 'Roadmap IA Farmacia', desc: 'Mapa de 5 fases · 12-18 meses', href: 'tools/roadmap.html', status: 'live' }
+      { id: 'guia-ia',     icon: '🧠', name: 'Centro de Comando IA',  desc: 'Modelos · herramientas · flujos por área', href: 'tools/guia-ia.html',     status: 'live' },
+      { id: 'orquestador', icon: '⚙️', name: 'Orquestador IA',        desc: 'Idea → modelo → flujo → prompts listos',   href: 'tools/orquestador.html', status: 'live' },
+      { id: 'malla',       icon: '🗺️', name: 'Malla Aprendizaje v4',  desc: 'Currículum día por día',                   href: 'tools/malla.html',       status: 'live' },
+      { id: 'roadmap',     icon: '🛤️', name: 'Roadmap IA Farmacia',   desc: 'Mapa de 5 fases · 12-18 meses',            href: 'tools/roadmap.html',     status: 'live' },
+      { id: 'analisis-ia', icon: '🔬', name: 'Análisis Profundo IA',  desc: 'Estudio comparativo de IA',                href: DRIVE('1KHRmr1sGaIHjaM26_LXgFx0rzmLa_0Pc'), status: 'drive', external: true }
+    ],
+    files: []
+  },
+  {
+    cat: 'Farmacia PAC · trabajo QF',
+    short: 'Farmacia PAC',
+    items: [
+      { id: 'calc-disp', icon: '💊', name: 'Calculadora Dispensación v3', desc: 'Cálculo de dosificación · 6 pestañas', href: 'https://www.notion.so/32e9a86ba8ec8114943ad7620464eb00', status: 'notion', external: true },
+      { id: 'pac',       icon: '☑',  name: 'Checklist Mensual PAC',       desc: 'Actividades del mes con progreso',     href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
+      { id: 'posologia', icon: '📐', name: 'Posología de contador (PDF)', desc: 'Inhaladores, gotas, insulina · A5',    href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
+      { id: 'top20',     icon: '📊', name: 'Proyección Utilidades Top 20',desc: 'Excel · márgenes y delta por producto',href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
+      { id: 'checklist-farmacia', icon: '☑', name: 'Checklist Farmacia V3', desc: 'Tareas diarias y mensuales · check-in por turno', href: 'tools/checklist-farmacia.html', status: 'live' }
+    ],
+    files: [
+      { name: 'Scraper FP / Meki',          kind: 'ZIP', desc: 'Precios FP + Meki → Excel',     href: DRIVE('1dBVgqVPoUm40-KwiKDBft7g_0eF4TeE9') },
+      { name: 'Scraper Registro ISP v4',    kind: 'ZIP', desc: 'Extracción registro ISP',       href: DRIVE('1Zl4b7FjW7QvYlof_r8BTSggVE8A2h_A6') },
+      { name: 'Traductor Recetas',          kind: 'ZIP', desc: 'V1 · congelado',                href: DRIVE('1OjaUaLOGoEmHVkqd-fBny9h5uqz0-ZTs') },
+      { name: 'Comparador Curie',           kind: 'PY',  desc: 'Medicamentos exclusivos Curie', href: DRIVE('1Tfmzf6PQnqEu9U6Zrff9HWT0MoOgiAZ9') },
+      { name: 'Scraper Curie exclusivos',   kind: 'PY',  desc: 'Extracción exclusivos Curie',   href: DRIVE('1maVElpkWUTFr74u08v3N9qb1gCD9xxpF') }
     ]
   },
   {
-    cat: '💸 Finanzas',
+    cat: 'Finanzas',
+    short: 'Finanzas',
     items: [
-      { icon: '💸', name: 'Plan Financiero', desc: 'Dashboard deudas + ingresos + proyección', href: 'tools/plan-finanzas.html', status: 'live' },
-      { icon: '📋', name: '15 Opciones de Trabajo', desc: 'Catálogo de ingresos extra', href: 'tools/15-opciones.html', status: 'live' },
-      { icon: '✅', name: 'Opciones Filtrado', desc: '8 opciones con plan de 7 días', href: 'tools/opciones-filtrado.html', status: 'live' }
+      { id: 'finanzas',     icon: '💸', name: 'Plan Financiero',          desc: 'Deudas + ingresos + proyección',  href: 'tools/plan-finanzas.html',     status: 'live' },
+      { id: 'flujo',        icon: '📊', name: 'Flujo de caja',            desc: 'Ingresos, egresos y pagos del mes · lee tus PDF', href: 'tools/flujo.html', status: 'live' },
+      { id: '15-opciones',  icon: '📋', name: '15 Opciones de Trabajo',   desc: 'Catálogo de ingresos extra',      href: 'tools/15-opciones.html',       status: 'live' },
+      { id: 'opciones-flt', icon: '✓',  name: 'Opciones Filtrado · Top 8',desc: '8 opciones con plan de 7 días',   href: 'tools/opciones-filtrado.html', status: 'live' },
+      { id: 'analizador',   icon: '📈', name: 'Analizador de Acciones',   desc: 'Equity research · análisis de inversión', href: 'tools/analizador.html', status: 'live' },
+      { id: 'litoral',      icon: '🏖️', name: 'Inversión Litoral',        desc: 'Estudio de inversión',            href: DRIVE('1xOP-qnakH1MbSeiN0F1LHOac82bhVigh'), status: 'drive', external: true },
+      { id: 'ingresos-qf',  icon: '💵', name: 'Ingresos QF',              desc: 'V1 · ingresos por área',          href: DRIVE('16Nj5Gy4B2tjs057PO_udae5viGJKuX0K'), status: 'drive', external: true }
+    ],
+    files: [
+      { name: 'Automatización DCA', kind: 'ZIP', desc: 'jsx + js · V1 sin ejecutar', href: DRIVE('12a5kbcLOFrEZ04shw3dOoVj8hXgNNO0J') }
     ]
   },
   {
-    cat: '💊 Farmacia y trabajo QF',
+    cat: 'Sistema',
+    short: 'Sistema',
     items: [
-      { icon: '💊', name: 'Calculadora Dispensación v3', desc: 'Cálculo de dosificación · 6 pestañas', href: 'https://www.notion.so/32e9a86ba8ec8114943ad7620464eb00', status: 'notion', external: true },
-      { icon: '📐', name: 'Posología de contador (PDF)', desc: 'Inhaladores, gotas, insulina · A5', href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
-      { icon: '📊', name: 'Proyección Utilidades Top 20', desc: 'Excel · márgenes y delta por producto', href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
-      { icon: '✓', name: 'Checklist Mensual PAC', desc: 'Actividades del mes con progreso', href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true }
+      { id: 'tiempo-libre', icon: '🎲', name: 'Selector Tiempo Libre', desc: 'Tira al azar un panorama desde Notion · handoff a Salidas', href: 'tools/generador.html', status: 'live' },
+      { id: 'planificador', icon: '🗺️', name: 'Planificador de Salidas', desc: 'Paradas, mapa, descuentos y exporta a Calendar', href: 'tools/planificador.html', status: 'live' },
+      { id: 'os-semanal',   icon: '🗓️', name: 'OS Semanal',              desc: 'Tu semana: foco por día · ¿qué hago? · relación · sheets', href: 'tools/os-semanal.html', status: 'live' }
+    ],
+    files: [
+      { name: 'Dashboard de Chat',          kind: 'ZIP', desc: 'Panel de chats',              href: DRIVE('1z4dNgPCkUtECP495UFtTHSFeMiSUMcSl') },
+      { name: 'Esquema Calendario Semanal', kind: 'SVG', desc: 'Vista semanal',               href: DRIVE('1BQIULRUFBdnALwpEFti4xys2GJ4W4Wit') }
     ]
   },
   {
-    cat: '🐍 Scrapers Python (requieren Colab)',
+    cat: 'Proyectos',
+    short: 'Proyectos',
     items: [
-      { icon: '🔍', name: 'Scraper 4 cadenas', desc: 'Cruz Verde · Salco · Ahumada · Simi', href: '#', status: 'soon' },
-      { icon: '🔍', name: 'Scraper Farmacia Meki', desc: 'Sistema precios + alertas Excel', href: '#', status: 'soon' },
-      { icon: '🔍', name: 'Scraper Curie Búho', desc: 'Comparación BuhoChile', href: '#', status: 'soon' },
-      { icon: '🔍', name: 'Comparador Precios Curie', desc: 'Análisis comparativo de precios', href: '#', status: 'soon' }
+      { id: 'plan-farmacia',  icon: '🏪', name: 'Plan Farmacia',                desc: 'Farmacia propia · V1',           href: DRIVE('1xv9L8DUjjAUz3HBSpl2dPff4wbZ548fu'), status: 'drive', external: true },
+      { id: 'mapa-farmacia',  icon: '🗺️', name: 'Mapa Farmacia v2',             desc: 'Leaflet · 19 puntos + 5 zonas',  href: DRIVE('1_mL_tlkdluAxmFd7EDIaU177fyFXOCcH'), status: 'drive', external: true },
+      { id: 'analisis-farma', icon: '📊', name: 'Análisis Farmacia',            desc: 'Estudio farmacia propia · V1',   href: DRIVE('1dHSrlk1pvZXTEO3gINEtAEpclkjPz8RV'), status: 'drive', external: true },
+      { id: 'fuentes-review', icon: '🍽️', name: 'Fuentes Review Comida',        desc: 'Fuentes para reviews',           href: DRIVE('1L33u6xx5rra_mXG7_uVPDY67d2VDc4Uo'), status: 'drive', external: true },
+      { id: 'planif-review',  icon: '📅', name: 'Planificación Review Comida v2',desc: 'Plan de contenidos',             href: DRIVE('1DfP215rXG99UOye1nxwArHh5m9xwp3MC'), status: 'drive', external: true }
+    ],
+    files: []
+  },
+  {
+    cat: 'Familia / Hogar',
+    short: 'Hogar',
+    items: [],
+    files: [
+      { name: 'Plano Casa',    kind: 'JSX', desc: 'Plano arquitectónico base · 50 m²',        href: DRIVE('1wTQUZpbia4z1FH9nMDrfokkzHvEVbwmR') },
+      { name: 'Plano Casa v2', kind: 'JSX', desc: '3 propuestas: escalera · solar · huerto',  href: DRIVE('1rHXaIbroagFZUlLI-FgbM_m2gWe9PeLZ') }
     ]
   },
   {
-    cat: '📚 Referencias en Notion',
+    cat: 'Salud',
+    short: 'Salud',
     items: [
-      { icon: '🏠', name: 'Mi Base de Operaciones', desc: 'Hub principal de Notion', href: 'https://www.notion.so/32d9a86ba8ec81fdadb9cde81071fed4', status: 'notion', external: true },
-      { icon: '📊', name: 'Dashboard Vista Rápida', desc: 'Estado por área + accesos rápidos', href: 'https://www.notion.so/33b9a86ba8ec81268ebccc6986bbf2b3', status: 'notion', external: true },
-      { icon: '📚', name: 'Archivo de Sesiones Claude', desc: 'Bitácora de cada sesión', href: 'https://www.notion.so/32e9a86ba8ec811797b9c3117983fa2c', status: 'notion', external: true }
-    ]
+      { id: 'dislipidemia-1', icon: '🩺', name: 'Dislipidemia',     desc: '8 pestañas · guía clínica',  href: DRIVE('120J9X-zR7Qa9mlfQcIWGAd1lGJwvgqyI'), status: 'drive', external: true },
+      { id: 'dislipidemia-2', icon: '🩺', name: 'Dislipidemia v2',  desc: '4 tabs · versión compacta',  href: DRIVE('1waH1YOHMkvMIGCE2uXsM-aTwIrvQ9ltA'), status: 'drive', external: true }
+    ],
+    files: []
   }
 ];
 
-/* ═══════════════════════════════════════════════════════════
-   RENDER
-   ═══════════════════════════════════════════════════════════ */
+// ─── CREACIONES Claude (timeline) ──────────────
+// Bitácora cronológica de artefactos. La fecha es ISO YYYY-MM-DD.
+const CREATIONS = [
+  { date: '2026-06-27', icon: '🗺️', name: 'Planificador de Salidas v1.1',          desc: 'Paradas + mapa + Sorpréndeme + descuentos + Calendar', tag: 'Módulo', href: 'tools/planificador.html' },
+  { date: '2026-06-27', icon: '🎲', name: 'Selector Tiempo Libre',                 desc: 'Tira al azar desde Notion · handoff a Salidas',     tag: 'Módulo', href: 'tools/generador.html' },
+  { date: '2026-06-26', icon: '📊', name: 'Flujo de caja',                          desc: 'Ingresos/egresos del mes · lee tus PDF con IA',     tag: 'Módulo', href: 'tools/flujo.html' },
+  { date: '2026-06-24', icon: '✦', name: 'Panel · versión final unificada',       desc: 'Funciones de v2 + calidez de v0 en un solo panel', tag: 'Dashboard',  href: 'Dashboard Final.html' },
+  { date: '2026-05-08', icon: '✦', name: 'Panel · Centro de operaciones v2',     desc: 'Rediseño del panel principal',                   tag: 'Dashboard',  href: 'Dashboard.html' },
+  { date: '2026-04-22', icon: '🧠', name: 'Centro de Comando IA',                 desc: 'Modelos + flujos + prompts agrupados por área',   tag: 'Herramienta', href: 'tools/guia-ia.html' },
+  { date: '2026-04-18', icon: '⚙️', name: 'Orquestador IA',                        desc: 'Idea → modelo → flujo → prompts listos',          tag: 'Herramienta', href: 'tools/orquestador.html' },
+  { date: '2026-04-12', icon: '🗺️', name: 'Malla Aprendizaje v4',                  desc: 'Currículum diario IA aplicada a farmacia',        tag: 'Plan',       href: 'tools/malla.html' },
+  { date: '2026-04-05', icon: '🛤️', name: 'Roadmap IA Farmacia · 5 fases',         desc: 'Plan 12–18 meses con hitos y entregables',        tag: 'Plan',       href: 'tools/roadmap.html' },
+  { date: '2026-03-28', icon: '💸', name: 'Plan Financiero',                       desc: 'Deudas + ingresos + proyección + lump-sum',       tag: 'Dashboard',  href: 'tools/plan-finanzas.html' },
+  { date: '2026-03-21', icon: '📋', name: '15 Opciones de Trabajo',                desc: 'Catálogo de ingresos extra evaluados',            tag: 'Doc',        href: 'tools/15-opciones.html' },
+  { date: '2026-03-15', icon: '✓',  name: 'Opciones Filtrado · 8 + 7 días',        desc: 'Filtro y plan de validación rápida',              tag: 'Doc',        href: 'tools/opciones-filtrado.html' },
+  { date: '2026-02-26', icon: '💊', name: 'Calculadora Dispensación v3',           desc: '6 pestañas · cálculo de dosificación',            tag: 'Calc',       href: 'https://www.notion.so/32e9a86ba8ec8114943ad7620464eb00', external: true },
+  { date: '2026-02-14', icon: '📐', name: 'Posología de contador (PDF A5)',        desc: 'Inhaladores, gotas, insulina · imprimible',       tag: 'PDF',        href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', external: true },
+  { date: '2026-02-05', icon: '📊', name: 'Proyección Utilidades Top 20',          desc: 'Excel · márgenes y delta por producto',           tag: 'Excel',      href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', external: true },
+  { date: '2026-01-22', icon: '☑',  name: 'Checklist Mensual PAC',                 desc: 'Actividades del mes con progreso',                 tag: 'Doc',        href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', external: true }
+];
 
-// Saludo dinámico según hora
-function renderGreeting() {
+// ─── AGENDA · bloques recurrentes ──────────────
+// days: 0 = domingo … 6 = sábado
+const AGENDA = [
+  { id: 'guia',    time: '08:30', dur: 15, days: [1,2,3,4,5], name: 'Centro de Comando IA',      meta: 'pre-jornada · 15 min',  toolId: 'guia-ia',   icon: '🧠' },
+  { id: 'pac',     time: '09:00', dur: 30, days: [1],          name: 'Checklist PAC · semanal',   meta: 'lunes · 30 min',        toolId: 'pac',       icon: '☑' },
+  { id: 'top20',   time: '10:00', dur: 25, days: [3],          name: 'Revisar utilidades Top 20', meta: 'miércoles',             toolId: 'top20',     icon: '📊' },
+  { id: 'malla',   time: '19:00', dur: 60, days: [1,2,3,4,5], name: 'Malla Aprendizaje',         meta: 'L–V · 60 min',          toolId: 'malla',     icon: '🗺️' },
+  { id: 'orq',     time: '20:30', dur: 30, days: [2,4],        name: 'Sesión Orquestador IA',     meta: 'martes / jueves',       toolId: 'orquestador', icon: '⚙️' },
+  { id: 'fin',     time: '11:00', dur: 45, days: [0],          name: 'Plan Financiero · revisión',meta: 'domingo',               toolId: 'finanzas',  icon: '💸' },
+  { id: 'libre',   time: '15:00', dur: 90, days: [6,0],        name: 'Selector Tiempo Libre',     meta: 'finde · elige panorama', toolId: 'tiempo-libre', icon: '🎲' },
+  { id: 'salida',  time: '18:30', dur: 120, days: [6],         name: 'Planificar salida familiar',meta: 'sábado · tarde familiar',toolId: 'planificador', icon: '🗺️' }
+];
+
+// ─── BLOQUES MACRO · jornada (contexto del día) ──
+// Define en qué "bloque grande" estás según hora + día.
+// El panel muestra el nombre del bloque actual + tiempo restante.
+// days: 0 = domingo … 6 = sábado.  ← edita libremente para reflejar tu semana real.
+// ─── BLOQUES MACRO · jornada real (del Esquema Calendario Semanal) ──
+// Cada bloque define hora + día + qué herramienta sugerir (toolId) + una recomendación (tip).
+// El panel muestra el bloque actual, su recomendación y enlaza a la herramienta al hacer clic.
+// days: 0 = domingo … 6 = sábado.  ← edita libremente para reflejar tu semana real.
+const MACRO_BLOCKS = [
+  // ─ L–V · Popular (trabajo farmacia) ─
+  { id: 'pop-am',   name: 'Popular',            start: '08:00', end: '14:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo · Checklist Farmacia' },
+  { id: 'colacion', name: 'Colación',          start: '14:00', end: '15:00', days: [1,2,3,4,5], kind: 'pausa',   toolId: null,                 tip: 'Pausa · come algo' },
+  { id: 'pop-pm',   name: 'Popular',            start: '15:00', end: '17:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo · Checklist Farmacia' },
+  { id: 'inter',    name: 'Intermedio',         start: '17:00', end: '18:30', days: [1,2,3,4,5], kind: 'inter',   toolId: 'guia-ia',            tip: 'Transición · repasa el Centro de Comando IA' },
+  { id: 'fqf',      name: 'FQF',                start: '18:30', end: '21:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Turno FQF · Checklist Farmacia' },
+  // ─ L–V · 21:00–23:00 · bloque personal por día ─
+  { id: 'lun-eve',  name: 'Hobbies',            start: '21:00', end: '23:00', days: [1], kind: 'hobbies', toolId: 'os-semanal', tip: 'Recarga 🎮 · OS Semanal' },
+  { id: 'mar-eve',  name: 'Hobbies',            start: '21:00', end: '23:00', days: [2], kind: 'hobbies', toolId: 'os-semanal', tip: 'Hobbies 🎧 · OS Semanal' },
+  { id: 'mie-eve',  name: 'Noche de Pareja',    start: '21:00', end: '23:00', days: [3], kind: 'pareja',  toolId: 'os-semanal', tip: 'Noche de Pareja ❤️ · OS Semanal' },
+  { id: 'jue-eve',  name: 'Música + Protocolo', start: '21:00', end: '23:00', days: [4], kind: 'hobbies', toolId: 'os-semanal', tip: 'Protocolo Jueves 📋 · arma el finde' },
+  { id: 'vie-eve',  name: 'Proyecto IA',        start: '21:00', end: '23:00', days: [5], kind: 'ia',      toolId: 'malla',      tip: 'Proyecto IA 🤖 · estudia con la Malla' },
+  // ─ S–D · Curie (trabajo) + familia ─
+  { id: 'finde-am', name: 'Mañana libre',       start: '08:00', end: '10:00', days: [6,0], kind: 'libre',   toolId: null,                 tip: 'Mañana libre · sin agenda fija' },
+  { id: 'curie',    name: 'Curie',              start: '10:00', end: '18:00', days: [6,0], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo en Curie · Checklist Farmacia' },
+  { id: 'sab-fam',  name: 'Tarde Familiar',     start: '18:00', end: '21:00', days: [6],   kind: 'familia', toolId: 'planificador',       tip: 'Tarde familiar 🏠 · Planificador de Salidas' },
+  { id: 'dom-fam',  name: 'Cierre Familiar',    start: '18:00', end: '21:00', days: [0],   kind: 'familia', toolId: 'os-semanal',         tip: 'Cierre familiar 🌅 · con Melin y Zayd' },
+  { id: 'sab-eve',  name: 'Pareja noche',       start: '21:00', end: '23:00', days: [6],   kind: 'pareja',  toolId: 'os-semanal',         tip: 'Pareja noche ❤️ · OS Semanal' },
+  { id: 'dom-eve',  name: 'Check-in',           start: '21:00', end: '23:00', days: [0],   kind: 'pareja',  toolId: 'os-semanal',         tip: 'Check-in 🗣️ semanal + descanso' }
+];
+
+</script>
+<script>
+/* ═════════════════════════════════════════════════
+   PANEL · V5 — final
+   Cambios vs v4:
+   · defaults: tipografía limpia + densidad compacta
+   · barra de bloques: Capturar grande (en vez de Progreso)
+   · Ajustes: fuente configurable por rol (UI / cuerpo / datos)
+   ═════════════════════════════════════════════════ */
+
+const LS = {
+  PINNED:      'panel.v5.pinned',
+  MODS:        'panel.v5.mods',
+  INBOX:       'panel.v5.inbox',
+  AGENDA_DONE: 'panel.v5.agendaDone',
+  PREFS:       'panel.v5.prefs',
+  API:         'panel.v5.api_key'
+};
+
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const get = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const set = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+const DIAS   = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const DIAS_C = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MESES  = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MESES_C= ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+const NOMBRE = 'Bastián';
+
+const ALL_FLAT = ALL_TOOLS.flatMap(g => g.items.map(i => ({...i, cat: g.cat})));
+function toolById(id) { return ALL_FLAT.find(t => t.id === id); }
+
+// ── catálogo de fuentes (para experimentar) ──────
+const FONTS_SANS = [
+  { id:'geist',    label:'Geist',         stack:"'Geist', sans-serif" },
+  { id:'poppins',  label:'Poppins',       stack:"'Poppins', sans-serif" },
+  { id:'grotesk',  label:'Space Grotesk', stack:"'Space Grotesk', sans-serif" },
+  { id:'sora',     label:'Sora',          stack:"'Sora', sans-serif" },
+  { id:'manrope',  label:'Manrope',       stack:"'Manrope', sans-serif" },
+  { id:'fraunces', label:'Fraunces · serif', stack:"'Fraunces', serif" }
+];
+const FONTS_MONO = [
+  { id:'geistmono', label:'Geist Mono',     stack:"'Geist Mono', monospace" },
+  { id:'jetbrains', label:'JetBrains Mono',  stack:"'JetBrains Mono', monospace" },
+  { id:'spacemono', label:'Space Mono',      stack:"'Space Mono', monospace" },
+  { id:'plexmono',  label:'IBM Plex Mono',   stack:"'IBM Plex Mono', monospace" }
+];
+
+// ── prefs ────────────────────────────────────────
+const DEFAULT_PREFS = { ui:'geist', read:'geist', data:'geistmono', density:'compact' };
+function prefs() { return { ...DEFAULT_PREFS, ...get(LS.PREFS, {}) }; }
+function applyPrefs() {
+  const p = prefs();
+  const uiF   = FONTS_SANS.find(f => f.id === p.ui)   || FONTS_SANS[0];
+  const readF = FONTS_SANS.find(f => f.id === p.read) || FONTS_SANS[0];
+  const dataF = FONTS_MONO.find(f => f.id === p.data) || FONTS_MONO[0];
+  const root = document.documentElement.style;
+  root.setProperty('--f-ui',   uiF.stack);
+  root.setProperty('--f-read', readF.stack);
+  root.setProperty('--f-data', dataF.stack);
+  document.body.classList.toggle('density-compact', p.density === 'compact');
+  document.body.classList.toggle('density-comfy',   p.density !== 'compact');
+  const us = $('#fontUI'), rs = $('#fontRead'), ds = $('#fontData');
+  if (us) us.value = p.ui;
+  if (rs) rs.value = p.read;
+  if (ds) ds.value = p.data;
+  $$('.seg').forEach(seg => {
+    const k = seg.dataset.pref; if (!k) return;
+    seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.val === p[k]));
+  });
+  return p;
+}
+function setPref(key, val) {
+  const p = prefs(); p[key] = val; set(LS.PREFS, p); applyPrefs();
+}
+function buildFontSelects() {
+  const p = prefs();
+  const opt = (f, sel) => `<option value="${f.id}" ${sel ? 'selected' : ''}>${f.label}</option>`;
+  $('#fontUI').innerHTML   = FONTS_SANS.map(f => opt(f, f.id === p.ui)).join('');
+  $('#fontRead').innerHTML = FONTS_SANS.map(f => opt(f, f.id === p.read)).join('');
+  $('#fontData').innerHTML = FONTS_MONO.map(f => opt(f, f.id === p.data)).join('');
+}
+function resetFonts() {
+  const p = prefs();
+  p.ui = 'geist'; p.read = 'geist'; p.data = 'geistmono';
+  set(LS.PREFS, p);
+  buildFontSelects(); applyPrefs();
+}
+
+// ── API key central · una sola key para todos los módulos ──
+// Se guarda en panel.v5.api_key — la leen Selector, Flujo, Planificador
+// y cualquier módulo futuro que lea de 'panel.v5.api_key'.
+function loadApiKey() {
+  const inp = $('#apiKeyInput');
+  if (inp) inp.value = localStorage.getItem(LS.API) || '';
+  if (localStorage.getItem(LS.API)) showApiKeyStatus('✓ Key activa · la usan todos los módulos', true);
+  else showApiKeyStatus('', true);
+}
+function saveApiKey() {
+  const inp = $('#apiKeyInput'); if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) { showApiKeyStatus('Ingresa tu API key', false); return; }
+  if (!val.startsWith('sk-ant-')) { showApiKeyStatus('Debe empezar con sk-ant-...', false); return; }
+  localStorage.setItem(LS.API, val);
+  showApiKeyStatus('✓ Guardada · disponible para todos los módulos', true);
+}
+function clearApiKey() {
+  localStorage.removeItem(LS.API);
+  const inp = $('#apiKeyInput'); if (inp) inp.value = '';
+  showApiKeyStatus('Key borrada', false);
+}
+function showApiKeyStatus(msg, ok) {
+  const el = $('#apiKeyStatus'); if (!el) return;
+  el.textContent = msg;
+  el.className = 'prefs-api-status ' + (ok ? 'ok' : 'err');
+  el.style.display = msg ? 'block' : 'none';
+}
+
+// ── reloj + saludo ───────────────────────────────
+function updateClock() {
   const now = new Date();
-  const h = now.getHours();
-  let greet = 'Hola';
-  if (h < 12) greet = 'Buenos días';
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  $('#clockTime').innerHTML = `${hh}<span class="sep">:</span>${mm}`;
+  $('#clockDate').textContent = `${DIAS_C[now.getDay()]} · ${String(now.getDate()).padStart(2,'0')} ${MESES_C[now.getMonth()]}`;
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  $('#clockWeek').textContent = `Sem ${String(week).padStart(2,'0')} · ${now.getFullYear()}`;
+}
+function updateGreeting() {
+  const h = new Date().getHours();
+  let greet;
+  if (h < 6) greet = 'Buenas madrugadas';
+  else if (h < 12) greet = 'Buenos días';
   else if (h < 19) greet = 'Buenas tardes';
   else greet = 'Buenas noches';
-
-  const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const fecha = `${dias[now.getDay()]} ${now.getDate()} de ${meses[now.getMonth()]}`;
-
-  document.getElementById('greetTime').textContent = greet;
-  document.getElementById('greetDate').textContent = fecha;
+  $('#greeting').innerHTML = `${greet}, <strong>${NOMBRE}</strong>.`;
 }
 
-// Núcleo (4 tarjetas grandes)
+// ── AHORA strip ──────────────────────────────────
+function timeToMin(s) { const [h,m] = s.split(':').map(Number); return h*60+m; }
+function minToTime(m) {
+  const h = Math.floor(m/60) % 24, mm = m % 60;
+  return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+// bloque macro (Popular / FARQFAR …) en el que cae una fecha
+function macroBlockAt(date) {
+  const dow = date.getDay();
+  const m = date.getHours()*60 + date.getMinutes();
+  const blocks = (typeof MACRO_BLOCKS !== 'undefined') ? MACRO_BLOCKS : [];
+  return blocks.find(b => b.days.includes(dow) && m >= timeToMin(b.start) && m < timeToMin(b.end)) || null;
+}
+// duración legible en Title Case: 60 → "60 Min" · 90 → "1 h 30 Min"
+function fmtDur(min) {
+  if (min <= 0) return '0 Min';
+  if (min < 60) return `${min} Min`;
+  const h = Math.floor(min/60), m = min % 60;
+  return m ? `${h} h ${m} Min` : `${h} h`;
+}
+// meta del foco: bloque + estimado, en dos partes estilizadas
+function focusMeta(blockName, est) {
+  return `<span class="m-block">${blockName}</span><span class="m-sep">·</span><span class="m-est">${est}</span>`;
+}
+function todaysBlocks() {
+  const dow = new Date().getDay();
+  return AGENDA
+    .filter(b => b.days.includes(dow))
+    .map(b => ({...b, startM: timeToMin(b.time), endM: timeToMin(b.time) + b.dur }))
+    .sort((a,b) => a.startM - b.startM);
+}
+function isAgendaDoneToday(id) {
+  const k = new Date().toISOString().slice(0,10);
+  const map = get(LS.AGENDA_DONE, {});
+  return !!(map[k] && map[k].includes(id));
+}
+function toggleAgendaDone(id) {
+  const k = new Date().toISOString().slice(0,10);
+  const map = get(LS.AGENDA_DONE, {});
+  map[k] = map[k] || [];
+  if (map[k].includes(id)) map[k] = map[k].filter(x => x !== id);
+  else map[k].push(id);
+  set(LS.AGENDA_DONE, map);
+}
+
+// bloques macro (horario real) que aplican hoy, ordenados por hora
+function macroBlocksToday() {
+  const dow = new Date().getDay();
+  return MACRO_BLOCKS
+    .filter(b => b.days.includes(dow))
+    .map(b => ({ ...b, startM: timeToMin(b.start), endM: timeToMin(b.end) }))
+    .sort((a, b) => a.startM - b.startM);
+}
+
+function updateNowStrip() {
+  const now = new Date();
+  const nowM = now.getHours()*60 + now.getMinutes();
+  const blocks = macroBlocksToday();
+  const current = blocks.find(b => nowM >= b.startM && nowM < b.endM);
+  const next = blocks.find(b => b.startM > nowM);
+
+  const focusEl = $('#nowFocus');
+  if (current) {
+    const tool = current.toolId ? toolById(current.toolId) : null;
+    const rem = current.endM - nowM;
+    // bloque actual (dónde estás) + recomendación de qué hacer ahora
+    focusEl.querySelector('.value').textContent = current.name;
+    focusEl.querySelector('.meta').innerHTML = focusMeta(current.tip || (tool ? tool.name : 'Bloque actual'), 'Quedan ' + fmtDur(rem));
+    if (tool && tool.href && tool.href !== '#') {
+      focusEl.href = tool.href;
+      focusEl.target = tool.external ? '_blank' : '_self';
+    } else {
+      focusEl.removeAttribute('href');
+    }
+  } else {
+    // fuera de horario (madrugada / después de las 23:00)
+    focusEl.querySelector('.value').textContent = 'Tiempo libre';
+    focusEl.querySelector('.meta').innerHTML = focusMeta('Sin bloque ahora', 'descanso');
+    focusEl.removeAttribute('href');
+  }
+
+  if (next) {
+    $('#nowNext').textContent = next.name;
+    const diff = next.startM - nowM;
+    const h = Math.floor(diff/60), m = diff%60;
+    $('#nowNextTime').textContent = `${next.start} · ${h > 0 ? `en ${h}h ${m}min` : `en ${m} min`}`;
+  } else {
+    $('#nowNext').textContent = 'Sin más bloques hoy';
+    $('#nowNextTime').textContent = 'mañana retomamos';
+  }
+}
+
+// ── módulos fijados: orden + membresía unificada ──
+// claves: "core:<id>" (tarjeta base del núcleo) · "tool:<id>" (fijada desde Herramientas)
+const CORE_IDS = CORE.map(c => c.id);
+function splitKey(key) { const i = key.indexOf(':'); return [key.slice(0, i), key.slice(i + 1)]; }
+function keyExists(key) {
+  const [type, id] = splitKey(key);
+  return type === 'core' ? CORE.some(c => c.id === id) : !!toolById(id);
+}
+function defaultMods() {
+  const mods = CORE_IDS.map(id => 'core:' + id);
+  get(LS.PINNED, []).filter(id => toolById(id) && !CORE_IDS.includes(id))
+    .forEach(id => mods.push('tool:' + id));
+  return mods;
+}
+function getMods() {
+  let m = get(LS.MODS, null);
+  if (!Array.isArray(m)) { m = defaultMods(); set(LS.MODS, m); }
+  const clean = m.filter((k, i) => keyExists(k) && m.indexOf(k) === i);
+  if (clean.length !== m.length) set(LS.MODS, clean);
+  return clean;
+}
+function setMods(m) { set(LS.MODS, m); }
+
+// ── estrella en Herramientas (refleja si el módulo está fijado) ──
+function isPinned(id) {
+  return CORE_IDS.includes(id)
+    ? getMods().includes('core:' + id)
+    : get(LS.PINNED, []).includes(id);
+}
+function togglePin(id, ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  const mods = getMods();
+  if (CORE_IDS.includes(id)) {
+    const key = 'core:' + id;
+    const i = mods.indexOf(key);
+    if (i >= 0) mods.splice(i, 1); else mods.push(key);
+    setMods(mods);
+  } else {
+    const pinned = get(LS.PINNED, []);
+    const key = 'tool:' + id;
+    const pi = pinned.indexOf(id);
+    if (pi >= 0) { pinned.splice(pi, 1); const mi = mods.indexOf(key); if (mi >= 0) mods.splice(mi, 1); }
+    else { pinned.unshift(id); if (!mods.includes(key)) mods.push(key); }
+    set(LS.PINNED, pinned.slice(0, 12));
+    setMods(mods);
+  }
+  renderCore(); renderAll(); renderFootStats();
+}
+function renderPinned() { renderCore(); }
+
+// ── desfijar desde el menú ⋯ de la tarjeta ───────
+function unfixModule(key) {
+  setMods(getMods().filter(k => k !== key));
+  const [type, id] = splitKey(key);
+  if (type === 'tool') set(LS.PINNED, get(LS.PINNED, []).filter(x => x !== id));
+  closeCardMenus();
+  renderCore(); renderAll(); renderFootStats();
+}
+function closeCardMenus() { $$('.card-menu.open').forEach(m => m.classList.remove('open')); }
+
+// ── tarjeta de módulo (núcleo o herramienta fijada) ──
+function moduleCard(o) {
+  const dead = o.dis || !o.href || o.href === '#';
+  return `<a class="core-card ${o.dis ? 'disabled' : ''}" data-key="${o.key}" draggable="true"
+      href="${dead ? '#' : o.href}" ${dead ? 'onclick="return false;"' : ''} ${o.ext ? 'target="_blank" rel="noopener"' : ''}>
+    <button class="card-menu-btn" type="button" draggable="false" aria-label="Opciones del módulo" title="Opciones">⋯</button>
+    <div class="card-menu">
+      <button type="button" data-act="unfix"><span class="mi">⊘</span> Desfijar módulo</button>
+    </div>
+    <div class="core-glyph">${o.icon}</div>
+    <div class="core-name">${o.name}</div>
+    <div class="core-desc">${o.desc}</div>
+    <div class="core-foot">
+      <div class="core-tag">${o.tag}</div>
+      ${o.soon ? '<div class="core-tag soon">próximo</div>' : ''}
+    </div>
+  </a>`;
+}
+
+// ── fijado = módulos en el orden definido por el usuario ──
 function renderCore() {
-  const grid = document.getElementById('coreGrid');
-  grid.innerHTML = CORE.map(c => {
-    const disabled = c.status !== 'live';
-    const tag = c.tag || '';
-    const arrow = disabled ? '' : '<span class="core-arrow">→</span>';
-    return `
-      <a href="${disabled ? '#' : c.href}"
-         class="core-card ${disabled ? 'disabled' : ''}"
-         ${disabled ? '' : 'target="_blank" rel="noopener"'}
-         ${disabled ? 'onclick="return false;"' : ''}>
-        <div class="core-icon">${c.icon}</div>
-        <div class="core-body">
-          <div class="core-name">${c.name}</div>
-          <div class="core-desc">${c.desc}</div>
-        </div>
-        <div class="core-foot">
-          <div class="core-tag">${tag}</div>
-          ${arrow}
-        </div>
-      </a>
-    `;
-  }).join('');
-
-  document.getElementById('coreCount').textContent = `${CORE.filter(c=>c.status==='live').length}/${CORE.length} activos`;
-}
-
-// Vista rápida en Inicio (lista compacta de las herramientas top fuera del núcleo)
-function renderQuickTools() {
-  const cont = document.getElementById('quickTools');
-  // Filtramos: las primeras 2 categorías (IA + Finanzas) sin las del núcleo
-  const coreNames = new Set(CORE.map(c => c.name));
-  const cats = ALL_TOOLS.slice(0, 2).map(g => ({
-    cat: g.cat,
-    items: g.items.filter(i => !coreNames.has(i.name))
-  })).filter(g => g.items.length);
-
-  cont.innerHTML = cats.map(g => `
-    <div class="tools-cat">
-      <div class="tools-cat-label">${g.cat}</div>
-      <div class="tools-grid">${renderToolRows(g.items)}</div>
-    </div>
-  `).join('');
-}
-
-// Catálogo completo (tab Todas)
-function renderAllTools() {
-  const cont = document.getElementById('allTools');
-  const total = ALL_TOOLS.reduce((s,g) => s + g.items.length, 0);
-  document.getElementById('allCount').textContent = `${total} herramientas`;
-
-  cont.innerHTML = ALL_TOOLS.map(g => `
-    <div class="tools-cat">
-      <div class="tools-cat-label">${g.cat}</div>
-      <div class="tools-grid">${renderToolRows(g.items)}</div>
-    </div>
-  `).join('');
-}
-
-function renderToolRows(items) {
-  return items.map(t => {
-    const disabled = t.status === 'soon';
-    const external = t.external ? 'external' : '';
-    const statusLabel = {
-      live: '',
-      notion: 'Notion',
-      soon: 'Pronto'
-    }[t.status] || '';
-    return `
-      <a href="${disabled ? '#' : t.href}"
-         class="tool-row ${disabled ? 'disabled' : ''} ${external}"
-         ${disabled ? 'onclick="return false;"' : 'target="_blank" rel="noopener"'}>
-        <div class="tool-icon">${t.icon}</div>
-        <div class="tool-text">
-          <div class="tool-name">${t.name}</div>
-          <div class="tool-desc">${t.desc}</div>
-        </div>
-        ${statusLabel ? `<span class="tool-status">${statusLabel}</span>` : ''}
-      </a>
-    `;
+  const grid = $('#coreGrid');
+  if (!grid) return;
+  const mods = getMods();
+  const cc = $('#coreCount');
+  if (cc) cc.textContent = `${mods.length} módulo${mods.length === 1 ? '' : 's'} fijado${mods.length === 1 ? '' : 's'}`;
+  if (!mods.length) {
+    grid.innerHTML = `<div class="empty-rail" style="grid-column:1/-1">Sin módulos fijados · fíjalos con la estrella ☆ desde la pestaña Herramientas</div>`;
+    return;
+  }
+  grid.innerHTML = mods.map(key => {
+    const [type, id] = splitKey(key);
+    if (type === 'core') {
+      const c = CORE.find(x => x.id === id); if (!c) return '';
+      const dis = c.status !== 'live';
+      return moduleCard({ key, dis, soon: dis, href: c.href, ext: false, icon: c.icon, name: c.name, desc: c.desc, tag: c.tag });
+    }
+    const t = toolById(id); if (!t) return '';
+    const dis = t.status === 'soon';
+    return moduleCard({ key, dis, soon: dis, href: t.href, ext: t.external, icon: t.icon, name: t.name, desc: t.desc, tag: t.cat });
   }).join('');
 }
 
-// Cambio de tab
-function setupTabs() {
-  document.querySelectorAll('.tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('sec-' + btn.dataset.section).classList.add('active');
-    });
+// ── interacción: menú ⋯ + arrastrar para reordenar ──
+let _dragKey = null, _justDragged = false;
+function getDragAfterElement(grid, x, y) {
+  const els = [...grid.querySelectorAll('.core-card:not(.dragging)')];
+  let best = null, bestDist = Infinity;
+  for (const el of els) {
+    const b = el.getBoundingClientRect();
+    const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    const d = Math.hypot(x - cx, y - cy);
+    if (d < bestDist) { bestDist = d; best = { el, cx, cy, h: b.height }; }
+  }
+  if (!best) return null;
+  const sameRow = Math.abs(y - best.cy) < best.h * 0.6;
+  const before = sameRow ? x < best.cx : y < best.cy;
+  return before ? best.el : best.el.nextElementSibling;
+}
+function persistModuleOrder() {
+  const grid = $('#coreGrid'); if (!grid) return;
+  const order = [...grid.querySelectorAll('.core-card')].map(c => c.dataset.key).filter(Boolean);
+  if (order.length) { setMods(order); renderFootStats(); }
+}
+function initModulesUI() {
+  const grid = $('#coreGrid');
+  if (!grid || grid.dataset.uiReady) return;
+  grid.dataset.uiReady = '1';
+
+  // menú ⋯ → desfijar
+  grid.addEventListener('click', e => {
+    const btn = e.target.closest('.card-menu-btn');
+    const inMenu = e.target.closest('.card-menu');
+    if (btn || inMenu) { e.preventDefault(); e.stopPropagation(); }
+    if (btn) {
+      const menu = btn.closest('.core-card').querySelector('.card-menu');
+      const open = menu.classList.contains('open');
+      closeCardMenus();
+      if (!open) menu.classList.add('open');
+      return;
+    }
+    const act = e.target.closest('[data-act="unfix"]');
+    if (act) { unfixModule(act.closest('.core-card').dataset.key); return; }
+    if (_justDragged) { e.preventDefault(); e.stopPropagation(); }
+  });
+  grid.addEventListener('pointerdown', () => { _justDragged = false; });
+  document.addEventListener('click', () => closeCardMenus());
+
+  // arrastrar para reordenar
+  grid.addEventListener('dragstart', e => {
+    const card = e.target.closest('.core-card');
+    if (!card || e.target.closest('.card-menu-btn') || e.target.closest('.card-menu')) { e.preventDefault(); return; }
+    _dragKey = card.dataset.key;
+    closeCardMenus();
+    requestAnimationFrame(() => card.classList.add('dragging'));
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', _dragKey); } catch (_) {}
+  });
+  grid.addEventListener('dragover', e => {
+    if (!_dragKey) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const dragging = grid.querySelector('.core-card.dragging');
+    if (!dragging) return;
+    const after = getDragAfterElement(grid, e.clientX, e.clientY);
+    if (after === dragging) return;
+    if (after == null) grid.appendChild(dragging);
+    else grid.insertBefore(dragging, after);
+  });
+  grid.addEventListener('drop', e => { e.preventDefault(); });
+  grid.addEventListener('dragend', () => {
+    const dragging = grid.querySelector('.core-card.dragging');
+    if (dragging) dragging.classList.remove('dragging');
+    _dragKey = null;
+    _justDragged = true;
+    persistModuleOrder();
   });
 }
 
-// Última actualización (build time del HTML, hardcoded)
-function setLastUpdate() {
-  document.getElementById('lastUpdate').textContent = 'build · 22 abr 2026';
+// ── catálogo completo ────────────────────────────
+let _activeToolCat = 0;
+// pestañas de categoría en el nav superior
+function buildNav() {
+  const host = $('#navCats');
+  if (!host) return;
+  host.innerHTML = ALL_TOOLS.map((g, i) =>
+    `<button class="tab" data-section="todas" data-cat="${i}">${g.short || g.cat}</button>`
+  ).join('');
+}
+function renderAll() {
+  const cont = $('#allTools');
+  const totalItems = ALL_TOOLS.reduce((s,g) => s + g.items.length, 0);
+  const totalFiles = ALL_TOOLS.reduce((s,g) => s + (g.files ? g.files.length : 0), 0);
+  $('#footT').textContent = totalItems + totalFiles;
+  cont.innerHTML = ALL_TOOLS.map((g, i) => {
+    const files = g.files || [];
+    const itemsHtml = g.items.length
+      ? `<div class="tools-grid">${g.items.map(renderToolRow).join('')}</div>`
+      : '';
+    const filesHtml = files.length
+      ? `<div class="tools-files">
+           <div class="files-label">Archivos${g.items.length ? '' : ' · solo descarga'} · ${files.length}</div>
+           ${files.map(renderFileRow).join('')}
+         </div>`
+      : '';
+    return `<div class="tools-cat ${i === _activeToolCat ? 'on' : ''}" data-cat="${i}">
+      ${itemsHtml}
+      ${filesHtml}
+    </div>`;
+  }).join('');
+  setToolCat(_activeToolCat);
+}
+function setToolCat(i) {
+  _activeToolCat = i;
+  const g = ALL_TOOLS[i];
+  const files = g.files || [];
+  const tt = $('#toolCatTitle');
+  const ts = $('#toolCatSub');
+  if (tt) tt.textContent = g.cat;
+  if (ts) ts.textContent = `${g.items.length} web${files.length ? ' · ' + files.length + ' archivo' + (files.length===1?'':'s') : ''}`;
+  $$('#allTools .tools-cat').forEach(c => c.classList.toggle('on', +c.dataset.cat === i));
+}
+function renderFileRow(f) {
+  return `<a class="file-row" href="${f.href}" target="_blank" rel="noopener">
+    <span class="file-kind ${f.kind.toLowerCase()}">${f.kind}</span>
+    <div class="file-text">
+      <div class="file-name">${f.name}</div>
+      <div class="file-desc">${f.desc}</div>
+    </div>
+    <span class="file-ext">↓ Drive</span>
+  </a>`;
+}
+function renderToolRow(t) {
+  const dis = t.status === 'soon';
+  const ext = t.external ? 'external' : '';
+  const lbl = { live: 'Live', notion: 'Notion', soon: 'Pronto', drive: 'Drive' }[t.status] || '';
+  const pinned = isPinned(t.id);
+  return `<a class="tool-row ${dis ? 'disabled' : ''} ${ext}" href="${dis ? '#' : t.href}" ${dis ? 'onclick="return false;"' : ''} ${t.external ? 'target="_blank" rel="noopener"' : ''} data-track="${t.id}">
+    <div class="tool-glyph">${t.icon}</div>
+    <div class="tool-text">
+      <div class="tool-name">${t.name}</div>
+      <div class="tool-desc">${t.desc}</div>
+    </div>
+    ${lbl ? `<span class="tool-status ${t.status}">${lbl}</span>` : ''}
+    ${dis ? '' : `<button class="pin-toggle ${pinned ? 'pinned' : ''}" onclick="togglePin('${t.id}', event)" title="${pinned ? 'Quitar fijado' : 'Fijar'}">${pinned ? '★' : '☆'}</button>`}
+  </a>`;
 }
 
-// Init
+// ── creaciones (bitácora) ────────────────────────
+function renderCreations() {
+  const cont = $('#creationsList');
+  const sorted = [...CREATIONS].sort((a,b) => b.date.localeCompare(a.date));
+  $('#creationsCount').textContent = `${sorted.length} artefactos`;
+  const upd = $('#creationsUpdated');
+  if (upd && sorted.length) {
+    const d = new Date(sorted[0].date + 'T00:00:00');
+    const fecha = `${String(d.getDate()).padStart(2,'0')} ${MESES_C[d.getMonth()]} ${d.getFullYear()}`;
+    const dias = Math.floor((Date.now() - d.getTime()) / 86400000);
+    const rel = dias <= 0 ? 'hoy' : dias === 1 ? 'ayer' : `hace ${dias} días`;
+    upd.innerHTML = `<span class="dot"></span>Última actualización: <b>${fecha}</b> · ${rel}`;
+  }
+  cont.innerHTML = sorted.map(c => {
+    const d = new Date(c.date + 'T00:00:00');
+    const fecha = `${String(d.getDate()).padStart(2,'0')} ${MESES_C[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+    return `<a class="log-row" href="${c.href}" ${c.external ? 'target="_blank" rel="noopener"' : ''}>
+      <div class="log-date">${fecha}</div>
+      <div class="log-name">${c.name}</div>
+      <div class="log-tag">${c.tag}</div>
+      ${c.external ? '<div class="log-ext">↗</div>' : '<div class="log-ext"></div>'}
+    </a>`;
+  }).join('');
+}
+
+// ── agenda hoy ───────────────────────────────────
+function renderAgendaHoy() {
+  const slot = $('#agendaHoySlot');
+  const blocks = todaysBlocks();
+  const dow = new Date().getDay();
+  const nowM = new Date().getHours()*60 + new Date().getMinutes();
+  const as = $('#agendaSub');
+  if (as) as.textContent = `${DIAS[dow]} · ${blocks.length} bloque${blocks.length===1?'':'s'}`;
+  if (!blocks.length) {
+    slot.innerHTML = `<div class="empty-rail">Día libre de bloques recurrentes</div>`;
+    return;
+  }
+  slot.innerHTML = `<div class="agenda-hoy">${blocks.map(b => {
+    const tool = toolById(b.toolId);
+    const isNow = nowM >= b.startM && nowM < b.endM;
+    const isDone = isAgendaDoneToday(b.id);
+    const cls = [isNow && 'now', isDone && 'done'].filter(Boolean).join(' ');
+    const href = tool && tool.href && tool.href !== '#' ? tool.href : '#';
+    const ext = tool && tool.external ? 'target="_blank" rel="noopener"' : '';
+    return `<a class="agenda-row ${cls}" href="${href}" ${ext} data-track="${b.toolId}">
+      <div class="agenda-time"><span class="marker"></span>${b.time}</div>
+      <div>
+        <div class="agenda-name">${b.icon}&nbsp;&nbsp;${b.name}</div>
+        <div class="agenda-meta">${b.meta}${isNow ? ' · <b>en curso</b>' : ''}</div>
+      </div>
+      <button class="agenda-check" onclick="event.preventDefault();event.stopPropagation();toggleAgendaDone('${b.id}');renderAgendaHoy();updateNowStrip();" title="Marcar hecho">${isDone ? '✓' : ''}</button>
+    </a>`;
+  }).join('')}</div>`;
+}
+
+// ── agenda semana ────────────────────────────────
+function renderWeek() {
+  const grid = $('#weekGrid');
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dow + 6) % 7));
+  const sun = new Date(monday.getTime() + 6*86400000);
+  $('#weekSub').textContent = `${monday.getDate()} ${MESES_C[monday.getMonth()]} → ${sun.getDate()} ${MESES_C[sun.getMonth()]}`;
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dayN = d.getDay();
+    const blocks = AGENDA.filter(b => b.days.includes(dayN)).sort((a,b) => timeToMin(a.time) - timeToMin(b.time));
+    const isToday = d.toDateString() === today.toDateString();
+    html += `<div class="week-day ${isToday ? 'today' : ''}">
+      <div class="week-day-label">
+        <div class="wd-name">${DIAS[dayN]}</div>
+        <div class="wd-num">${String(d.getDate()).padStart(2,'0')} ${MESES_C[d.getMonth()]}${isToday ? ' · hoy' : ''}</div>
+      </div>
+      <div class="week-day-blocks">
+        ${blocks.length
+          ? blocks.map(b => `<span class="week-block"><span class="t">${b.time}</span>${b.icon} ${b.name}</span>`).join('')
+          : '<span class="week-block empty">— libre —</span>'}
+      </div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// ── agenda mes ───────────────────────────────────
+let _monthRef = new Date();
+function renderMonth() {
+  const grid = $('#monthGrid');
+  const ref = _monthRef;
+  const year = ref.getFullYear(), month = ref.getMonth();
+  const today = new Date();
+  $('#monthSub').textContent = `${MESES[month]} ${year}`;
+
+  const first = new Date(year, month, 1);
+  const startOffset = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+
+  let head = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(d => `<div class="m-head">${d}</div>`).join('');
+  let cells = '';
+  for (let i = 0; i < totalCells; i++) {
+    const dayNumber = i - startOffset + 1;
+    const inMonth = dayNumber >= 1 && dayNumber <= daysInMonth;
+    if (!inMonth) { cells += `<div class="m-cell out"></div>`; continue; }
+    const d = new Date(year, month, dayNumber);
+    const dayN = d.getDay();
+    const blocks = AGENDA.filter(b => b.days.includes(dayN)).sort((a,b) => timeToMin(a.time) - timeToMin(b.time));
+    const isToday = d.toDateString() === today.toDateString();
+    const dots = blocks.slice(0,4).map(() => `<span class="m-dot"></span>`).join('');
+    cells += `<div class="m-cell ${isToday ? 'today' : ''} ${blocks.length ? 'has' : ''}" title="${blocks.map(b=>b.time+' '+b.name).join(' · ')}">
+      <div class="m-num">${dayNumber}</div>
+      <div class="m-dots">${dots}</div>
+      ${blocks.length ? `<div class="m-count">${blocks.length}</div>` : ''}
+    </div>`;
+  }
+  grid.innerHTML = `<div class="month-head">${head}</div><div class="month-cells">${cells}</div>`;
+}
+function shiftMonth(delta) {
+  _monthRef = new Date(_monthRef.getFullYear(), _monthRef.getMonth() + delta, 1);
+  renderMonth();
+}
+function setAgendaView(view) {
+  const isMonth = view === 'mes';
+  $('#weekWrap').style.display = isMonth ? 'none' : 'block';
+  $('#monthWrap').style.display = isMonth ? 'block' : 'none';
+  $('#agViewWeek').classList.toggle('on', !isMonth);
+  $('#agViewMonth').classList.toggle('on', isMonth);
+  if (isMonth) renderMonth();
+}
+
+// ── inbox ────────────────────────────────────────
+let _activeCat = 'idea';
+function renderInbox() {
+  const list = get(LS.INBOX, []);
+  const tci = $('#tabCountInbox');
+  if (tci) tci.textContent = list.length || '';
+  $('#inboxSub').textContent = list.length ? `${list.length} elemento${list.length===1?'':'s'} sin procesar` : 'vacío';
+  $('#footI').textContent = list.length;
+  const cont = $('#inboxList');
+  if (!list.length) {
+    cont.innerHTML = `<div class="empty-rail">Bandeja vacía · captura tu primera idea arriba</div>`;
+    return;
+  }
+  const labels = { idea:'idea', tarea:'tarea', compra:'compra', ref:'ref', misc:'misc' };
+  cont.innerHTML = list.map(it => {
+    const d = new Date(it.ts);
+    const dd = `${String(d.getDate()).padStart(2,'0')} ${MESES_C[d.getMonth()]} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `<div class="inbox-item">
+      <span class="inbox-cat-pill ${it.cat}">${labels[it.cat] || it.cat}</span>
+      <div>
+        <div class="inbox-text">${escapeHtml(it.text)}</div>
+        <div class="inbox-time">${dd}</div>
+      </div>
+      <button class="inbox-del" onclick="delInbox(${it.ts})" title="Eliminar">×</button>
+    </div>`;
+  }).join('');
+}
+function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function saveInbox() {
+  const text = $('#inboxText').value.trim();
+  if (!text) return;
+  const list = get(LS.INBOX, []);
+  list.unshift({ ts: Date.now(), cat: _activeCat, text });
+  set(LS.INBOX, list);
+  $('#inboxText').value = '';
+  renderInbox(); renderFootStats();
+}
+function delInbox(ts) {
+  set(LS.INBOX, get(LS.INBOX, []).filter(i => i.ts !== ts));
+  renderInbox(); renderFootStats();
+}
+
+// ── tabs ─────────────────────────────────────────
+function goToTab(name, btnEl) {
+  $$('.tab').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  else {
+    const t = $(`.tab[data-section="${name}"]:not([data-cat])`);
+    if (t) t.classList.add('active');
+  }
+  $$('.section').forEach(s => s.classList.toggle('active', s.id === 'sec-' + name));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── foot stats ───────────────────────────────────
+function renderFootStats() {
+  $('#footP').textContent = getMods().length;
+  $('#footI').textContent = get(LS.INBOX, []).length;
+}
+
+// ── búsqueda colapsable ──────────────────────────
+function openSearch() {
+  $('#cmdBar').classList.add('searching');
+  setTimeout(() => $('#cmdSearch').focus(), 30);
+}
+function closeSearch() {
+  $('#cmdSearch').value = '';
+  clearSearch();
+  $('#cmdBar').classList.remove('searching');
+}
+function liveSearch(q) {
+  if (!q.trim()) { clearSearch(); return; }
+  goToTab('todas');
+  const at = $('#allTools');
+  at.classList.add('searching');
+  const lower = q.trim().toLowerCase();
+  $$('#allTools .tool-row, #allTools .file-row').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(lower) ? '' : 'none';
+  });
+  $$('#allTools .tools-cat').forEach(cat => {
+    const visible = [...cat.querySelectorAll('.tool-row, .file-row')].some(r => r.style.display !== 'none');
+    cat.style.display = visible ? 'block' : 'none';
+  });
+}
+function clearSearch() {
+  const at = $('#allTools');
+  if (at) at.classList.remove('searching');
+  $$('#allTools .tool-row, #allTools .file-row').forEach(el => el.style.display = '');
+  $$('#allTools .tools-cat').forEach(el => el.style.display = '');
+  if (typeof _activeToolCat !== 'undefined') setToolCat(_activeToolCat);
+}
+
+// expose
+window.delInbox = delInbox;
+window.togglePin = togglePin;
+window.toggleAgendaDone = toggleAgendaDone;
+window.renderAgendaHoy = renderAgendaHoy;
+window.updateNowStrip = updateNowStrip;
+window.goToTab = goToTab;
+
+// ── init ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  renderGreeting();
+  buildFontSelects();
+  applyPrefs();
+  loadApiKey();
+  updateClock();
+  updateGreeting();
+  setInterval(updateClock, 1000);
+  setInterval(updateNowStrip, 30000);
+
+  buildNav();
   renderCore();
-  renderQuickTools();
-  renderAllTools();
-  setupTabs();
-  setLastUpdate();
+  renderPinned();
+  renderAgendaHoy();
+  renderAll();
+  renderCreations();
+  renderWeek();
+  renderInbox();
+  updateNowStrip();
+  renderFootStats();
+  initModulesUI();
+
+  $$('.tab').forEach(btn => btn.addEventListener('click', () => {
+    const sec = btn.dataset.section;
+    goToTab(sec, btn);
+    if (sec === 'todas' && btn.dataset.cat != null) setToolCat(+btn.dataset.cat);
+  }));
+
+  // Búsqueda colapsable
+  $('#searchToggle').addEventListener('click', openSearch);
+  $('#searchClose').addEventListener('click', closeSearch);
+  const sInput = $('#cmdSearch');
+  sInput.addEventListener('input', e => { const v = e.target.value; if (!v.trim()) clearSearch(); else liveSearch(v); });
+  sInput.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+  // Capturar (en la barra de bloques) → inbox
+  $('#captureBtn').addEventListener('click', () => {
+    goToTab('inbox');
+    setTimeout(() => $('#inboxText').focus(), 200);
+  });
+
+  // Ajustes
+  $('#prefsBtn').addEventListener('click', () => {
+    const p = $('#prefsPanel');
+    const willOpen = (p.style.display === 'none' || !p.style.display);
+    p.style.display = willOpen ? 'block' : 'none';
+    if (willOpen) loadApiKey();
+  });
+  $('#prefsClose').addEventListener('click', () => $('#prefsPanel').style.display = 'none');
+  $('#apiKeySave').addEventListener('click', saveApiKey);
+  $('#apiKeyClear').addEventListener('click', clearApiKey);
+  $('#apiKeyInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveApiKey(); } });
+  $('#fontUI').addEventListener('change',   e => setPref('ui',   e.target.value));
+  $('#fontRead').addEventListener('change', e => setPref('read', e.target.value));
+  $('#fontData').addEventListener('change', e => setPref('data', e.target.value));
+  $('#fontReset').addEventListener('click', resetFonts);
+  $$('.seg').forEach(seg => {
+    seg.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b || !seg.dataset.pref) return;
+      setPref(seg.dataset.pref, b.dataset.val);
+    });
+  });
+
+  // Bitácora desde el pie ("herramientas · N" → vista bitácora)
+  const fb = $('#footBitacora');
+  if (fb) fb.addEventListener('click', () => goToTab('bitacora'));
+
+  // Agenda view + month nav
+  $('#agViewWeek').addEventListener('click', () => setAgendaView('semana'));
+  $('#agViewMonth').addEventListener('click', () => setAgendaView('mes'));
+  $('#monthPrev').addEventListener('click', () => shiftMonth(-1));
+  $('#monthNext').addEventListener('click', () => shiftMonth(1));
+  $('#monthToday').addEventListener('click', () => { _monthRef = new Date(); renderMonth(); });
+
+  // Inbox
+  $$('.cat-chip').forEach(c => c.addEventListener('click', () => {
+    _activeCat = c.dataset.cat;
+    $$('.cat-chip').forEach(x => x.classList.toggle('on', x === c));
+  }));
+  $('#inboxSave').addEventListener('click', saveInbox);
+  $('#inboxText').addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); saveInbox(); }
+  });
+  $('#inboxExport').addEventListener('click', () => {
+    const list = get(LS.INBOX, []);
+    if (!list.length) return alert('Inbox vacía');
+    const txt = list.map(i => `[${i.cat}] ${i.text}`).join('\n');
+    navigator.clipboard.writeText(txt).then(() => {
+      const btn = $('#inboxExport'); const orig = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  });
+
+  // Atajos
+  document.addEventListener('keydown', e => {
+    if (/input|textarea|select/i.test(document.activeElement.tagName)) return;
+    const map = { '1':'inicio', '2':'todas' };
+    if (map[e.key]) { e.preventDefault(); const t = $(`.tab[data-section="${map[e.key]}"]`); goToTab(map[e.key], t); if (map[e.key] === 'todas') setToolCat(_activeToolCat); }
+    if (e.key === '/') { e.preventDefault(); openSearch(); }
+  });
 });
+
 </script>
 
 </body>
