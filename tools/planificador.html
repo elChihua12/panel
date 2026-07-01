@@ -318,20 +318,41 @@ function addDiscRow(){if(!discData[editorBank])discData[editorBank]={0:[],1:[],2
 function removeDiscRow(i){discData[editorBank][editorDay].splice(i,1);renderEditorRows();}
 function saveDiscounts(){discData.month=new Date().toISOString().slice(0,7);localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));updateDiscBadge();renderDiscounts();closeDiscEditor();}
 
-async function nominatim(q){
-  if(geoCache[q])return geoCache[q];
-  const wait=Math.max(0,1100-(Date.now()-lastGeoCall));if(wait)await new Promise(r=>setTimeout(r,wait));lastGeoCall=Date.now();
-  const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=3&countrycodes=cl&addressdetails=1`,{headers:{'Accept-Language':'es','User-Agent':'PlanificadorSalidas/1.1'}});
-  const d=await r.json();geoCache[q]=d;return d;
+let cityCenter=null,cityViewbox=null,cityBiasFor=null;
+// Sesga las búsquedas a la ciudad: geocodifica el centro una vez y arma un viewbox alrededor.
+async function ensureCityBias(city){
+  if(cityBiasFor===city)return;
+  cityBiasFor=city;
+  try{
+    const d=await nominatim(city);
+    if(d.length){const lat=+d[0].lat,lng=+d[0].lon,pad=0.30;
+      cityCenter={lat,lng};
+      cityViewbox=`${lng-pad},${lat+pad},${lng+pad},${lat-pad}`;}
+  }catch(e){}
 }
-async function geocode(addr,city){
+async function nominatim(q,opts={}){
+  const ck=q+(opts.bounded?'|b':'');
+  if(geoCache[ck])return geoCache[ck];
+  const wait=Math.max(0,1100-(Date.now()-lastGeoCall));if(wait)await new Promise(r=>setTimeout(r,wait));lastGeoCall=Date.now();
+  let url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=cl&addressdetails=1`;
+  if(cityViewbox){url+=`&viewbox=${cityViewbox}`;if(opts.bounded)url+='&bounded=1';}
+  const r=await fetch(url,{headers:{'Accept-Language':'es'}});
+  const d=await r.json();geoCache[ck]=d;return d;
+}
+// Geocodifica probando: nombre del lugar (POI) → dirección completa → calle acotada a la ciudad → centro de la zona.
+async function geocode(addr,city,name){
   city=city||'Santiago, Chile';
+  await ensureCityBias(city);
+  // 1) Nombre del lugar como POI — lo más confiable para lugares conocidos
+  if(name){try{const d=await nominatim(`${name}, ${city}`);if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'verified',note:null};}catch(e){}}
+  // 2) Dirección completa
   try{const d=await nominatim(`${addr}, ${city}`);if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'verified',note:null};}catch(e){}
-  const m=addr.match(/^(.+?)\s+(\d+)/);
-  if(m){const street=m[1].trim(),num=+m[2];
-    for(const delta of[-50,50,-100,100,-150,150]){try{const d=await nominatim(`${street} ${num+delta}, ${city}`);if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'estimated',note:`~estimado en ${street} (ref: nro. ${num+delta})`};}catch(e){}}
-    try{const d=await nominatim(`${street}, ${city}`);if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'estimated',note:`~calle ${street}, número ${num} sin verificar`};}catch(e){}
-  }
+  // 3) Solo la calle, acotada a la ciudad (evita calles homónimas lejanas)
+  const m=addr.match(/^(.+?)\s+\d+/);
+  if(m){const street=m[1].trim();
+    try{const d=await nominatim(`${street}, ${city}`,{bounded:true});if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'estimated',note:`calle ${street} · número aproximado`};}catch(e){}}
+  // 4) Último recurso: centro de la zona (marca clara, sin fingir precisión)
+  if(cityCenter)return{lat:cityCenter.lat,lng:cityCenter.lng,status:'estimated',note:'ubicación aproximada (centro de la zona)'};
   return{lat:null,lng:null,status:'failed',note:'No se pudo geocodificar'};
 }
 async function previewGeo(){
@@ -430,7 +451,7 @@ async function loadBloqueActivity(){
   stops=[];
   const stop={id:Date.now(),name,addr:name+', '+city,cat:'entertainment',pri:'fixed',open:'',close:'',notes:'Cargado desde Generador Aleatorio',geo:{status:'pending'}};
   stops.push(stop);switchMode('manual');renderStops();renderMap();
-  stop.geo=await geocode(name+', '+city,city);renderStops();renderMap();checkAlerts();
+  stop.geo=await geocode(name+', '+city,city,name);renderStops();renderMap();checkAlerts();
   localStorage.removeItem(`${LS}.pendingActivity`);
 }
 function clearPendingActivity(){localStorage.removeItem(`${LS}.pendingActivity`);renderBloqueMode();}
@@ -462,9 +483,9 @@ async function runSurprise(){
   const now=new Date();
   const ages=FAMILY.children.map(c=>{const mo=Math.floor((now-c.born)/(1000*60*60*24*30.44)),yr=Math.floor(mo/12);return`${c.name}(${yr>0?yr+'a':mo+'m'})`;}).join(', ');
   const dayN=date?DAYS[new Date(date+'T12:00:00').getDay()]:'';
-  const prompt=`Planificador salidas familiares Chile. Diseña salida 5-7 paradas:\nCiudad:${city}\nFecha:${date?`${date}(${dayN})`:'pronto'}\nPresupuesto:${budget||'moderado'}\nGrupo:2 adultos,${ages}\nPreferencias:${prefs||'sorpréndeme'}\nSOLO JSON sin backticks:\n{"titulo":"...","descripcion":"...","stops":[{"name":"...","address":"dir completa ciudad","category":"shopping|food|entertainment|pets|other","priority":"fixed|optional","openTime":"HH:MM|null","closeTime":"HH:MM|null","notes":"...|null"}]}`;
+  const prompt=`Planificador salidas familiares Chile. Diseña salida 5-7 paradas:\nCiudad:${city}\nFecha:${date?`${date}(${dayN})`:'pronto'}\nPresupuesto:${budget||'moderado'}\nGrupo:2 adultos,${ages}\nPreferencias:${prefs||'sorpréndeme'}\nUSA SOLO lugares REALES y conocidos que existan (parques, museos, malls, cafés reales con nombre propio). Da la dirección real con calle y número cuando la sepas y SIEMPRE la comuna. Si no sabes el número exacto, deja calle + comuna (no inventes números).\nSOLO JSON sin backticks:\n{"titulo":"...","descripcion":"...","stops":[{"name":"nombre real del lugar","address":"calle y número reales","comuna":"comuna","category":"shopping|food|entertainment|pets|other","priority":"fixed|optional","openTime":"HH:MM|null","closeTime":"HH:MM|null","notes":"...|null"}]}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const plan=JSON.parse((d.content?.[0]?.text||'').replace(/```json?|```/g,'').trim());
     window.__sPlan=plan;
@@ -476,9 +497,9 @@ async function loadSurprise(){
   const plan=window.__sPlan;if(!plan?.stops)return;
   const city=document.getElementById('ss-city').value.trim()||'Santiago, Chile';
   stops=[];
-  for(const s of plan.stops)stops.push({id:Date.now()+Math.random(),name:s.name,addr:s.address,cat:s.category||'other',pri:s.priority||'optional',open:s.openTime||'',close:s.closeTime||'',notes:s.notes||'',geo:{status:'pending'}});
+  for(const s of plan.stops)stops.push({id:Date.now()+Math.random(),name:s.name,addr:(s.address||s.name)+(s.comuna?', '+s.comuna:''),cat:s.category||'other',pri:s.priority||'optional',open:s.openTime||'',close:s.closeTime||'',notes:s.notes||'',geo:{status:'pending'}});
   switchMode('manual');renderStops();renderMap();
-  for(const s of stops){s.geo=await geocode(s.addr,city);renderStops();renderMap();checkAlerts();}
+  for(const s of stops){s.geo=await geocode(s.addr,city,s.name);renderStops();renderMap();checkAlerts();}
 }
 
 function switchMode(m){

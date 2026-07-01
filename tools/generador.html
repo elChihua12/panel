@@ -439,12 +439,11 @@ body {
   <details class="api-setup" id="apiSetup">
     <summary>
       <span class="api-icon">🔑</span>
-      API Key de Anthropic
+      API Keys · Anthropic + Notion
     </summary>
     <div class="api-body">
       <p class="api-note">
-        Crea tu key en <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>.
-        Se guarda en localStorage de este navegador — nunca sale de tu equipo.
+        <strong>1. Anthropic:</strong> crea tu key en <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>.
       </p>
       <div class="api-row">
         <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-api03-..." />
@@ -452,6 +451,15 @@ body {
         <button class="btn-xs" onclick="clearKey()">Borrar</button>
       </div>
       <div class="api-status" id="apiStatus"></div>
+      <p class="api-note" style="margin-top:14px">
+        <strong>2. Notion:</strong> crea una integración interna en <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a>, copia su token (<code>ntn_...</code>) y comparte tus bases de datos con ella (··· → Conexiones). Este token le da a Claude acceso a tu Notion.
+      </p>
+      <div class="api-row">
+        <input type="password" class="api-input" id="notionKeyInput" placeholder="ntn_..." />
+        <button class="btn-xs" onclick="saveNotionKey()">Guardar</button>
+        <button class="btn-xs" onclick="clearNotionKey()">Borrar</button>
+      </div>
+      <div class="api-status" id="notionStatus"></div>
     </div>
   </details>
 
@@ -580,7 +588,26 @@ let lastItem       = null;   // persiste el resultado para el handoff
 //  API KEY
 // ═══════════════════════════════════════════
 const KEY_STORAGE = 'panel.v5.api_key';
+const NOTION_KEY_STORAGE = 'panel.v5.notion_key';
 function getKey() { return localStorage.getItem(KEY_STORAGE) || ''; }
+function getNotionKey() { return localStorage.getItem(NOTION_KEY_STORAGE) || ''; }
+
+function saveNotionKey() {
+  const val = document.getElementById('notionKeyInput').value.trim();
+  if (!val) { showNotionStatus('Pega tu token de Notion', false); return; }
+  localStorage.setItem(NOTION_KEY_STORAGE, val);
+  showNotionStatus('✓ Token de Notion guardado', true);
+}
+function clearNotionKey() {
+  localStorage.removeItem(NOTION_KEY_STORAGE);
+  document.getElementById('notionKeyInput').value = '';
+  showNotionStatus('Token borrado', false);
+}
+function showNotionStatus(msg, ok) {
+  const el = document.getElementById('notionStatus');
+  el.textContent = msg;
+  el.className = 'api-status ' + (ok ? 'ok' : 'err');
+}
 
 function saveKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
@@ -608,6 +635,9 @@ window.addEventListener('DOMContentLoaded', () => {
   } else {
     document.getElementById('apiSetup').setAttribute('open', '');
   }
+  const nk = getNotionKey();
+  if (nk) { document.getElementById('notionKeyInput').value = nk; showNotionStatus('✓ Token cargado', true); }
+  else { document.getElementById('apiSetup').setAttribute('open', ''); }
   renderFilters();
 });
 
@@ -662,6 +692,8 @@ async function tirar() {
   if (isLoading) return;
   const key = getKey();
   if (!key) { document.getElementById('apiSetup').setAttribute('open',''); showApiStatus('Ingresa tu API key primero', false); return; }
+  const notionKey = getNotionKey();
+  if (!notionKey) { document.getElementById('apiSetup').setAttribute('open',''); showNotionStatus('Falta tu token de Notion (paso 2)', false); return; }
 
   const m = MODES[currentMode];
   isLoading = true; hideResult(); hideError();
@@ -709,7 +741,7 @@ Example: [{"${activeNameField}":"Example","Categoria":"Cat","url":"https://..."}
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 4000,
-        mcp_servers: [{ type: 'url', url: 'https://mcp.notion.com/mcp', name: 'notion-mcp', authorization_token: key }],
+        mcp_servers: [{ type: 'url', url: 'https://mcp.notion.com/mcp', name: 'notion-mcp', authorization_token: notionKey }],
         messages: [{ role: 'user', content: prompt }]
       })
     });
