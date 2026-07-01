@@ -435,33 +435,10 @@ body {
 
   <a class="back" href="../index.html">← Panel</a>
 
-  <!-- API KEY -->
-  <details class="api-setup" id="apiSetup">
-    <summary>
-      <span class="api-icon">🔑</span>
-      API Keys · Anthropic + Notion
-    </summary>
-    <div class="api-body">
-      <p class="api-note">
-        <strong>1. Anthropic:</strong> crea tu key en <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>.
-      </p>
-      <div class="api-row">
-        <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-api03-..." />
-        <button class="btn-xs" onclick="saveKey()">Guardar</button>
-        <button class="btn-xs" onclick="clearKey()">Borrar</button>
-      </div>
-      <div class="api-status" id="apiStatus"></div>
-      <p class="api-note" style="margin-top:14px">
-        <strong>2. Notion:</strong> crea una integración interna en <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a>, copia su token (<code>ntn_...</code>) y comparte tus bases de datos con ella (··· → Conexiones). Este token le da a Claude acceso a tu Notion.
-      </p>
-      <div class="api-row">
-        <input type="password" class="api-input" id="notionKeyInput" placeholder="ntn_..." />
-        <button class="btn-xs" onclick="saveNotionKey()">Guardar</button>
-        <button class="btn-xs" onclick="clearNotionKey()">Borrar</button>
-      </div>
-      <div class="api-status" id="notionStatus"></div>
-    </div>
-  </details>
+  <!-- NOTION: conectado server-side vía proxy Vercel; el navegador no necesita llaves -->
+  <div class="notion-note" style="text-align:center;font-size:13px;opacity:.7;margin:4px 0 2px;">
+    🔗 Notion conectado en el servidor · no necesitas pegar llaves, solo tira.
+  </div>
 
   <!-- HEADER -->
   <div class="app-header">
@@ -587,59 +564,11 @@ let lastItem       = null;   // persiste el resultado para el handoff
 // ═══════════════════════════════════════════
 //  API KEY
 // ═══════════════════════════════════════════
-const KEY_STORAGE = 'panel.v5.api_key';
-const NOTION_KEY_STORAGE = 'panel.v5.notion_key';
-function getKey() { return localStorage.getItem(KEY_STORAGE) || ''; }
-function getNotionKey() { return localStorage.getItem(NOTION_KEY_STORAGE) || ''; }
+const NOTION_API = 'https://analizador-de-acciones.vercel.app';
 
-function saveNotionKey() {
-  const val = document.getElementById('notionKeyInput').value.trim();
-  if (!val) { showNotionStatus('Pega tu token de Notion', false); return; }
-  localStorage.setItem(NOTION_KEY_STORAGE, val);
-  showNotionStatus('✓ Token de Notion guardado', true);
-}
-function clearNotionKey() {
-  localStorage.removeItem(NOTION_KEY_STORAGE);
-  document.getElementById('notionKeyInput').value = '';
-  showNotionStatus('Token borrado', false);
-}
-function showNotionStatus(msg, ok) {
-  const el = document.getElementById('notionStatus');
-  el.textContent = msg;
-  el.className = 'api-status ' + (ok ? 'ok' : 'err');
-}
-
-function saveKey() {
-  const val = document.getElementById('apiKeyInput').value.trim();
-  if (!val.startsWith('sk-ant-')) { showApiStatus('Debe empezar con sk-ant-...', false); return; }
-  localStorage.setItem(KEY_STORAGE, val);
-  showApiStatus('✓ Guardada', true);
-  document.getElementById('apiSetup').removeAttribute('open');
-}
-function clearKey() {
-  localStorage.removeItem(KEY_STORAGE);
-  document.getElementById('apiKeyInput').value = '';
-  showApiStatus('Key borrada', false);
-}
-function showApiStatus(msg, ok) {
-  const el = document.getElementById('apiStatus');
-  el.textContent = msg;
-  el.className = 'api-status ' + (ok ? 'ok' : 'err');
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  const saved = getKey();
-  if (saved) {
-    document.getElementById('apiKeyInput').value = saved;
-    showApiStatus('✓ Key cargada', true);
-  } else {
-    document.getElementById('apiSetup').setAttribute('open', '');
-  }
-  const nk = getNotionKey();
-  if (nk) { document.getElementById('notionKeyInput').value = nk; showNotionStatus('✓ Token cargado', true); }
-  else { document.getElementById('apiSetup').setAttribute('open', ''); }
-  renderFilters();
-});
+// Notion se consulta vía proxy en Vercel (api/notion.js). El token vive como variable
+// de entorno en Vercel — el navegador no necesita ninguna llave.
+window.addEventListener('DOMContentLoaded', () => { renderFilters(); });
 
 // ═══════════════════════════════════════════
 //  MODO Y FILTROS
@@ -690,10 +619,6 @@ function selectChipSource(el, val, source) {
 // ═══════════════════════════════════════════
 async function tirar() {
   if (isLoading) return;
-  const key = getKey();
-  if (!key) { document.getElementById('apiSetup').setAttribute('open',''); showApiStatus('Ingresa tu API key primero', false); return; }
-  const notionKey = getNotionKey();
-  if (!notionKey) { document.getElementById('apiSetup').setAttribute('open',''); showNotionStatus('Falta tu token de Notion (paso 2)', false); return; }
 
   const m = MODES[currentMode];
   isLoading = true; hideResult(); hideError();
@@ -716,44 +641,24 @@ async function tirar() {
       activeNotaField  = m.notaField;
     }
 
-    const nullCheck   = activeNameField === 'Name' ? '"Name" IS NOT NULL' : '"Nombre" IS NOT NULL';
-    const finalFilter = selectedFilter
-      ? `WHERE "Categoria" = '${selectedFilter}' AND ${nullCheck}`
-      : `WHERE ${nullCheck}`;
-    const fieldsStr   = activeFields.join(', ');
-
-    const prompt = `You have access to the Notion MCP. Query the data source: ${activeCollection}
-SELECT ${fieldsStr} FROM the collection ${finalFilter} LIMIT 60.
-Return ONLY a valid JSON array, no markdown, no explanation.
-Each object must include: ${fieldsStr}.
-Use null for missing fields.
-Example: [{"${activeNameField}":"Example","Categoria":"Cat","url":"https://..."}]`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-        'anthropic-beta': 'mcp-client-2025-04-04'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 4000,
-        mcp_servers: [{ type: 'url', url: 'https://mcp.notion.com/mcp', name: 'notion-mcp', authorization_token: notionKey }],
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
+    // Consulta el proxy de Notion en Vercel (token server-side). Devuelve las filas aplanadas.
+    const response = await fetch(`${NOTION_API}/api/notion?ds=${encodeURIComponent(activeCollection)}`);
     if (!response.ok) {
       const e = await response.json().catch(() => ({}));
-      throw new Error(`API ${response.status}: ${e?.error?.message || response.statusText}`);
+      throw new Error(`Notion ${response.status}: ${e?.error || response.statusText}`);
     }
+    const data = await response.json();
+    let items = data.items || [];
 
-    const data  = await response.json();
-    const items = extractItems(data);
-    if (!items?.length) { showStatus('Sin resultados. Prueba con otro filtro.'); return; }
+    // Filtra en el cliente: descarta filas sin nombre y aplica la categoría elegida.
+    items = items.filter(it => {
+      const nm = it?.[activeNameField];
+      if (!nm || !String(nm).trim()) return false;
+      if (selectedFilter && it?.Categoria !== selectedFilter) return false;
+      return true;
+    });
+
+    if (!items.length) { showStatus('Sin resultados. Prueba con otro filtro.'); return; }
 
     hideStatus();
     const random = items[Math.floor(Math.random() * items.length)];

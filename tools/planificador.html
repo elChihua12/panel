@@ -493,7 +493,7 @@ async function runSurprise(){
   const dayN=date?DAYS[new Date(date+'T12:00:00').getDay()]:'';
   const prompt=`Planificador salidas familiares Chile. Diseña salida 5-7 paradas:\nCiudad:${city}\nFecha:${date?`${date}(${dayN})`:'pronto'}\nPresupuesto:${budget||'moderado'}\nGrupo:2 adultos,${ages}\nPreferencias:${prefs||'sorpréndeme'}\nUSA SOLO lugares REALES y conocidos que existan (parques, museos, malls, cafés reales con nombre propio). Da la dirección real con calle y número cuando la sepas y SIEMPRE la comuna. Si no sabes el número exacto, deja calle + comuna (no inventes números).\nSOLO JSON sin backticks:\n{"titulo":"...","descripcion":"...","stops":[{"name":"nombre real del lugar","address":"calle y número reales","comuna":"comuna","category":"shopping|food|entertainment|pets|other","priority":"fixed|optional","openTime":"HH:MM|null","closeTime":"HH:MM|null","notes":"...|null"}]}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const plan=JSON.parse((d.content?.[0]?.text||'').replace(/```json?|```/g,'').trim());
     window.__sPlan=plan;
