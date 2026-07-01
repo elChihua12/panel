@@ -339,22 +339,30 @@ async function nominatim(q,opts={}){
   const r=await fetch(url,{headers:{'Accept-Language':'es'}});
   const d=await r.json();geoCache[ck]=d;return d;
 }
+// Arma el resultado usando los addressdetails reales de Nominatim (comuna + display correctos)
+function geoHit(d0,status,note){
+  const ad=d0.address||{};
+  const comuna=ad.city_district||ad.suburb||ad.municipality||ad.town||ad.city||ad.county||null;
+  return{lat:+d0.lat,lng:+d0.lon,status,note,comuna,display:d0.display_name||null};
+}
 // Geocodifica probando: nombre del lugar (POI) → dirección completa → calle acotada a la ciudad → centro de la zona.
 async function geocode(addr,city,name){
   city=city||'Santiago, Chile';
   await ensureCityBias(city);
   // 1) Nombre del lugar como POI — lo más confiable para lugares conocidos
-  if(name){try{const d=await nominatim(`${name}, ${city}`);if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'verified',note:null};}catch(e){}}
+  if(name){try{const d=await nominatim(`${name}, ${city}`);if(d.length)return geoHit(d[0],'verified',null);}catch(e){}}
   // 2) Dirección completa
-  try{const d=await nominatim(`${addr}, ${city}`);if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'verified',note:null};}catch(e){}
+  try{const d=await nominatim(`${addr}, ${city}`);if(d.length)return geoHit(d[0],'verified',null);}catch(e){}
   // 3) Solo la calle, acotada a la ciudad (evita calles homónimas lejanas)
   const m=addr.match(/^(.+?)\s+\d+/);
   if(m){const street=m[1].trim();
-    try{const d=await nominatim(`${street}, ${city}`,{bounded:true});if(d.length)return{lat:+d[0].lat,lng:+d[0].lon,status:'estimated',note:`calle ${street} · número aproximado`};}catch(e){}}
+    try{const d=await nominatim(`${street}, ${city}`,{bounded:true});if(d.length)return geoHit(d[0],'estimated',`calle ${street} · número aproximado`);}catch(e){}}
   // 4) Último recurso: centro de la zona (marca clara, sin fingir precisión)
-  if(cityCenter)return{lat:cityCenter.lat,lng:cityCenter.lng,status:'estimated',note:'ubicación aproximada (centro de la zona)'};
-  return{lat:null,lng:null,status:'failed',note:'No se pudo geocodificar'};
+  if(cityCenter)return{lat:cityCenter.lat,lng:cityCenter.lng,status:'estimated',note:'ubicación aproximada (centro de la zona)',comuna:null,display:null};
+  return{lat:null,lng:null,status:'failed',note:'No se pudo geocodificar',comuna:null,display:null};
 }
+// Etiqueta corta y real del lugar (primeras 3 partes del display de Nominatim)
+function locLabel(disp){return disp?disp.split(',').slice(0,3).map(s=>s.trim()).join(', '):'';}
 async function previewGeo(){
   const addr=document.getElementById('s-addr').value.trim(),city=document.getElementById('t-city').value.trim(),el=document.getElementById('geo-preview');
   if(!addr)return;
@@ -499,7 +507,7 @@ async function loadSurprise(){
   stops=[];
   for(const s of plan.stops)stops.push({id:Date.now()+Math.random(),name:s.name,addr:(s.address||s.name)+(s.comuna?', '+s.comuna:''),cat:s.category||'other',pri:s.priority||'optional',open:s.openTime||'',close:s.closeTime||'',notes:s.notes||'',geo:{status:'pending'}});
   switchMode('manual');renderStops();renderMap();
-  for(const s of stops){s.geo=await geocode(s.addr,city,s.name);renderStops();renderMap();checkAlerts();}
+  for(const s of stops){s.geo=await geocode(s.addr,city,s.name);if(s.geo.status==='verified'&&s.geo.display)s.addr=locLabel(s.geo.display);renderStops();renderMap();checkAlerts();}
 }
 
 function switchMode(m){

@@ -522,7 +522,11 @@ let history = [], cache = {}, currentTicker = '', currentMkt = null;
    no existen, así que el Analizador cae a modo manual + estimaciones (sigue funcionando).
    Para tener datos en vivo TAMBIÉN desde GitHub Pages, pega aquí la URL base de tu backend en
    Vercel, ej: const API_BASE = 'https://tu-analizador.vercel.app';  (requiere CORS habilitado). */
-const API_BASE = '';
+/* Datos en vivo (Yahoo) vía backend serverless en Vercel (repo Analizador-de-Acciones).
+   api/quote.js y api/history.js proxean Yahoo Finance con CORS abierto, así que funciona
+   desde GitHub Pages sin exponer nada. Si algún día cae Yahoo, el usuario puede pegar una
+   API key de Financial Modeling Prep en ⚙ y usa esa fuente; si no hay ninguna, cae a modo manual. */
+const API_BASE = 'https://analizador-de-acciones.vercel.app';
 let loadStepInterval = null, activeTab = 'fund';
 
 const WATCHLIST = [
