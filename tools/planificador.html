@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <!--
 ════════════════════════════════════════════════════════════════
-  PLANIFICADOR DE SALIDAS FAMILIARES v1.1
+  PLANIFICADOR DE SALIDAS FAMILIARES v1.3
   Carpeta: Dashboard Final / Módulos /
-  Actualizado: Junio 2026
+  Actualizado: Julio 2026
 ════════════════════════════════════════════════════════════════
+  CAMBIOS v1.3:
+  - Google Places ELIMINADO (era de pago). Geocodificación 100% gratis:
+    Photon/Komoot (POIs, tolera tipeos) + Nominatim (estructurado + texto libre)
+  - Direcciones con número solo se marcan ✓ si el resultado trae house_number
+    (antes la calle sola se marcaba "verificado" — falso positivo)
+  - Pines ARRASTRABLES: si un pin queda corrido, arrástralo → queda "✓ Ajustado"
+  - Descuentos bancarios: se actualizan con BÚSQUEDA WEB real (tool server-side
+    de Anthropic, misma key central) → lee las páginas de beneficios del mes
+  - Botón 🔍 en paradas estimadas/sin ubicar: busca la dirección real en la web
+    (equivalente a buscar en Google Maps) y re-geocodifica
+
   CAMBIOS v1.1 vs v1.0:
   - Modo 2 IMPLEMENTADO: lee localStorage['panel.v5.pendingActivity']
   - Descuentos editables desde UI (⚙️ header) → localStorage['panel.v5.discounts']
@@ -23,7 +34,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#c9956f">
-<title>Planificador de Salidas · v1.1</title>
+<title>Planificador de Salidas · v1.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
@@ -39,6 +50,18 @@ body{font-family:var(--f-ui);background:radial-gradient(ellipse 70% 45% at 85% -
 .hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .group-bar{display:flex;gap:8px;flex-wrap:wrap}
 .gmem{font-size:.76rem;color:var(--ink-soft);background:var(--beige);padding:3px 8px;border-radius:20px}.gmem b{color:var(--ink)}
+.gctl{display:flex;align-items:center;gap:6px;background:var(--beige);padding:3px 4px 3px 9px;border-radius:20px;font-size:.76rem;color:var(--ink-soft)}
+.gctl-lbl{font-weight:500}
+.gstep{width:20px;height:20px;border:1px solid var(--line);background:var(--cream-soft);border-radius:50%;cursor:pointer;font-size:14px;line-height:1;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;font-family:var(--f-ui)}
+.gstep:hover{border-color:var(--terracota);color:var(--terracota-deep)}
+.gcount{min-width:13px;text-align:center;color:var(--ink);font-family:var(--f-data)}
+.kid-chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-ui);font-size:.76rem;padding:3px 11px 3px 9px;border-radius:20px;border:1px solid var(--line);background:var(--cream-soft);color:var(--muted);cursor:pointer;transition:all .15s}
+.kid-chip:hover{border-color:var(--terracota)}
+.kid-chip .kid-dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:all .15s}
+.kid-chip .kid-age{font-family:var(--f-data);font-size:.67rem;opacity:.85}
+.kid-chip.on{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.kid-chip.on .kid-dot{background:var(--ok)}
+.kid-chip:not(.on){opacity:.62}
 .tabs{display:flex;gap:5px;background:var(--beige);padding:4px;border-radius:var(--r-md);margin-bottom:16px}
 .tab{flex:1;padding:8px 10px;border:none;border-radius:var(--r-sm);font-family:var(--f-ui);font-size:.81rem;font-weight:500;cursor:pointer;color:var(--muted);background:transparent;transition:all .18s;white-space:nowrap}
 .tab.active{background:var(--cream-soft);color:var(--ink);box-shadow:var(--shadow-sm)}.tab:hover:not(.active){color:var(--ink-soft)}
@@ -107,7 +130,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
 <div class="wrap">
 <a class="back" href="../index.html">← Panel</a>
 <div class="hdr">
-  <div class="hdr-left"><span class="hdr-title">🗺️ Planificador de Salidas</span><span class="ver">v1.1</span></div>
+  <div class="hdr-left"><span class="hdr-title">🗺️ Planificador de Salidas</span><span class="ver">v1.3</span></div>
   <div class="hdr-right">
     <div class="group-bar" id="group-bar"></div>
     <button class="btn btn-ghost btn-sm" onclick="openDiscEditor()">⚙️ Descuentos <span id="disc-month-badge" class="month-badge mb-ok"></span></button>
@@ -142,7 +165,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
   </div>
   <div class="card">
     <div class="ctitle">Agregar parada</div>
-    <div class="callout"><b>Verde</b> = exacto · <b>Ámbar</b> = estimado en la calle correcta · <b>Rojo</b> = no ubicado</div>
+    <div class="callout"><b>Verde</b> = exacto · <b>Ámbar</b> = estimado en la calle correcta · <b>Rojo</b> = no ubicado · ¿Pin corrido? <b>Arrástralo</b> en el mapa a su lugar real.</div>
     <div class="fgrid">
       <div class="fg"><label>Nombre</label><input type="text" id="s-name" placeholder="ej: Importadora Bambi"></div>
       <div class="fg"><label>Dirección</label><input type="text" id="s-addr" placeholder="ej: Bascuñán Guerrero 135" onblur="previewGeo()"></div>
@@ -176,7 +199,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
       <div id="disc-section" class="card" style="margin-top:12px;display:none">
         <div class="ctitle">Descuentos del día · <span id="disc-bank-label">—</span></div>
         <div id="disc-list"></div>
-        <div style="font-size:.69rem;color:var(--muted-soft);margin-top:7px">Tope $40.000 · crédito · <button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.69rem">actualizar mes</button></div>
+        <div style="font-size:.69rem;color:var(--muted-soft);margin-top:7px">Tope $40.000 · crédito · se actualiza solo cada mes buscando en la web del banco · <button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.69rem">corregir manual</button></div>
       </div>
     </div>
     <div>
@@ -189,7 +212,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
         </div>
       </div>
       <div id="map"></div>
-      <div style="font-size:.67rem;color:var(--muted-soft);margin-top:4px;text-align:right">© OpenStreetMap · Nominatim OSM</div>
+      <div style="font-size:.67rem;color:var(--muted-soft);margin-top:4px;display:flex;justify-content:space-between;gap:8px"><span>✋ Arrastra un pin para corregir su posición</span><span>© OpenStreetMap · Nominatim + Photon</span></div>
     </div>
   </div>
 </div>
@@ -248,7 +271,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 const LS='panel.v5';
-const FAMILY={adults:2,children:[{name:'Melin',born:new Date('2021-01-16')},{name:'Zayd',born:new Date('2026-02-23')}]};
+let FAMILY={adults:2,children:[{name:'Melin',born:new Date('2021-01-16'),active:true},{name:'Zayd',born:new Date('2026-02-23'),active:true}]};
 const CAT={shopping:{color:'#2a5cb8',label:'🛒 Compras'},food:{color:'#8c4a14',label:'🍜 Comida'},entertainment:{color:'#5a3ea8',label:'🎮 Entretención'},pets:{color:'#2e7d32',label:'🐾 Mascotas'},other:{color:'#5a4a37',label:'📍 Otro'}};
 const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const DEFAULT_DISC={month:new Date().toISOString().slice(0,7),
@@ -262,7 +285,7 @@ let discData=JSON.parse(JSON.stringify(DEFAULT_DISC));
 let editorBank='santander',editorDay=1;
 
 document.addEventListener('DOMContentLoaded',()=>{
-  renderGroupBar();initMap();loadDiscounts();checkApiKey();
+  loadFamily();renderGroupBar();initMap();loadDiscounts();checkApiKey();autoRefreshDiscounts();
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('t-date').value=today;
   document.getElementById('ss-date').value=today;
@@ -273,10 +296,19 @@ function getApiKey(){return localStorage.getItem(`${LS}.api_key`)||'';}
 function saveApiKey(){const k=document.getElementById('api-key-input').value.trim();if(k){localStorage.setItem(`${LS}.api_key`,k);document.getElementById('api-notice').style.display='none';}}
 function checkApiKey(){if(!getApiKey())document.getElementById('api-notice').style.display='flex';}
 
+function loadFamily(){
+  try{const s=JSON.parse(localStorage.getItem(`${LS}.family`)||'null');
+    if(s){if(typeof s.adults==='number')FAMILY.adults=s.adults;
+      if(Array.isArray(s.kids))FAMILY.children.forEach(c=>{const f=s.kids.find(k=>k.name===c.name);if(f)c.active=!!f.active;});}}catch(e){}
+}
+function saveFamily(){localStorage.setItem(`${LS}.family`,JSON.stringify({adults:FAMILY.adults,kids:FAMILY.children.map(c=>({name:c.name,active:c.active}))}));}
+function setAdults(n){FAMILY.adults=Math.max(1,Math.min(9,FAMILY.adults+n));saveFamily();renderGroupBar();}
+function toggleKid(name){const c=FAMILY.children.find(k=>k.name===name);if(c){c.active=!c.active;saveFamily();renderGroupBar();}}
 function renderGroupBar(){
   const now=new Date();
-  let html=`<div class="gmem">👥 <b>${FAMILY.adults}</b> adultos</div>`;
-  FAMILY.children.forEach(c=>{const mo=Math.floor((now-c.born)/(1000*60*60*24*30.44)),yr=Math.floor(mo/12),rm=mo%12;const age=yr>0?(rm>0?`${yr}a ${rm}m`:`${yr}a`):`${mo}m`;html+=`<div class="gmem">👶 <b>${c.name}</b> ${age}</div>`;});
+  let html=`<div class="gctl"><span class="gctl-lbl">👥 Adultos</span><button class="gstep" onclick="setAdults(-1)" title="Quitar adulto">−</button><b class="gcount">${FAMILY.adults}</b><button class="gstep" onclick="setAdults(1)" title="Agregar adulto">+</button></div>`;
+  FAMILY.children.forEach(c=>{const mo=Math.floor((now-c.born)/(1000*60*60*24*30.44)),yr=Math.floor(mo/12),rm=mo%12;const age=yr>0?(rm>0?`${yr}a ${rm}m`:`${yr}a`):`${mo}m`;
+    html+=`<button class="kid-chip ${c.active?'on':''}" onclick="toggleKid('${c.name}')" title="${c.active?'Va — click para excluir':'No va — click para incluir'}"><span class="kid-dot"></span>👶 ${c.name} <span class="kid-age">${age}</span></button>`;});
   document.getElementById('group-bar').innerHTML=html;
 }
 function initMap(){leafMap=L.map('map',{zoomControl:true});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org">OSM</a>',maxZoom:19}).addTo(leafMap);leafMap.setView([-33.454,-70.674],14);}
@@ -291,16 +323,73 @@ function updateDiscBadge(){
   const[y,m]=discData.month.split('-').map(Number),now=new Date();
   const ok=y===now.getFullYear()&&m===(now.getMonth()+1);
   b.className=`month-badge ${ok?'mb-ok':'mb-warn'}`;b.textContent=discData.month;
+  b.title=discData.auto?'Descuentos traídos con búsqueda web del mes en curso':'Descuentos ingresados manualmente';
+}
+// Extrae el JSON de una respuesta de la API (con búsqueda web el texto llega en varios bloques)
+function aiJSON(d){
+  const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  const clean=txt.replace(/```json?|```/g,'').trim();
+  const m=clean.match(/\{[\s\S]*\}/);
+  return JSON.parse(m?m[0]:clean);
+}
+// Refresca los descuentos automáticamente al cambiar de mes usando la API central.
+// Usa BÚSQUEDA WEB real (server-side de Anthropic) → lee las páginas de beneficios vigentes.
+// Si no hay key, o falla, conserva los datos previos (nunca los borra).
+async function autoRefreshDiscounts(){
+  const cur=new Date().toISOString().slice(0,7);
+  if(discData.month===cur)return; // ya está al día este mes
+  const key=getApiKey();
+  if(!key){updateDiscBadge();return;} // sin key → queda el editor manual
+  const b=document.getElementById('disc-month-badge');
+  b.className='month-badge mb-warn';b.innerHTML='<span class="spin"></span>';b.title='Actualizando descuentos del mes…';
+  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  const prompt=`Busca EN LA WEB los descuentos vigentes en ${monthName} en restaurantes por día de la semana pagando con tarjeta de CRÉDITO en Santiago de Chile. Fuentes oficiales: banco.santander.cl/beneficios, bci.cl beneficios, banco.falabella · CMR Puntos. Para cada banco y cada día (0=domingo..6=sábado) entrega los restaurantes REALES que participan ESTE MES y su % (tope habitual 40%). Solo lo que confirmes en las páginas; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"santander":{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]},"bci":{"0":[],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]},"cmr":{"0":[],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}}`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,tools:[{type:'web_search_20250305',name:'web_search',max_uses:5}],messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    const parsed=aiJSON(d);
+    let any=false;['santander','bci','cmr'].forEach(bk=>{if(parsed[bk]&&typeof parsed[bk]==='object'){discData[bk]=parsed[bk];any=true;}});
+    if(any){discData.month=cur;discData.auto=true;localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));}
+  }catch(e){/* conservar datos previos */}
+  updateDiscBadge();renderDiscounts();
 }
 function onDateChange(){renderDiscounts();}
-function renderDiscounts(){
+const BANK_LABEL={santander:'Santander',bci:'BCI',cmr:'CMR Falabella'};
+// Muestra los descuentos del banco seleccionado. Si no están frescos para el mes actual
+// y hay API key, los trae AUTOMÁTICAMENTE para esa tarjeta específica.
+async function renderDiscounts(){
   const date=document.getElementById('t-date').value,bank=document.getElementById('t-bank').value;
   const sec=document.getElementById('disc-section');
   if(!bank||!date){sec.style.display='none';return;}
-  const dow=new Date(date+'T12:00:00').getDay(),rows=(discData[bank]||{})[dow]||[];
-  document.getElementById('disc-bank-label').textContent=bank==='santander'?'Santander':bank==='bci'?'BCI':'CMR Falabella';
-  document.getElementById('disc-list').innerHTML=rows.length?rows.map(r=>`<div class="drow"><span>${r.n}</span><span class="dpct">${r.p}%</span></div>`).join(''):'<div style="font-size:.79rem;color:var(--muted)">Sin descuentos — <button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.75rem">agregar</button></div>';
   sec.style.display='block';
+  document.getElementById('disc-bank-label').textContent=BANK_LABEL[bank]||bank;
+  const cur=new Date().toISOString().slice(0,7);
+  const fresh=discData.fresh&&discData.fresh[bank]===cur;
+  if(!fresh&&getApiKey()){
+    document.getElementById('disc-list').innerHTML='<div style="font-size:.79rem;color:var(--muted)"><span class="spin"></span> Buscando descuentos del mes…</div>';
+    await fetchBankDiscounts(bank);updateDiscBadge();
+  }
+  const dow=new Date(date+'T12:00:00').getDay(),rows=(discData[bank]||{})[dow]||[];
+  const noKey=!getApiKey();
+  document.getElementById('disc-list').innerHTML=rows.length?rows.map(r=>`<div class="drow"><span>${r.n}</span><span class="dpct">${r.p}%</span></div>`).join(''):`<div style="font-size:.79rem;color:var(--muted)">${noKey?'Configura la API key en el Panel para traer descuentos automáticos · ':'Sin descuentos este día · '}<button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.75rem">agregar manual</button></div>`;
+}
+// Trae vía IA + búsqueda web los descuentos del mes en curso para UNA tarjeta específica.
+async function fetchBankDiscounts(bank){
+  const key=getApiKey();if(!key)return false;
+  const cur=new Date().toISOString().slice(0,7);
+  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  const label=bank==='santander'?'Santander (Beneficios)':bank==='bci'?'BCI':'CMR Falabella';
+  const site=bank==='santander'?'banco.santander.cl/beneficios':bank==='bci'?'bci.cl beneficios gastronomía':'CMR Puntos Falabella beneficios restaurantes';
+  const prompt=`Busca EN LA WEB (${site}) los descuentos vigentes en ${monthName} en restaurantes por día de la semana con tarjeta de CRÉDITO ${label} en Santiago de Chile. Para cada día (0=domingo..6=sábado) entrega los restaurantes REALES que participan ESTE MES y su % (tope habitual 40%). Solo lo confirmado en la página; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,tools:[{type:'web_search_20250305',name:'web_search',max_uses:3}],messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    const parsed=aiJSON(d);
+    discData[bank]=parsed;discData.auto=true;discData.month=cur;
+    discData.fresh=discData.fresh||{};discData.fresh[bank]=cur;
+    localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
+    return true;
+  }catch(e){return false;}
 }
 
 function openDiscEditor(){document.getElementById('disc-overlay').classList.add('open');renderEditorRows();document.getElementById('disc-last-update').textContent=discData.month?`Datos de: ${discData.month}`:'Sin datos guardados';}
@@ -339,35 +428,133 @@ async function nominatim(q,opts={}){
   const r=await fetch(url,{headers:{'Accept-Language':'es'}});
   const d=await r.json();geoCache[ck]=d;return d;
 }
+// Consulta ESTRUCTURADA a Nominatim (street= / city=) — más precisa que texto libre para direcciones
+async function nominatimStructured(street,city){
+  const cityName=(city||'').split(',')[0].trim();
+  const ck=`st|${street}|${cityName}`;
+  if(geoCache[ck])return geoCache[ck];
+  const wait=Math.max(0,1100-(Date.now()-lastGeoCall));if(wait)await new Promise(r=>setTimeout(r,wait));lastGeoCall=Date.now();
+  const url=`https://nominatim.openstreetmap.org/search?street=${encodeURIComponent(street)}&city=${encodeURIComponent(cityName)}&country=Chile&format=json&limit=5&addressdetails=1`;
+  const r=await fetch(url,{headers:{'Accept-Language':'es'}});
+  const d=await r.json();geoCache[ck]=d;return d;
+}
+// ── Photon (Komoot) — geocoder OSM gratuito, sin key. Tolera errores de tipeo
+// y encuentra POIs por nombre mucho mejor que Nominatim. Se sesga al centro de la ciudad.
+async function photon(q){
+  const ck='ph|'+q;
+  if(geoCache[ck])return geoCache[ck];
+  let url=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=es`;
+  if(cityCenter)url+=`&lat=${cityCenter.lat}&lon=${cityCenter.lng}`;
+  const r=await fetch(url);
+  const d=await r.json();
+  const out=(d.features||[]).filter(f=>{
+    const p=f.properties||{};
+    if((p.countrycode||'').toUpperCase()!=='CL')return false;
+    if(cityCenter){const[lng,lat]=f.geometry.coordinates;if(Math.abs(lat-cityCenter.lat)>0.35||Math.abs(lng-cityCenter.lng)>0.35)return false;}
+    return true;
+  });
+  geoCache[ck]=out;return out;
+}
+function photonHit(f,status,note){
+  const p=f.properties||{},co=f.geometry.coordinates;
+  const comuna=p.district||p.city||p.county||null;
+  const disp=[p.name,p.street?`${p.street}${p.housenumber?' '+p.housenumber:''}`:null,comuna].filter(Boolean).join(', ');
+  return{lat:co[1],lng:co[0],status,note,comuna,display:disp||null};
+}
+// ¿El resultado Photon es un local/POI con ficha en OSM (no una calle o comuna)?
+function isPOI(f){return['amenity','shop','leisure','tourism','office','craft','building'].includes((f.properties||{}).osm_key);}
+// Coincidencia laxa de nombres (sin tildes, minúsculas, comparte alguna palabra >2 letras)
+function nameMatch(q,n){
+  if(!n)return false;
+  const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  q=norm(q);n=norm(n);
+  return n.includes(q)||q.includes(n)||q.split(/\s+/).filter(w=>w.length>2).some(w=>n.includes(w));
+}
 // Arma el resultado usando los addressdetails reales de Nominatim (comuna + display correctos)
 function geoHit(d0,status,note){
   const ad=d0.address||{};
   const comuna=ad.city_district||ad.suburb||ad.municipality||ad.town||ad.city||ad.county||null;
   return{lat:+d0.lat,lng:+d0.lon,status,note,comuna,display:d0.display_name||null};
 }
-// Geocodifica probando: nombre del lugar (POI) → dirección completa → calle acotada a la ciudad → centro de la zona.
+// Flujo del marcador (todo gratis, sin keys):
+// 1) POI por NOMBRE vía Photon (fuzzy, sesgado a la ciudad) → verificado
+// 2) POI por nombre vía Nominatim → verificado
+// 3) dirección: estructurada + texto libre + Photon — solo ✓ si trae N° de casa real
+// 4) números vecinos de la misma cuadra → estimado · 5) solo la calle → estimado
+// 6) sin datos → falla (NUNCA cae al centro de la ciudad)
 async function geocode(addr,city,name){
   city=city||'Santiago, Chile';
   await ensureCityBias(city);
-  // 1) Nombre del lugar como POI — lo más confiable para lugares conocidos
-  if(name){try{const d=await nominatim(`${name}, ${city}`);if(d.length)return geoHit(d[0],'verified',null);}catch(e){}}
-  // 2) Dirección completa
-  try{const d=await nominatim(`${addr}, ${city}`);if(d.length)return geoHit(d[0],'verified',null);}catch(e){}
-  // 3) Solo la calle, acotada a la ciudad (evita calles homónimas lejanas)
-  const m=addr.match(/^(.+?)\s+\d+/);
-  if(m){const street=m[1].trim();
-    try{const d=await nominatim(`${street}, ${city}`,{bounded:true});if(d.length)return geoHit(d[0],'estimated',`calle ${street} · número aproximado`);}catch(e){}}
-  // 4) Último recurso: centro de la zona (marca clara, sin fingir precisión)
-  if(cityCenter)return{lat:cityCenter.lat,lng:cityCenter.lng,status:'estimated',note:'ubicación aproximada (centro de la zona)',comuna:null,display:null};
-  return{lat:null,lng:null,status:'failed',note:'No se pudo geocodificar',comuna:null,display:null};
+  const cityName=city.split(',')[0].trim();
+  // 1) Nombre del lugar vía Photon — el mejor buscador gratuito de POIs
+  if(name){
+    try{
+      const fs=await photon(`${name} ${cityName}`);
+      const hit=fs.find(f=>isPOI(f)&&nameMatch(name,(f.properties||{}).name));
+      if(hit)return photonHit(hit,'verified',null);
+    }catch(e){}
+    // 2) Nombre del lugar vía Nominatim
+    try{const d=await nominatim(`${name}, ${city}`);if(d.length)return geoHit(d[0],'verified',null);}catch(e){}
+  }
+  const hasNum=/\d/.test(addr);
+  // 3a) Dirección estructurada (street=/city=) — solo aceptar si trae número real
+  try{const d=await nominatimStructured(addr,city);const h=d.find(isHouse);if(h)return geoHit(h,'verified',null);}catch(e){}
+  // 3b) Dirección texto libre — ✓ solo con número real; sin número en la consulta, acepta el primer resultado
+  try{
+    const d=await nominatim(`${addr}, ${city}`);
+    if(d.length){const h=d.find(isHouse);if(h)return geoHit(h,'verified',null);if(!hasNum)return geoHit(d[0],'verified',null);}
+  }catch(e){}
+  // 3c) Dirección vía Photon (a veces tiene números que Nominatim no resuelve)
+  try{
+    const fs=await photon(`${addr} ${cityName}`);
+    const h=fs.find(f=>(f.properties||{}).housenumber);
+    if(h)return photonHit(h,'verified',null);
+  }catch(e){}
+  const m=addr.match(/^(.+?)\s+(\d{1,6})(?:\b|$)/);
+  if(m){
+    const street=m[1].trim(),num=parseInt(m[2],10);
+    // 4) Estimar la altura con números vecinos de la misma calle
+    const near=await estimateByNeighbors(street,num,city);
+    if(near)return near;
+    // 5) Solo la calle, acotada a la ciudad (altura no confirmada, pero calle correcta)
+    try{const d=await nominatim(`${street}, ${city}`,{bounded:true});if(d.length)return geoHit(d[0],'estimated',`sobre ${street} · altura no confirmada`);}catch(e){}
+  } else {
+    // Sin número: intentar la dirección acotada a la ciudad
+    try{const d=await nominatim(`${addr}, ${city}`,{bounded:true});if(d.length)return geoHit(d[0],'estimated','ubicación aproximada en la zona');}catch(e){}
+  }
+  // 6) Sin datos: no inventar posición
+  return{lat:null,lng:null,status:'failed',note:'No se pudo ubicar en el mapa',comuna:null,display:null};
 }
+// Prueba números cercanos en la misma calle para estimar la altura del punto.
+// Busca el más cercano hacia abajo y hacia arriba; con ambos interpola el punto
+// ("entre N°X y N°Y"); con uno solo lo usa ("misma cuadra").
+async function estimateByNeighbors(street,num,city){
+  const offs=[1,2,4,6];
+  let lo=null,hi=null;
+  for(const o of offs){if(lo)break;const n=num-o;if(n<=0)continue;
+    try{const d=await nominatim(`${street} ${n}, ${city}`,{bounded:true});if(d.length&&isHouse(d[0]))lo={n,d:d[0]};}catch(e){}}
+  for(const o of offs){if(hi)break;const n=num+o;
+    try{const d=await nominatim(`${street} ${n}, ${city}`,{bounded:true});if(d.length&&isHouse(d[0]))hi={n,d:d[0]};}catch(e){}}
+  if(lo&&hi){
+    const lat=(+lo.d.lat+ +hi.d.lat)/2,lng=(+lo.d.lon+ +hi.d.lon)/2;
+    const ad=lo.d.address||hi.d.address||{};
+    const comuna=ad.city_district||ad.suburb||ad.municipality||ad.town||ad.city||ad.county||null;
+    return{lat,lng,status:'estimated',note:`altura estimada · entre N°${lo.n} y N°${hi.n} (misma cuadra)`,comuna,display:`${street} ${num} (aprox), ${comuna||city}`};
+  }
+  const one=lo||hi;
+  if(one){const h=geoHit(one.d,'estimated',`altura aprox · usé N°${one.n} en la misma calle`);h.display=`${street} ${num} (aprox · cerca N°${one.n})`;return h;}
+  return null;
+}
+// ¿El resultado de Nominatim es una dirección con número (no la calle entera)?
+function isHouse(d){return !!(d&&d.address&&d.address.house_number);}
 // Etiqueta corta y real del lugar (primeras 3 partes del display de Nominatim)
 function locLabel(disp){return disp?disp.split(',').slice(0,3).map(s=>s.trim()).join(', '):'';}
 async function previewGeo(){
   const addr=document.getElementById('s-addr').value.trim(),city=document.getElementById('t-city').value.trim(),el=document.getElementById('geo-preview');
+  const name=document.getElementById('s-name').value.trim();
   if(!addr)return;
   el.innerHTML='<span class="spin"></span><span style="color:var(--muted)">Verificando...</span>';
-  const r=await geocode(addr,city);
+  const r=await geocode(addr,city,name||undefined);
   if(r.status==='verified')el.innerHTML='<span class="geo-badge g-ok">✓ Verificado</span>';
   else if(r.status==='estimated')el.innerHTML=`<span class="geo-badge g-warn">~ ${r.note}</span>`;
   else el.innerHTML='<span class="geo-badge g-err">✗ No encontrado</span>';
@@ -383,9 +570,30 @@ async function addStop(){
   stops.push(stop);renderStops();renderMap();
   ['s-name','s-addr','s-notes','s-open','s-close'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('geo-preview').innerHTML='';
-  stop.geo=await geocode(addr,city);renderStops();renderMap();checkAlerts();
+  stop.geo=await geocode(addr,city,name);renderStops();renderMap();checkAlerts();
 }
 function removeStop(id){stops=stops.filter(s=>s.id!==id);renderStops();renderMap();checkAlerts();}
+// 🔍 Busca EN LA WEB la dirección real del lugar (lo que verías en Google Maps) y re-ubica el pin.
+// Usa la key central + tool de búsqueda web server-side de Anthropic (~$0.02 por lugar).
+async function aiLocate(id){
+  const s=stops.find(x=>x.id===id);if(!s)return;
+  const key=getApiKey();if(!key){document.getElementById('api-notice').style.display='flex';alert('Configura la API key de Anthropic (⚙ Ajustes del Panel).');return;}
+  const city=document.getElementById('t-city').value.trim()||'Santiago, Chile';
+  const prev=s.geo;s.geo={status:'pending'};renderStops();
+  const prompt=`Busca EN LA WEB la ubicación exacta de "${s.name}" en ${city} (referencia: "${s.addr}"). Necesito la dirección como aparece en su ficha (calle y número reales + comuna) y, si alguna fuente muestra coordenadas, inclúyelas. NO inventes números ni coordenadas. Responde SOLO JSON sin backticks:\n{"address":"calle número","comuna":"comuna","lat":-33.4|null,"lng":-70.6|null}`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,tools:[{type:'web_search_20250305',name:'web_search',max_uses:3}],messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    const p=aiJSON(d);
+    if(p.address)s.addr=p.address+(p.comuna?', '+p.comuna:'');
+    if(typeof p.lat==='number'&&typeof p.lng==='number'){
+      s.geo={lat:p.lat,lng:p.lng,status:'verified',note:'ubicado con búsqueda web',comuna:p.comuna||null,display:s.addr};
+    }else if(p.address){
+      s.geo=await geocode(s.addr,city,s.name);
+    }else{throw new Error('sin datos');}
+  }catch(e){s.geo=prev&&prev.lat?prev:{lat:null,lng:null,status:'failed',note:'la búsqueda web no encontró la dirección',comuna:null,display:null};}
+  renderStops();renderMap();checkAlerts();
+}
 function moveStop(id,dir){const i=stops.findIndex(s=>s.id===id),j=i+dir;if(j<0||j>=stops.length)return;[stops[i],stops[j]]=[stops[j],stops[i]];renderStops();renderMap();}
 function sortGeo(){const ok=stops.filter(s=>s.geo?.lat),no=stops.filter(s=>!s.geo?.lat);if(ok.length<2){alert('Necesito al menos 2 paradas geocodificadas.');return;}ok.sort((a,b)=>a.geo.lat-b.geo.lat);stops=[...ok,...no];renderStops();renderMap();}
 function clearAll(){if(!stops.length||confirm('¿Limpiar todas las paradas?')){stops=[];renderStops();renderMap();checkAlerts();}}
@@ -398,11 +606,12 @@ function renderStops(){
     const c=CAT[s.cat]||CAT.other,g=s.geo||{status:'pending'};
     let gb;
     if(g.status==='verified')gb='<span class="geo-badge g-ok">✓ Verif.</span>';
+    else if(g.status==='manual')gb='<span class="geo-badge g-ok" title="Posición ajustada a mano en el mapa">✓ Ajustado</span>';
     else if(g.status==='estimated')gb=`<span class="geo-badge g-warn" title="${g.note||''}">~ Estim.</span>`;
     else if(g.status==='failed')gb='<span class="geo-badge g-err">✗ Sin ubicar</span>';
     else gb='<span class="geo-badge g-pend"><span class="spin"></span></span>';
     const sched=(s.open||s.close)?`<span class="stag" style="background:var(--beige);color:var(--muted)">${s.open||'?'}–${s.close||'?'}</span>`:'';
-    return `<div class="stop-item"><div class="snum" style="background:${c.color}">${i+1}</div><div class="sbody"><div class="sname">${s.name}</div><div class="saddr">${s.addr}</div><div class="smeta"><span class="stag ${s.pri==='fixed'?'t-fixed':'t-optional'}">${s.pri==='fixed'?'📌 Fija':'○ Opcional'}</span><span class="stag t-${s.cat}">${c.label}</span>${sched}${gb}</div>${s.notes?`<div class="snote">💬 ${s.notes}</div>`:''}${g.status==='estimated'&&g.note?`<div class="geo-note">📍 ${g.note}</div>`:''}</div><div class="sactions"><button class="btn btn-ghost btn-sm" onclick="moveStop(${s.id},-1)">↑</button><button class="btn btn-ghost btn-sm" onclick="moveStop(${s.id},1)">↓</button><button class="btn btn-rm" onclick="removeStop(${s.id})">✕</button></div></div>`;
+    return `<div class="stop-item"><div class="snum" style="background:${c.color}">${i+1}</div><div class="sbody"><div class="sname">${s.name}</div><div class="saddr">${s.addr}</div><div class="smeta"><span class="stag ${s.pri==='fixed'?'t-fixed':'t-optional'}">${s.pri==='fixed'?'📌 Fija':'○ Opcional'}</span><span class="stag t-${s.cat}">${c.label}</span>${sched}${gb}</div>${s.notes?`<div class="snote">💬 ${s.notes}</div>`:''}${g.status==='estimated'&&g.note?`<div class="geo-note">📍 ${g.note}</div>`:''}</div><div class="sactions">${(g.status==='estimated'||g.status==='failed')?`<button class="btn btn-ghost btn-sm" title="Buscar la dirección real en la web (IA)" onclick="aiLocate(${s.id})">🔍</button>`:''}<button class="btn btn-ghost btn-sm" onclick="moveStop(${s.id},-1)">↑</button><button class="btn btn-ghost btn-sm" onclick="moveStop(${s.id},1)">↓</button><button class="btn btn-rm" onclick="removeStop(${s.id})">✕</button></div></div>`;
   }).join('');
 }
 
@@ -412,13 +621,22 @@ function renderMap(){
   const lls=[];
   stops.forEach((s,i)=>{
     const g=s.geo;if(!g?.lat)return;
-    const col=(CAT[s.cat]||CAT.other).color,st=g.status;
-    const border=st==='verified'?'#5a7a40':st==='estimated'?'#b8864a':'#a4492c';
-    const dash=st!=='verified'?'border-style:dashed;':'';
-    const icon=L.divIcon({className:'',html:`<div style="width:26px;height:26px;border-radius:50%;background:${col};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:10px;font-weight:700;border:3px solid ${border};box-shadow:0 2px 6px rgba(0,0,0,.25);${dash}">${i+1}</div>`,iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-13]});
-    const mk=L.marker([g.lat,g.lng],{icon}).addTo(leafMap);
+    const st=g.status;
+    // Relleno = estado (coincide con el legend) · anillo exterior = categoría
+    const stCol=(st==='verified'||st==='manual')?'#5a7a40':st==='estimated'?'#b8864a':st==='failed'?'#a4492c':'#8a7860';
+    const catCol=(CAT[s.cat]||CAT.other).color;
+    const dash=st==='estimated'?'border-style:dashed;':'';
+    const title=st==='verified'?'Verificado':st==='manual'?'Ajustado a mano':st==='estimated'?'Estimado · arrástrame a la posición real':'Sin ubicar';
+    const icon=L.divIcon({className:'',html:`<div title="${title}" style="width:26px;height:26px;border-radius:50%;background:${stCol};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:10px;font-weight:700;border:3px solid #fff;box-shadow:0 0 0 2px ${catCol},0 2px 6px rgba(0,0,0,.25);${dash};cursor:grab">${i+1}</div>`,iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-13]});
+    const mk=L.marker([g.lat,g.lng],{icon,draggable:true}).addTo(leafMap);
+    // Arrastrar el pin = corrección manual definitiva (queda ✓ Ajustado)
+    mk.on('dragend',()=>{
+      const ll=mk.getLatLng();
+      s.geo={...s.geo,lat:ll.lat,lng:ll.lng,status:'manual',note:'ajustado a mano en el mapa'};
+      renderStops();renderMap();checkAlerts();
+    });
     const sched=(s.open||s.close)?`<div style="font-size:11px;color:#8a7860;margin-top:2px">🕐 ${s.open||'?'}–${s.close||'?'}</div>`:'';
-    const gNote=st!=='verified'?`<div style="font-size:10px;color:#b8864a;margin-top:3px">📍 ${g.note||'Posición estimada'}</div>`:'';
+    const gNote=(st!=='verified'&&st!=='manual')?`<div style="font-size:10px;color:#b8864a;margin-top:3px">📍 ${g.note||'Posición estimada'}</div>`:'';
     mk.bindPopup(`<div style="font-family:'Geist',sans-serif;min-width:175px"><div style="font-weight:700;font-size:13px">${i+1}. ${s.name}</div><div style="font-size:11px;color:#8a7860;margin-top:1px">${s.addr}</div>${sched}${gNote}${s.notes?`<div style="font-size:11px;color:#5a4a37;margin-top:3px">💬 ${s.notes}</div>`:''}</div>`,{maxWidth:240});
     mapMarkers.push(mk);lls.push([g.lat,g.lng]);
   });
@@ -489,9 +707,10 @@ async function runSurprise(){
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> Planificando...';
   res.innerHTML='<div style="color:var(--muted);font-size:.82rem">Claude está diseñando tu salida...</div>';
   const now=new Date();
-  const ages=FAMILY.children.map(c=>{const mo=Math.floor((now-c.born)/(1000*60*60*24*30.44)),yr=Math.floor(mo/12);return`${c.name}(${yr>0?yr+'a':mo+'m'})`;}).join(', ');
+  const kidsGoing=FAMILY.children.filter(c=>c.active);
+  const ages=kidsGoing.map(c=>{const mo=Math.floor((now-c.born)/(1000*60*60*24*30.44)),yr=Math.floor(mo/12);return`${c.name}(${yr>0?yr+'a':mo+'m'})`;}).join(', ');
   const dayN=date?DAYS[new Date(date+'T12:00:00').getDay()]:'';
-  const prompt=`Planificador salidas familiares Chile. Diseña salida 5-7 paradas:\nCiudad:${city}\nFecha:${date?`${date}(${dayN})`:'pronto'}\nPresupuesto:${budget||'moderado'}\nGrupo:2 adultos,${ages}\nPreferencias:${prefs||'sorpréndeme'}\nUSA SOLO lugares REALES y conocidos que existan (parques, museos, malls, cafés reales con nombre propio). Da la dirección real con calle y número cuando la sepas y SIEMPRE la comuna. Si no sabes el número exacto, deja calle + comuna (no inventes números).\nSOLO JSON sin backticks:\n{"titulo":"...","descripcion":"...","stops":[{"name":"nombre real del lugar","address":"calle y número reales","comuna":"comuna","category":"shopping|food|entertainment|pets|other","priority":"fixed|optional","openTime":"HH:MM|null","closeTime":"HH:MM|null","notes":"...|null"}]}`;
+  const prompt=`Planificador salidas familiares Chile. Diseña salida 5-7 paradas:\nCiudad:${city}\nFecha:${date?`${date}(${dayN})`:'pronto'}\nPresupuesto:${budget||'moderado'}\nGrupo:${FAMILY.adults} adultos,${ages||'sin niños'}\nPreferencias:${prefs||'sorpréndeme'}\nUSA SOLO lugares REALES y conocidos que existan (parques, museos, malls, cafés reales con nombre propio). Da la dirección real con calle y número cuando la sepas y SIEMPRE la comuna. Si no sabes el número exacto, deja calle + comuna (no inventes números).\nSOLO JSON sin backticks:\n{"titulo":"...","descripcion":"...","stops":[{"name":"nombre real del lugar","address":"calle y número reales","comuna":"comuna","category":"shopping|food|entertainment|pets|other","priority":"fixed|optional","openTime":"HH:MM|null","closeTime":"HH:MM|null","notes":"...|null"}]}`;
   try{
     const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
