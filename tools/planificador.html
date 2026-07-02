@@ -259,6 +259,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
       <div class="day-tabs" id="day-tabs"></div>
       <div id="disc-rows"></div>
       <button class="btn btn-ghost btn-sm" onclick="addDiscRow()" style="margin-top:8px">+ Agregar restaurante</button>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">🔗 Página o PDF oficial de beneficios de <b id="url-bank-label">Santander</b> (Claude la abre y extrae los descuentos del mes):</div>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="disc-url" placeholder="https://banco.…/beneficios  ó  https://…/descuentos.pdf" style="flex:1" onchange="saveBankUrl()">
+          <button class="btn btn-solid btn-sm" id="url-fetch-btn" onclick="fetchFromUrl()">Leer ahora</button>
+        </div>
+        <div id="url-fetch-status" style="font-size:.72rem;color:var(--muted-soft);margin-top:5px"></div>
+      </div>
     </div>
     <div class="modal-foot">
       <span style="font-size:.74rem;color:var(--muted);flex:1" id="disc-last-update"></span>
@@ -380,9 +388,13 @@ async function fetchBankDiscounts(bank){
   const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
   const label=bank==='santander'?'Santander (Beneficios)':bank==='bci'?'BCI':'CMR Falabella';
   const site=bank==='santander'?'banco.santander.cl/beneficios':bank==='bci'?'bci.cl beneficios gastronomía':'CMR Puntos Falabella beneficios restaurantes';
-  const prompt=`Busca EN LA WEB (${site}) los descuentos vigentes en ${monthName} en restaurantes por día de la semana con tarjeta de CRÉDITO ${label} en Santiago de Chile. Para cada día (0=domingo..6=sábado) entrega los restaurantes REALES que participan ESTE MES y su % (tope habitual 40%). Solo lo confirmado en la página; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+  const savedUrl=(getBankUrls()[bank]||'').trim();
+  // Si hay URL oficial guardada, ábrela con web_fetch (lee HTML o PDF); si no, busca en la web.
+  const src=savedUrl?`Abre la página oficial ${savedUrl} (léela completa, puede ser un PDF)`:`Busca EN LA WEB (${site})`;
+  const tools=savedUrl?[{type:'web_fetch_20250910',name:'web_fetch',max_uses:3},{type:'web_search_20250305',name:'web_search',max_uses:2}]:[{type:'web_search_20250305',name:'web_search',max_uses:3}];
+  const prompt=`${src} y extrae los descuentos vigentes en ${monthName} en restaurantes por día de la semana con tarjeta de CRÉDITO ${label} en Santiago de Chile. Para cada día (0=domingo..6=sábado) entrega los restaurantes REALES que participan ESTE MES y su % (tope habitual 40%). Solo lo confirmado en la fuente; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,tools:[{type:'web_search_20250305',name:'web_search',max_uses:3}],messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-beta':'web-fetch-2025-09-10','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,tools,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const parsed=aiJSON(d);
     discData[bank]=parsed;discData.auto=true;discData.month=cur;
@@ -392,10 +404,38 @@ async function fetchBankDiscounts(bank){
   }catch(e){return false;}
 }
 
-function openDiscEditor(){document.getElementById('disc-overlay').classList.add('open');renderEditorRows();document.getElementById('disc-last-update').textContent=discData.month?`Datos de: ${discData.month}`:'Sin datos guardados';}
+function openDiscEditor(){document.getElementById('disc-overlay').classList.add('open');renderEditorRows();syncUrlField();document.getElementById('disc-last-update').textContent=discData.month?`Datos de: ${discData.month}`:'Sin datos guardados';}
 function closeDiscEditor(){document.getElementById('disc-overlay').classList.remove('open');}
 function closeDiscOnBg(e){if(e.target===document.getElementById('disc-overlay'))closeDiscEditor();}
-function selectBank(b){editorBank=b;document.querySelectorAll('.btab').forEach((t,i)=>t.classList.toggle('active',['santander','bci','cmr'][i]===b));renderEditorRows();}
+function selectBank(b){editorBank=b;document.querySelectorAll('.btab').forEach((t,i)=>t.classList.toggle('active',['santander','bci','cmr'][i]===b));renderEditorRows();syncUrlField();}
+// URL oficial de beneficios por banco (página fija o PDF). Se guarda en localStorage.
+function getBankUrls(){try{return JSON.parse(localStorage.getItem(`${LS}.disc_urls`))||{};}catch(e){return {};}}
+function saveBankUrl(){const u=getBankUrls();u[editorBank]=document.getElementById('disc-url').value.trim();localStorage.setItem(`${LS}.disc_urls`,JSON.stringify(u));}
+function syncUrlField(){document.getElementById('url-bank-label').textContent=BANK_LABEL[editorBank]||editorBank;document.getElementById('disc-url').value=getBankUrls()[editorBank]||'';document.getElementById('url-fetch-status').textContent='';}
+// Abre la URL guardada con web_fetch (lee HTML o PDF completo) y extrae los descuentos del banco activo.
+async function fetchFromUrl(){
+  const key=getApiKey();const st=document.getElementById('url-fetch-status');
+  if(!key){st.textContent='⚠️ Configura la API key de Anthropic en ⚙ Ajustes del Panel.';return;}
+  const url=(getBankUrls()[editorBank]||'').trim();
+  if(!/^https?:\/\//.test(url)){st.textContent='⚠️ Pega primero la URL oficial (o el PDF) de beneficios.';return;}
+  const btn=document.getElementById('url-fetch-btn');btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span>';
+  st.textContent='Leyendo la página/PDF oficial…';
+  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  const prompt=`Abre ${url} y extrae los descuentos de restaurantes vigentes en ${monthName} con tarjeta de CRÉDITO ${BANK_LABEL[editorBank]}, agrupados por día de la semana (0=domingo..6=sábado). Usa SOLO lo que aparezca en esa página/PDF; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-beta':'web-fetch-2025-09-10','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,tools:[{type:'web_fetch_20250910',name:'web_fetch',max_uses:3}],messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    const parsed=aiJSON(d);
+    const cur=new Date().toISOString().slice(0,7);
+    discData[editorBank]=parsed;discData.auto=true;discData.month=cur;
+    discData.fresh=discData.fresh||{};discData.fresh[editorBank]=cur;
+    localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
+    renderEditorRows();updateDiscBadge();renderDiscounts();
+    const n=Object.values(parsed).reduce((a,x)=>a+(x?x.length:0),0);
+    st.textContent=`✓ ${n} descuentos leídos desde la página oficial.`;
+  }catch(e){st.textContent='✗ No se pudo leer: '+e.message+' (revisa la URL o edita manual).';}
+  btn.disabled=false;btn.textContent=old;
+}
 function buildDayTabs(){document.getElementById('day-tabs').innerHTML=DAYS.map((d,i)=>`<button class="dtab ${i===editorDay?'active':''}" onclick="selectDay(${i})">${d}</button>`).join('');}
 function selectDay(d){editorDay=d;document.querySelectorAll('.dtab').forEach((t,i)=>t.classList.toggle('active',i===d));renderEditorRows();}
 function renderEditorRows(){
