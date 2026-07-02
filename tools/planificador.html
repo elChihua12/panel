@@ -748,7 +748,6 @@ function checkAlerts(){
   list.innerHTML=alerts.map(a=>`<div class="alert a-${a.t}">${a.t==='warn'?'⚠️':'✗'} ${a.m}</div>`).join('');
 }
 
-function renderBloqueMode(){
 // Lee la COLA de actividades pendientes (array). Migra la clave antigua de 1 item si existe.
 function getPendingList(){
   let list=[];
