@@ -11,8 +11,10 @@
   - Direcciones con número solo se marcan ✓ si el resultado trae house_number
     (antes la calle sola se marcaba "verificado" — falso positivo)
   - Pines ARRASTRABLES: si un pin queda corrido, arrástralo → queda "✓ Ajustado"
-  - Descuentos bancarios: se actualizan con BÚSQUEDA WEB real (tool server-side
-    de Anthropic, misma key central) → lee las páginas de beneficios del mes
+  - Descuentos bancarios AUTOMÁTICOS mes a mes (SALTO DOBLE, key central):
+    abre la página fija del banco → encuentra el PDF del mes → lo lee y extrae
+    restaurante / % / COMUNA por día. Santander + BCI precargados.
+    CMR Falabella NO tiene PDF (SPA) → solo manual (pegar texto).
   - Botón 🔍 en paradas estimadas/sin ubicar: busca la dirección real en la web
     (equivalente a buscar en Google Maps) y re-geocodifica
 
@@ -98,6 +100,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
 .a-warn{background:var(--warn-bg);color:var(--warn)}.a-err{background:var(--err-bg);color:var(--err)}.a-info{background:var(--ok-bg);color:var(--ok)}
 .drow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line-soft);font-size:.80rem}.drow:last-child{border-bottom:none}
 .dpct{font-family:var(--f-data);font-weight:600;color:var(--moss)}
+.dcomuna{font-size:.72rem;color:var(--muted-soft);font-weight:400}
 .s-form{display:grid;gap:10px;max-width:480px}
 .api-notice{background:var(--warn-bg);border:1px solid var(--warn);border-radius:var(--r-md);padding:10px 14px;font-size:.81rem;color:var(--warn);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pending-card{background:var(--beige);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:12px}
@@ -260,10 +263,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
       <div id="disc-rows"></div>
       <button class="btn btn-ghost btn-sm" onclick="addDiscRow()" style="margin-top:8px">+ Agregar restaurante</button>
       <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
-        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">🔗 Página o PDF oficial de beneficios de <b id="url-bank-label">Santander</b> (Claude la abre y extrae los descuentos del mes):</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">📄 <b>Pegar texto</b> (lo más confiable) — abre la página/PDF de <b class="url-bank-label">Santander</b>, selecciona todo (Ctrl+A), copia (Ctrl+C) y pégalo acá. Claude lo ordena por día:</div>
+        <textarea id="disc-paste" placeholder="Pega acá el texto con los restaurantes y % de descuento por día…" style="width:100%;min-height:90px;resize:vertical"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:6px">
+          <button class="btn btn-solid btn-sm" id="paste-btn" onclick="parsePasted()">Estructurar texto pegado</button>
+        </div>
+        <div id="paste-status" style="font-size:.72rem;color:var(--muted-soft);margin-top:5px"></div>
+      </div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">🔗 <b>Automático</b> — página oficial fija de beneficios de <b class="url-bank-label">Santander</b>. Claude la abre, encuentra el PDF del mes y lo lee solo. <span style="color:var(--muted-soft)">Ya viene precargada; se actualiza sola cada mes.</span></div>
         <div style="display:flex;gap:6px">
-          <input type="text" id="disc-url" placeholder="https://banco.…/beneficios  ó  https://…/descuentos.pdf" style="flex:1" onchange="saveBankUrl()">
-          <button class="btn btn-solid btn-sm" id="url-fetch-btn" onclick="fetchFromUrl()">Leer ahora</button>
+          <input type="text" id="disc-url" placeholder="https://… (página de beneficios del banco)" style="flex:1" onchange="saveBankUrl()">
+          <button class="btn btn-ghost btn-sm" id="url-fetch-btn" onclick="fetchFromUrl()">Leer del sitio</button>
         </div>
         <div id="url-fetch-status" style="font-size:.72rem;color:var(--muted-soft);margin-top:5px"></div>
       </div>
@@ -340,9 +351,9 @@ function aiJSON(d){
   const m=clean.match(/\{[\s\S]*\}/);
   return JSON.parse(m?m[0]:clean);
 }
-// Refresca los descuentos automáticamente al cambiar de mes usando la API central.
-// Usa BÚSQUEDA WEB real (server-side de Anthropic) → lee las páginas de beneficios vigentes.
-// Si no hay key, o falla, conserva los datos previos (nunca los borra).
+// Refresca los descuentos automáticamente al cambiar de mes.
+// Por cada banco hace el SALTO DOBLE: página fija → PDF del mes → tablas de restaurantes.
+// Si no hay key, o un banco falla, conserva sus datos previos (nunca los borra).
 async function autoRefreshDiscounts(){
   const cur=new Date().toISOString().slice(0,7);
   if(discData.month===cur)return; // ya está al día este mes
@@ -350,19 +361,33 @@ async function autoRefreshDiscounts(){
   if(!key){updateDiscBadge();return;} // sin key → queda el editor manual
   const b=document.getElementById('disc-month-badge');
   b.className='month-badge mb-warn';b.innerHTML='<span class="spin"></span>';b.title='Actualizando descuentos del mes…';
-  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-  const prompt=`Busca EN LA WEB los descuentos vigentes en ${monthName} en restaurantes por día de la semana pagando con tarjeta de CRÉDITO en Santiago de Chile. Fuentes oficiales: banco.santander.cl/beneficios, bci.cl beneficios, banco.falabella · CMR Puntos. Para cada banco y cada día (0=domingo..6=sábado) entrega los restaurantes REALES que participan ESTE MES y su % (tope habitual 40%). Solo lo que confirmes en las páginas; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"santander":{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]},"bci":{"0":[],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]},"cmr":{"0":[],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}}`;
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,tools:[{type:'web_search_20250305',name:'web_search',max_uses:5}],messages:[{role:'user',content:prompt}]})});
-    const d=await r.json();if(d.error)throw new Error(d.error.message);
-    const parsed=aiJSON(d);
-    let any=false;['santander','bci','cmr'].forEach(bk=>{if(parsed[bk]&&typeof parsed[bk]==='object'){discData[bk]=parsed[bk];any=true;}});
-    if(any){discData.month=cur;discData.auto=true;localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));}
-  }catch(e){/* conservar datos previos */}
+  let any=false;
+  for(const bk of ['santander','bci','cmr']){
+    if(!bankUrl(bk))continue; // CMR (sin PDF) queda para carga manual
+    const ok=await fetchBankDiscounts(bk);any=any||ok;
+  }
+  if(any){discData.month=cur;localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));}
   updateDiscBadge();renderDiscounts();
 }
 function onDateChange(){renderDiscounts();}
 const BANK_LABEL={santander:'Santander',bci:'BCI',cmr:'CMR Falabella'};
+// Páginas FIJAS de beneficios (siempre apuntan al PDF del mes vigente). El usuario puede
+// sobreescribirlas en ⚙ Descuentos, pero de fábrica ya funcionan mes a mes.
+const DEFAULT_URLS={
+  santander:'https://banco.santander.cl/personas/archivos/beneficios-del-mes',
+  bci:'https://www.bci.cl/beneficios',
+  cmr:'' // Banco Falabella no publica PDF (SPA con datos por API) → solo manual (pegar texto)
+};
+function bankUrl(bank){const u=getBankUrls()[bank];return(u&&u.trim())?u.trim():DEFAULT_URLS[bank]||'';}
+// Prompt de SALTO DOBLE: abre la página fija → encuentra el enlace del PDF del mes
+// ("Descargar PDF" / "VER PDF") → lo abre y lee las tablas → extrae por día de la semana.
+function discPrompt(bank){
+  const label=BANK_LABEL[bank],url=bankUrl(bank);
+  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  return `Abre la página oficial ${url}. En esa página hay un enlace de descarga del PDF de beneficios del mes (texto tipo "Descargar PDF", "VER PDF" o "DESCARGA PDF BENEFICIOS"): sigue ese enlace y LEE EL PDF completo (trae tablas de restaurantes con Restaurante, Descuento, Día y Comuna/Ubicación). Extrae TODOS los restaurantes de la sección Restaurantes que aplican con tarjeta de CRÉDITO ${label} en Chile. Para cada uno: nombre, % de descuento (número; si dice "cortesía" usa 100) y COMUNA. IMPORTANTE sobre la comuna: en Chile la comuna es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú, La Serena, Viña del Mar), NO la ciudad ni la región. Usa el valor de la columna Ubicación/Comuna del PDF tal cual. Agrúpalos por día de la semana (0=domingo..6=sábado). Si un restaurante aplica varios días, ponlo en cada día; si dice "todos los días", en los 7. Vigente en ${monthName}. Usa SOLO lo que aparezca en la página/PDF, no inventes. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+}
+const WEBFETCH_HEADERS={'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-beta':'web-fetch-2025-09-10','anthropic-dangerous-direct-browser-access':'true'};
+const WEBFETCH_TOOLS=[{type:'web_fetch_20250910',name:'web_fetch',max_uses:5},{type:'web_search_20250305',name:'web_search',max_uses:2}];
 // Muestra los descuentos del banco seleccionado. Si no están frescos para el mes actual
 // y hay API key, los trae AUTOMÁTICAMENTE para esa tarjeta específica.
 async function renderDiscounts(){
@@ -379,24 +404,19 @@ async function renderDiscounts(){
   }
   const dow=new Date(date+'T12:00:00').getDay(),rows=(discData[bank]||{})[dow]||[];
   const noKey=!getApiKey();
-  document.getElementById('disc-list').innerHTML=rows.length?rows.map(r=>`<div class="drow"><span>${r.n}</span><span class="dpct">${r.p}%</span></div>`).join(''):`<div style="font-size:.79rem;color:var(--muted)">${noKey?'Configura la API key en el Panel para traer descuentos automáticos · ':'Sin descuentos este día · '}<button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.75rem">agregar manual</button></div>`;
+  document.getElementById('disc-list').innerHTML=rows.length?rows.map(r=>`<div class="drow"><span>${r.n}${r.c?` <span class="dcomuna">· ${r.c}</span>`:''}</span><span class="dpct">${r.p}%</span></div>`).join(''):`<div style="font-size:.79rem;color:var(--muted)">${noKey?'Configura la API key en el Panel para traer descuentos automáticos · ':'Sin descuentos este día · '}<button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.75rem">agregar manual</button></div>`;
 }
-// Trae vía IA + búsqueda web los descuentos del mes en curso para UNA tarjeta específica.
+// Trae los descuentos del mes para UNA tarjeta: SALTO DOBLE (página fija → PDF del mes → tablas).
 async function fetchBankDiscounts(bank){
   const key=getApiKey();if(!key)return false;
+  if(!bankUrl(bank))return false; // sin página/PDF (CMR) → no auto
   const cur=new Date().toISOString().slice(0,7);
-  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-  const label=bank==='santander'?'Santander (Beneficios)':bank==='bci'?'BCI':'CMR Falabella';
-  const site=bank==='santander'?'banco.santander.cl/beneficios':bank==='bci'?'bci.cl beneficios gastronomía':'CMR Puntos Falabella beneficios restaurantes';
-  const savedUrl=(getBankUrls()[bank]||'').trim();
-  // Si hay URL oficial guardada, ábrela con web_fetch (lee HTML o PDF); si no, busca en la web.
-  const src=savedUrl?`Abre la página oficial ${savedUrl} (léela completa, puede ser un PDF)`:`Busca EN LA WEB (${site})`;
-  const tools=savedUrl?[{type:'web_fetch_20250910',name:'web_fetch',max_uses:3},{type:'web_search_20250305',name:'web_search',max_uses:2}]:[{type:'web_search_20250305',name:'web_search',max_uses:3}];
-  const prompt=`${src} y extrae los descuentos vigentes en ${monthName} en restaurantes por día de la semana con tarjeta de CRÉDITO ${label} en Santiago de Chile. Para cada día (0=domingo..6=sábado) entrega los restaurantes REALES que participan ESTE MES y su % (tope habitual 40%). Solo lo confirmado en la fuente; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-beta':'web-fetch-2025-09-10','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,tools,messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:5000,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:discPrompt(bank)}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const parsed=aiJSON(d);
+    const total=Object.values(parsed).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0);
+    if(!total)return false; // no borrar datos previos si vino vacío
     discData[bank]=parsed;discData.auto=true;discData.month=cur;
     discData.fresh=discData.fresh||{};discData.fresh[bank]=cur;
     localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
@@ -411,19 +431,28 @@ function selectBank(b){editorBank=b;document.querySelectorAll('.btab').forEach((
 // URL oficial de beneficios por banco (página fija o PDF). Se guarda en localStorage.
 function getBankUrls(){try{return JSON.parse(localStorage.getItem(`${LS}.disc_urls`))||{};}catch(e){return {};}}
 function saveBankUrl(){const u=getBankUrls();u[editorBank]=document.getElementById('disc-url').value.trim();localStorage.setItem(`${LS}.disc_urls`,JSON.stringify(u));}
-function syncUrlField(){document.getElementById('url-bank-label').textContent=BANK_LABEL[editorBank]||editorBank;document.getElementById('disc-url').value=getBankUrls()[editorBank]||'';document.getElementById('url-fetch-status').textContent='';}
-// Abre la URL guardada con web_fetch (lee HTML o PDF completo) y extrae los descuentos del banco activo.
-async function fetchFromUrl(){
-  const key=getApiKey();const st=document.getElementById('url-fetch-status');
+function syncUrlField(){
+  document.querySelectorAll('.url-bank-label').forEach(e=>e.textContent=BANK_LABEL[editorBank]||editorBank);
+  const inp=document.getElementById('disc-url'),btn=document.getElementById('url-fetch-btn'),st=document.getElementById('url-fetch-status');
+  const def=DEFAULT_URLS[editorBank]||'';
+  inp.value=getBankUrls()[editorBank]||def;
+  const noPdf=(editorBank==='cmr');
+  inp.disabled=noPdf;btn.disabled=noPdf;
+  st.textContent=noPdf?'ℹ️ CMR Falabella no publica PDF — usa “Pegar texto” de arriba para este banco.':'';
+  const ps=document.getElementById('paste-status');if(ps)ps.textContent='';
+  const pt=document.getElementById('disc-paste');if(pt)pt.value='';
+}
+// Estructura el TEXTO pegado (de la página o PDF) en descuentos por día. No usa herramientas web → barato y siempre funciona.
+async function parsePasted(){
+  const key=getApiKey();const st=document.getElementById('paste-status');
   if(!key){st.textContent='⚠️ Configura la API key de Anthropic en ⚙ Ajustes del Panel.';return;}
-  const url=(getBankUrls()[editorBank]||'').trim();
-  if(!/^https?:\/\//.test(url)){st.textContent='⚠️ Pega primero la URL oficial (o el PDF) de beneficios.';return;}
-  const btn=document.getElementById('url-fetch-btn');btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span>';
-  st.textContent='Leyendo la página/PDF oficial…';
-  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-  const prompt=`Abre ${url} y extrae los descuentos de restaurantes vigentes en ${monthName} con tarjeta de CRÉDITO ${BANK_LABEL[editorBank]}, agrupados por día de la semana (0=domingo..6=sábado). Usa SOLO lo que aparezca en esa página/PDF; si un día no aparece, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+  const raw=document.getElementById('disc-paste').value.trim();
+  if(raw.length<20){st.textContent='⚠️ Pega primero el texto de los descuentos.';return;}
+  const btn=document.getElementById('paste-btn');btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span>';
+  st.textContent='Ordenando los descuentos por día…';
+  const prompt=`Del siguiente texto de beneficios de ${BANK_LABEL[editorBank]} (tarjeta de crédito, Chile), extrae los restaurantes con su % de descuento y su COMUNA, agrupados por día de la semana (0=domingo..6=sábado). La COMUNA en Chile es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú), NO la ciudad ni la región — usa la columna Ubicación/Comuna tal cual. Si un descuento aplica "todos los días", ponlo en los 7. Si dice "cortesía" usa 100. Si un día no tiene, deja []. Usa SOLO lo que aparezca en el texto, no inventes. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}\n\nTEXTO:\n${raw.slice(0,12000)}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-beta':'web-fetch-2025-09-10','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,tools:[{type:'web_fetch_20250910',name:'web_fetch',max_uses:3}],messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const parsed=aiJSON(d);
     const cur=new Date().toISOString().slice(0,7);
@@ -431,8 +460,30 @@ async function fetchFromUrl(){
     discData.fresh=discData.fresh||{};discData.fresh[editorBank]=cur;
     localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
     renderEditorRows();updateDiscBadge();renderDiscounts();
-    const n=Object.values(parsed).reduce((a,x)=>a+(x?x.length:0),0);
-    st.textContent=`✓ ${n} descuentos leídos desde la página oficial.`;
+    const n=Object.values(parsed).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0);
+    st.textContent=n?`✓ ${n} descuentos ordenados. Revisa las pestañas de días y guarda.`:'No se detectaron descuentos en el texto — revisa que hayas copiado la lista.';
+  }catch(e){st.textContent='✗ '+e.message;}
+  btn.disabled=false;btn.textContent=old;
+}
+// Abre la URL guardada con web_fetch (lee HTML o PDF completo) y extrae los descuentos del banco activo.
+async function fetchFromUrl(){
+  const key=getApiKey();const st=document.getElementById('url-fetch-status');
+  if(!key){st.textContent='⚠️ Configura la API key de Anthropic en ⚙ Ajustes del Panel.';return;}
+  const url=bankUrl(editorBank);
+  if(!/^https?:\/\//.test(url)){st.textContent='⚠️ Pega primero la URL oficial de beneficios.';return;}
+  const btn=document.getElementById('url-fetch-btn');btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span>';
+  st.textContent='Abriendo la página y leyendo el PDF del mes…';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:5000,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:discPrompt(editorBank)}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    const parsed=aiJSON(d);
+    const cur=new Date().toISOString().slice(0,7);
+    discData[editorBank]=parsed;discData.auto=true;discData.month=cur;
+    discData.fresh=discData.fresh||{};discData.fresh[editorBank]=cur;
+    localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
+    renderEditorRows();updateDiscBadge();renderDiscounts();
+    const n=Object.values(parsed).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0);
+    st.textContent=n?`✓ ${n} descuentos leídos desde el sitio oficial.`:'No se detectaron descuentos — revisa la URL o usa "Pegar texto".';
   }catch(e){st.textContent='✗ No se pudo leer: '+e.message+' (revisa la URL o edita manual).';}
   btn.disabled=false;btn.textContent=old;
 }
@@ -440,10 +491,10 @@ function buildDayTabs(){document.getElementById('day-tabs').innerHTML=DAYS.map((
 function selectDay(d){editorDay=d;document.querySelectorAll('.dtab').forEach((t,i)=>t.classList.toggle('active',i===d));renderEditorRows();}
 function renderEditorRows(){
   const rows=(discData[editorBank]||{})[editorDay]||[];
-  document.getElementById('disc-rows').innerHTML=rows.length?rows.map((r,i)=>`<div class="disc-edit-row"><input type="text" value="${r.n}" placeholder="Restaurante" onchange="updateDiscRow(${i},'n',this.value)"><input type="number" value="${r.p}" min="1" max="100" placeholder="%" onchange="updateDiscRow(${i},'p',+this.value)"><button class="btn btn-rm" onclick="removeDiscRow(${i})">✕</button></div>`).join(''):'<div style="font-size:.79rem;color:var(--muted);padding:8px 0">Sin restaurantes — agrega abajo.</div>';
+  document.getElementById('disc-rows').innerHTML=rows.length?rows.map((r,i)=>`<div class="disc-edit-row"><input type="text" value="${r.n}" placeholder="Restaurante" onchange="updateDiscRow(${i},'n',this.value)"><input type="text" value="${r.c||''}" placeholder="Comuna" onchange="updateDiscRow(${i},'c',this.value)"><input type="number" value="${r.p}" min="1" max="100" placeholder="%" onchange="updateDiscRow(${i},'p',+this.value)"><button class="btn btn-rm" onclick="removeDiscRow(${i})">✕</button></div>`).join(''):'<div style="font-size:.79rem;color:var(--muted);padding:8px 0">Sin restaurantes — agrega abajo.</div>';
 }
 function updateDiscRow(i,f,v){if(!discData[editorBank])discData[editorBank]={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};if(!discData[editorBank][editorDay])discData[editorBank][editorDay]=[];discData[editorBank][editorDay][i][f]=v;}
-function addDiscRow(){if(!discData[editorBank])discData[editorBank]={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};if(!discData[editorBank][editorDay])discData[editorBank][editorDay]=[];discData[editorBank][editorDay].push({n:'',p:40});renderEditorRows();}
+function addDiscRow(){if(!discData[editorBank])discData[editorBank]={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};if(!discData[editorBank][editorDay])discData[editorBank][editorDay]=[];discData[editorBank][editorDay].push({n:'',p:40,c:''});renderEditorRows();}
 function removeDiscRow(i){discData[editorBank][editorDay].splice(i,1);renderEditorRows();}
 function saveDiscounts(){discData.month=new Date().toISOString().slice(0,7);localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));updateDiscBadge();renderDiscounts();closeDiscEditor();}
 
@@ -698,29 +749,39 @@ function checkAlerts(){
 }
 
 function renderBloqueMode(){
+// Lee la COLA de actividades pendientes (array). Migra la clave antigua de 1 item si existe.
+function getPendingList(){
+  let list=[];
+  try{list=JSON.parse(localStorage.getItem(`${LS}.pendingActivities`)||'[]');}catch(e){}
+  if(!Array.isArray(list))list=[];
+  try{const old=JSON.parse(localStorage.getItem(`${LS}.pendingActivity`)||'null');if(old&&old.nombre){if(!list.some(x=>x.nombre===old.nombre))list.push(old);localStorage.removeItem(`${LS}.pendingActivity`);localStorage.setItem(`${LS}.pendingActivities`,JSON.stringify(list));}}catch(e){}
+  return list;
+}
+function renderBloqueMode(){
   const el=document.getElementById('bloque-content');
-  let pending=null;
-  try{pending=JSON.parse(localStorage.getItem(`${LS}.pendingActivity`)||'null');}catch(e){}
-  if(pending){
-    const ts=pending.timestamp?new Date(pending.timestamp).toLocaleString('es-CL'):'—';
-    el.innerHTML=`<div class="pending-card"><h3>📍 Actividad del Generador</h3><p>Asignada el ${ts}</p><div style="margin-bottom:12px"><span class="pending-tag">${pending.categoria||'—'}</span><span class="pending-tag">${pending.modo||'—'}</span>${pending.notionUrl?`<a href="${pending.notionUrl}" target="_blank" style="font-size:.75rem;color:var(--terracota)">Ver en Notion →</a>`:''}</div><div class="fgrid" style="margin-bottom:14px"><div class="fg"><label>Lugar</label><input type="text" id="b-name" value="${pending.nombre||''}" readonly></div><div class="fg"><label>Fecha</label><input type="date" id="b-date" value="${new Date().toISOString().split('T')[0]}"></div><div class="fg"><label>Hora</label><input type="time" id="b-time" value="09:00"></div><div class="fg"><label>Ciudad</label><input type="text" id="b-city" value="Santiago, Chile"></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-solid" onclick="loadBloqueActivity()">→ Cargar en el planificador</button><button class="btn btn-ghost btn-sm" onclick="clearPendingActivity()">Descartar</button></div></div>`;
+  const list=getPendingList();
+  if(list.length){
+    const today=new Date().toISOString().split('T')[0];
+    const items=list.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--cream-soft)"><div style="flex:1"><div style="font-weight:600;color:var(--ink)">${p.nombre||'—'}</div><div style="margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="pending-tag">${p.categoria||'—'}</span><span class="pending-tag">${p.modo||'—'}</span>${p.notionUrl?`<a href="${p.notionUrl}" target="_blank" style="font-size:.72rem;color:var(--terracota)">Notion →</a>`:''}</div></div><button class="btn btn-rm" onclick="removePending(${i})" title="Quitar de la cola">✕</button></div>`).join('');
+    el.innerHTML=`<div class="pending-card"><h3>📍 ${list.length} actividad${list.length===1?'':'es'} del Generador</h3><p>Todas las que asignaste se cargarán como paradas de una misma salida.</p><div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">${items}</div><div class="fgrid" style="margin-bottom:14px"><div class="fg"><label>Fecha</label><input type="date" id="b-date" value="${today}"></div><div class="fg"><label>Hora inicio</label><input type="time" id="b-time" value="09:00"></div><div class="fg"><label>Ciudad</label><input type="text" id="b-city" value="Santiago, Chile"></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-solid" onclick="loadAllBloque()">→ Cargar ${list.length===1?'la actividad':'las '+list.length+' actividades'} al planificador</button><button class="btn btn-ghost btn-sm" onclick="clearPendingActivity()">Descartar todas</button></div></div>`;
   } else {
-    el.innerHTML=`<div class="card"><div class="ctitle">Desde Bloque Horario</div><div style="text-align:center;padding:32px 20px;border:2px dashed var(--line);border-radius:var(--r-lg)"><div style="font-size:1.4rem;margin-bottom:10px">📅</div><div style="font-weight:600;color:var(--ink-soft);margin-bottom:6px">Sin actividad pendiente</div><div style="font-size:.82rem;color:var(--muted);max-width:380px;margin:0 auto;line-height:1.6">Abre el <b>Generador Aleatorio</b>, elige una actividad y presiona <b>"📅 Asignar a momento"</b>. Aparecerá aquí automáticamente.</div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="ctitle">Desde Bloque Horario</div><div style="text-align:center;padding:32px 20px;border:2px dashed var(--line);border-radius:var(--r-lg)"><div style="font-size:1.4rem;margin-bottom:10px">📅</div><div style="font-weight:600;color:var(--ink-soft);margin-bottom:6px">Sin actividades pendientes</div><div style="font-size:.82rem;color:var(--muted);max-width:380px;margin:0 auto;line-height:1.6">Abre el <b>Generador Aleatorio</b>, elige una o varias actividades y presiona <b>"📅 Asignar a momento"</b> en cada una. Se van acumulando y aparecen aquí.</div></div></div>`;
   }
 }
+function removePending(i){const list=getPendingList();list.splice(i,1);localStorage.setItem(`${LS}.pendingActivities`,JSON.stringify(list));renderBloqueMode();}
 
-async function loadBloqueActivity(){
-  const name=document.getElementById('b-name').value.trim();
-  const date=document.getElementById('b-date').value,time=document.getElementById('b-time').value;
-  const city=document.getElementById('b-city').value.trim();
+// Carga TODAS las actividades de la cola como paradas de una misma salida.
+async function loadAllBloque(){
+  const list=getPendingList();if(!list.length)return;
+  const date=document.getElementById('b-date').value,time=document.getElementById('b-time').value,city=document.getElementById('b-city').value.trim();
   document.getElementById('t-date').value=date;document.getElementById('t-time').value=time;document.getElementById('t-city').value=city;onDateChange();
-  stops=[];
-  const stop={id:Date.now(),name,addr:name+', '+city,cat:'entertainment',pri:'fixed',open:'',close:'',notes:'Cargado desde Generador Aleatorio',geo:{status:'pending'}};
-  stops.push(stop);switchMode('manual');renderStops();renderMap();
-  stop.geo=await geocode(name+', '+city,city,name);renderStops();renderMap();checkAlerts();
-  localStorage.removeItem(`${LS}.pendingActivity`);
+  stops=list.map((p,idx)=>({id:Date.now()+idx,name:p.nombre,addr:p.nombre+', '+city,cat:'entertainment',pri:idx===0?'fixed':'optional',open:'',close:'',notes:'Cargado desde Generador Aleatorio',geo:{status:'pending'}}));
+  switchMode('manual');renderStops();renderMap();
+  for(const s of stops){s.geo=await geocode(s.name+', '+city,city,s.name);renderStops();renderMap();}
+  checkAlerts();
+  localStorage.removeItem(`${LS}.pendingActivities`);
 }
-function clearPendingActivity(){localStorage.removeItem(`${LS}.pendingActivity`);renderBloqueMode();}
+function clearPendingActivity(){localStorage.removeItem(`${LS}.pendingActivities`);localStorage.removeItem(`${LS}.pendingActivity`);renderBloqueMode();}
 
 // ── Exportar salida a Google Calendar (.ics · sin login) ──
 function exportICS(){

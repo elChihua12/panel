@@ -289,6 +289,13 @@ body {
   pointer-events: none;
 }
 .result-card.visible { display: block; }
+/* ── Detalle completo: todas las columnas de la fila ── */
+.res-fields { text-align:left; margin-top:14px; border-top:1px solid var(--line-soft); padding-top:12px; }
+.rf-title { font-size:.70rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:8px; }
+.rf-row { display:flex; gap:12px; padding:5px 0; border-bottom:1px solid var(--line-soft); font-size:.82rem; }
+.rf-row:last-child { border-bottom:none; }
+.rf-key { min-width:120px; max-width:140px; flex-shrink:0; color:var(--muted); font-weight:600; }
+.rf-val { flex:1; color:var(--ink); word-break:break-word; white-space:pre-wrap; }
 
 @keyframes secIn { from { transform: translateY(8px); } to { transform: translateY(0); } }
 
@@ -435,11 +442,6 @@ body {
 
   <a class="back" href="../index.html">← Panel</a>
 
-  <!-- NOTION: conectado server-side vía proxy Vercel; el navegador no necesita llaves -->
-  <div class="notion-note" style="text-align:center;font-size:13px;opacity:.7;margin:4px 0 2px;">
-    🔗 Notion conectado en el servidor · no necesitas pegar llaves, solo tira.
-  </div>
-
   <!-- HEADER -->
   <div class="app-header">
     <div class="eyebrow">Generador · Panel Bastián</div>
@@ -478,6 +480,7 @@ body {
     <div class="res-meta"  id="resMeta"></div>
     <div class="res-nota"  id="resNota"></div>
     <div id="resLink"></div>
+    <div class="res-fields" id="resAllFields" style="display:none"></div>
     <div class="res-actions">
       <button class="btn-ghost"  onclick="tirar()">🔀 Otro</button>
       <button class="btn-ghost"  id="notionBtn" style="display:none">📋 Ver en Notion</button>
@@ -736,6 +739,16 @@ function showResult(item, m, nameField, notaField) {
   if (notionUrl) { notionBtn.style.display = 'flex'; notionBtn.onclick = () => window.open(notionUrl, '_blank'); }
   else { notionBtn.style.display = 'none'; }
 
+  // ── Todas las columnas de la fila (para no tener que abrir Notion) ──
+  const skip = new Set([nameField, 'url', 'id']);
+  const rows = Object.entries(item)
+    .filter(([k, v]) => !k.startsWith('_') && !skip.has(k) && v != null && String(v).trim() !== '')
+    .map(([k, v]) => `<div class="rf-row"><span class="rf-key">${escHtml(k)}</span><span class="rf-val">${fmtVal(v)}</span></div>`)
+    .join('');
+  const allEl = document.getElementById('resAllFields');
+  allEl.innerHTML = rows ? `<div class="rf-title">Todos los campos</div>${rows}` : '';
+  allEl.style.display = rows ? 'block' : 'none';
+
   // Botón Asignar — siempre visible cuando hay resultado
   document.getElementById('assignBtn').style.display = 'flex';
 
@@ -751,7 +764,7 @@ function showResult(item, m, nameField, notaField) {
 // ═══════════════════════════════════════════
 function prepareHandoff() {
   if (!lastItem) return;
-  const payload = {
+  const item = {
     nombre:     lastItem[lastItem._nameField] || 'Sin nombre',
     categoria:  lastItem.Categoria || '',
     modo:       lastItem._mode,
@@ -759,12 +772,18 @@ function prepareHandoff() {
     link:       lastItem.Link || null,
     timestamp:  new Date().toISOString()
   };
-  localStorage.setItem('panel.v5.pendingActivity', JSON.stringify(payload));
+  // COLA: se AGREGA a la lista (antes sobreescribía → solo quedaba 1).
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('panel.v5.pendingActivities') || '[]'); } catch(e) {}
+  if (!Array.isArray(list)) list = [];
+  if (!list.some(x => x.nombre === item.nombre)) list.push(item); // sin duplicar por nombre
+  if (list.length > 8) list = list.slice(-8);                     // tope de 8 en la cola
+  localStorage.setItem('panel.v5.pendingActivities', JSON.stringify(list));
 
   // Feedback visual temporal
   const btn = document.getElementById('assignBtn');
   const orig = btn.textContent;
-  btn.textContent = '✓ Guardado — abre el Planificador';
+  btn.textContent = `✓ Agregada (${list.length}) — abre el Planificador`;
   btn.style.background = 'var(--moss)';
   btn.style.color = 'var(--cream-soft)';
   btn.style.borderColor = 'var(--moss)';
@@ -786,11 +805,16 @@ function setSpinning(on) {
   btn.disabled = on;
   icon.textContent = on ? '⟳' : '🎲';
 }
-function showStatus(msg) { const el = document.getElementById('statusMsg'); el.innerHTML = msg; el.classList.add('visible'); }
-function hideStatus()    { document.getElementById('statusMsg').classList.remove('visible'); }
+function showStatus(msg) { const el = document.getElementById('statusMsg'); el.innerHTML = msg; el.classList.add('visible'); }function hideStatus()    { document.getElementById('statusMsg').classList.remove('visible'); }
 function hideResult()    { document.getElementById('resultCard').classList.remove('visible'); }
 function showError(msg)  { const el = document.getElementById('errorBox'); el.textContent = '⚠ ' + msg; el.classList.add('visible'); }
 function hideError()     { document.getElementById('errorBox').classList.remove('visible'); }
+// Escapa HTML y convierte URLs en enlaces — para mostrar columnas de forma segura.
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtVal(v){
+  const raw = Array.isArray(v) ? v.join(', ') : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+  return escHtml(raw).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--terracota)">$1</a>');
+}
 </script>
 </body>
 </html>
