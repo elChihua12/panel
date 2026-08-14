@@ -788,6 +788,7 @@ const ALL_TOOLS = [
       { id: 'orquestador', icon: '⚙️', name: 'Orquestador IA',        desc: 'Idea → modelo → flujo → prompts listos',   href: 'tools/orquestador.html', status: 'live' },
       { id: 'malla',       icon: '🗺️', name: 'Malla Aprendizaje v4',  desc: 'Currículum día por día',                   href: 'tools/malla.html',       status: 'live' },
       { id: 'roadmap',     icon: '🛤️', name: 'Roadmap IA Farmacia',   desc: 'Mapa de 5 fases · 12-18 meses',            href: 'tools/roadmap.html',     status: 'live' },
+      { id: 'estudio-qf',  icon: '📚', name: 'Generador de Unidades QF', desc: 'Modelo de Estudio QF · ruta, biblioteca y reglas', href: 'tools/generador-estudio-qf.html', status: 'live' },
       { id: 'analisis-ia', icon: '🔬', name: 'Análisis Profundo IA',  desc: 'Estudio comparativo de IA',                href: DRIVE('1KHRmr1sGaIHjaM26_LXgFx0rzmLa_0Pc'), status: 'drive', external: true }
     ],
     files: []
@@ -874,6 +875,7 @@ const ALL_TOOLS = [
 // ─── CREACIONES Claude (timeline) ──────────────
 // Bitácora cronológica de artefactos. La fecha es ISO YYYY-MM-DD.
 const CREATIONS = [
+  { date: '2026-08-14', icon: '📚', name: 'Generador de Unidades QF v1.2',        desc: 'Modelo de Estudio QF · ruta, biblioteca y reglas',  tag: 'Herramienta', href: 'tools/generador-estudio-qf.html' },
   { date: '2026-06-27', icon: '🗺️', name: 'Planificador de Salidas v1.1',          desc: 'Paradas + mapa + Sorpréndeme + descuentos + Calendar', tag: 'Módulo', href: 'tools/planificador.html' },
   { date: '2026-06-27', icon: '🎲', name: 'Selector Tiempo Libre',                 desc: 'Tira al azar desde Notion · handoff a Salidas',     tag: 'Módulo', href: 'tools/generador.html' },
   { date: '2026-06-26', icon: '📊', name: 'Flujo de caja',                          desc: 'Ingresos/egresos del mes · lee tus PDF con IA',     tag: 'Módulo', href: 'tools/flujo.html' },
