@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de Tiempo Libre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tinta:#17302E;
+    --papel:#E4E7E0;
+    --papel-alto:#F1F3EE;
+    --ambar:#A05B12;
+    --ambar-claro:#E4A24E;
+    --vidrio:#2F5D52;
+    --linea:#C2C7BB;
+    --tenue:#5E6A63;
+
+    --display:"Fraunces",Georgia,serif;
+    --texto:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    background:var(--papel);
+    color:var(--tinta);
+    font-family:var(--texto);
+    -webkit-font-smoothing:antialiased;
+    padding:28px 18px 60px;
+  }
+
+  .wrap{max-width:620px;margin:0 auto}
+
+  .back{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--tenue);
+    text-decoration:none;
+    margin-bottom:22px;
+    padding:6px 0;
+  }
+  .back:hover{color:var(--vidrio)}
+  .back:focus-visible{outline:2px solid var(--ambar);outline-offset:2px}
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ambar);
+    margin-bottom:14px;
+  }
+
+  h1{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(34px,9vw,52px);
+    line-height:1.02;
+    margin:0 0 10px;
+    letter-spacing:-.02em;
+  }
+
+  .sub{
+    margin:0 0 34px;
+    color:var(--tenue);
+    font-size:15px;
+    line-height:1.5;
+    max-width:44ch;
+  }
+
+  .qlabel{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--tenue);
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .qlabel::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--linea);
+  }
+
+  .bloque{margin-bottom:26px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+
+  .chip{
+    font-family:var(--texto);
+    font-size:15px;
+    font-weight:500;
+    padding:11px 16px;
+    border:1px solid var(--linea);
+    border-radius:2px;
+    background:transparent;
+    color:var(--tinta);
+    cursor:pointer;
+    transition:background .12s ease,border-color .12s ease,color .12s ease;
+    min-height:44px;
+  }
+  .chip:hover{border-color:var(--vidrio)}
+  .chip[aria-pressed="true"]{
+    background:var(--vidrio);
+    border-color:var(--vidrio);
+    color:var(--papel-alto);
+  }
+  .chip:focus-visible,.principal:focus-visible,.mini:focus-visible{
+    outline:2px solid var(--ambar);
+    outline-offset:2px;
+  }
+
+  .pista{
+    margin:9px 0 0;
+    font-size:12.5px;
+    line-height:1.5;
+    color:var(--tenue);
+    font-style:italic;
+  }
+
+  .principal{
+    width:100%;
+    margin-top:6px;
+    font-family:var(--display);
+    font-size:22px;
+    font-weight:600;
+    letter-spacing:-.01em;
+    color:var(--papel-alto);
+    background:var(--tinta);
+    border:none;
+    border-radius:2px;
+    padding:18px;
+    cursor:pointer;
+    transition:opacity .12s ease;
+  }
+  .principal:hover{opacity:.9}
+  .principal:disabled{opacity:.35;cursor:not-allowed}
+
+  /* ---- la tarjeta: una dosis ---- */
+  .dosis{
+    margin-top:30px;
+    background:var(--tinta);
+    color:var(--papel-alto);
+    border-radius:2px;
+    position:relative;
+    overflow:hidden;
+    animation:sale .28s ease-out;
+  }
+  @keyframes sale{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .dosis{animation:none}
+  }
+
+  .perf{
+    height:12px;
+    background:
+      repeating-linear-gradient(90deg,var(--papel) 0 7px,transparent 7px 14px);
+  }
+
+  .dosis-cuerpo{padding:20px 22px 24px}
+
+  .meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--ambar-claro);
+    border-bottom:1px solid rgba(228,162,78,.28);
+    padding-bottom:10px;
+    margin-bottom:18px;
+  }
+  .meta span:last-child{white-space:nowrap}
+
+  .accion{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(24px,5.6vw,31px);
+    line-height:1.15;
+    letter-spacing:-.015em;
+    margin:0 0 12px;
+  }
+
+  .nota{
+    margin:0;
+    font-size:15px;
+    line-height:1.55;
+    color:#B9C4BC;
+    max-width:42ch;
+  }
+
+  .acciones{
+    display:flex;
+    gap:8px;
+    margin-top:22px;
+  }
+
+  .mini{
+    flex:1;
+    font-family:var(--texto);
+    font-size:14px;
+    font-weight:500;
+    padding:12px;
+    min-height:44px;
+    border-radius:2px;
+    cursor:pointer;
+    border:1px solid rgba(228,162,78,.45);
+    background:transparent;
+    color:var(--ambar-claro);
+    transition:background .12s ease;
+  }
+  .mini:hover{background:rgba(228,162,78,.12)}
+  .mini.solida{
+    background:var(--ambar-claro);
+    border-color:var(--ambar-claro);
+    color:var(--tinta);
+    font-weight:600;
+  }
+  .mini.solida:hover{background:#EFB264}
+
+  .listo{
+    margin-top:30px;
+    padding:22px;
+    border:1px dashed var(--linea);
+    border-radius:2px;
+    font-family:var(--display);
+    font-size:20px;
+    text-align:center;
+    animation:sale .28s ease-out;
+  }
+
+  .regla{
+    margin-top:44px;
+    padding-top:18px;
+    border-top:1px solid var(--linea);
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--tenue);
+  }
+  .regla b{color:var(--tinta);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="../index.html">← Panel</a>
+
+  <div class="eyebrow">Generador · Tiempo libre</div>
+  <h1>¿Qué hago ahora?</h1>
+  <p class="sub">Dos toques y sale una sola cosa. Si no te acomoda, pides otra. No hay horario que cumplir.</p>
+
+  <div class="bloque">
+    <div class="qlabel">Dónde estás</div>
+    <div class="chips" id="ctx" role="group" aria-label="Dónde estás"></div>
+    <p class="pista" id="pista" hidden></p>
+  </div>
+
+  <div class="bloque">
+    <div class="qlabel">Cómo andas</div>
+    <div class="chips" id="ene" role="group" aria-label="Cómo andas"></div>
+  </div>
+
+  <button class="principal" id="go" disabled>Dame una</button>
+
+  <div id="salida" aria-live="polite"></div>
+
+  <p class="regla"><b>Regla única:</b> no guardas nada nuevo hasta convertir en algo tuyo lo último que guardaste. Una ficha, tres líneas, un esquema. Si no salió nada, no lo estudiaste.</p>
+
+</div>
+
+<script>
+const CONTEXTOS = [
+  {id:"casa",  txt:"En la casa"},
+  {id:"tarde", txt:"FARQFAR (tarde)"},
+  {id:"pop",   txt:"Popular"},
+  {id:"solo",  txt:"Solo / entremedio"}
+];
+
+const ENERGIAS = [
+  {id:"baja",  txt:"Fundido"},
+  {id:"media", txt:"Normal"},
+  {id:"alta",  txt:"Con pila"}
+];
+
+const CARTAS = [
+  // ---------- CASA ----------
+  {c:"casa",e:["baja"],t:"30 min",a:"Duerme una siesta, con alarma",n:"Te estás durmiendo igual en los ratos libres. Elegirlo rinde más que pelearlo."},
+  {c:"casa",e:["baja"],t:"40 min",a:"Tírate con tus hijos a ver lo que ellos elijan",n:"No tienes que animar nada ni proponer nada mejor. Basta con estar ahí."},
+  {c:"casa",e:["baja"],t:"15 min",a:"Ducha larga, sin teléfono",n:"Lo más barato que existe para bajar el estrés."},
+  {c:"casa",e:["baja","media"],t:"—",a:"Abre el generador de películas y dale play",n:"Cero decisiones. Para eso lo tienes."},
+  {c:"casa",e:["baja","media"],t:"20 min",a:"Come sentado y sin pantalla",n:"Aunque sea una vez al día. Cuenta como descanso."},
+  {c:"casa",e:["media"],t:"20 min",a:"Siéntate en el suelo a jugar lo que tus hijos ya están jugando",n:"Sin dirigir, sin corregir, sin mejorar el juego. Ellos mandan."},
+  {c:"casa",e:["media"],t:"30 min",a:"Cocina algo simple con uno de los dos",n:"Hacer algo juntos pesa más que mirarlos hacer algo."},
+  {c:"casa",e:["media"],t:"20 min",a:"Sal a caminar a la vuelta con uno solo",n:"Rota: hoy uno, la próxima el otro. A solas te conversan otra cosa."},
+  {c:"casa",e:["media"],t:"20 min",a:"Pregúntale a tu pareja qué necesita que hagas hoy, y hazlo",n:"Descarga real, no simbólica. Toma menos tiempo del que parece."},
+  {c:"casa",e:["media","alta"],t:"—",a:"Deja el teléfono en otra pieza por lo que queda de la tarde",n:"El loop no se corta con fuerza de voluntad, se corta con distancia física."},
+  {c:"casa",e:["alta"],t:"60 min",a:"Saquen a los niños fuera: plaza, cancha, bici",n:"Una hora afuera rinde más que tres adentro con pantallas de por medio."},
+  {c:"casa",e:["alta"],t:"—",a:"Noche de película en familia: que la elija el generador",n:"Nadie pelea por la elección si eligió la máquina."},
+  {c:"casa",e:["alta"],t:"45 min",a:"Ataca esa cosa de la casa que te molesta hace semanas",n:"45 minutos, aunque quede a medias. Deja de ocuparte espacio mental."},
+  {c:"casa",e:["alta"],t:"—",a:"Algo con tu pareja sin niños de por medio, aunque sea en la casa",n:"Te estás acostando tarde para verla. Que valga la pena estando despierto."},
+
+  // ---------- FARQFAR ----------
+  {c:"tarde",e:["baja"],t:"10 min",a:"Abre UN post guardado, léelo y escribe 3 líneas con tus palabras",n:"Después bórralo de guardados. Eso ya es una unidad terminada."},
+  {c:"tarde",e:["baja"],t:"15 min",a:"Elige un fármaco que despachaste hoy y no recuerdas bien. Léelo.",n:"Lo que se usa se fija. Lo que se guarda para después se pierde."},
+  {c:"tarde",e:["baja"],t:"10 min",a:"Guarda el teléfono en el bolso y quédate 10 minutos sin nada",n:"Aburrirte es la puerta de entrada a hacer algo. El scroll la tapa."},
+  {c:"tarde",e:["baja","media"],t:"5 min",a:"Anota la duda más rara que te preguntó un paciente esta semana",n:"Ese es tu temario real. No el de Instagram."},
+  {c:"tarde",e:["media"],t:"20 min",a:"Ficha de un fármaco: indicación, mecanismo, dosis, 3 errores frecuentes",n:"Una por turno. En un mes tienes veinte y son tuyas."},
+  {c:"tarde",e:["media"],t:"20 min",a:"Vacía 3 posts guardados: quédate con uno, bota los otros dos",n:"El backlog baja o nunca lo vas a usar. Botar también es avanzar."},
+  {c:"tarde",e:["media"],t:"25 min",a:"Toma una duda real de mostrador y respóndela bien, por escrito",n:"Estudias exactamente lo que te van a volver a preguntar."},
+  {c:"tarde",e:["alta"],t:"45 min",a:"Un esquema de mecanismo de acción, según tu protocolo de Notion",n:"Es tu proyecto, produce algo que se ve, y esta es la tarde más muerta que tienes."},
+  {c:"tarde",e:["alta"],t:"45 min",a:"45 minutos del tema de fondo que sabes que tienes flojo",n:"Elige el que más te incomoda. Ese es, y lo sabes."},
+  {c:"tarde",e:["alta"],t:"40 min",a:"Avanza tu proyecto propio: una sola tarea, la más chica de todas",n:"Estas tardes son el único capital de tiempo que te sobra. No lo regales."},
+
+  // ---------- POPULAR ----------
+  {c:"pop",e:["baja"],t:"20 min",a:"La tarea que llevas arrastrando: 20 minutos, aunque no la termines",n:"El atraso pesa más que la tarea misma."},
+  {c:"pop",e:["baja"],t:"10 min",a:"Ordena tu puesto y deja lista la primera tarea de mañana",n:"Poco esfuerzo hoy, mañana partes sin decidir nada."},
+  {c:"pop",e:["baja"],t:"10 min",a:"Sal 10 minutos, sin teléfono",n:"Después de un usuario difícil no se sigue de largo como si nada."},
+  {c:"pop",e:["media"],t:"30 min",a:"Adelanta lo que sabes que se te va a venir encima",n:"Tienes plazos largos y por eso mismo se te acumula al final."},
+  {c:"pop",e:["media"],t:"20 min",a:"Ficha de fármaco o repasa un protocolo interno",n:"Tiempo muerto pagado es tiempo de estudio gratis."},
+  {c:"pop",e:["alta"],t:"40 min",a:"Toma una tarea repetitiva, escríbela en pasos y córtale uno",n:"Aquí está escondido el medio día libre que dices que podrías tener."},
+  {c:"pop",e:["alta"],t:"30 min",a:"Cierra algo que siempre queda a medias",n:"Lo a medias es lo que después se convierte en atraso."},
+
+  // ---------- SOLO ----------
+  {c:"solo",e:["baja","media","alta"],t:"15 min",a:"Camina 15 minutos sin audífonos",n:"Sin podcast, sin música. El ruido de la calle basta y descansa más."},
+  {c:"solo",e:["baja","media"],t:"3 min",a:"Respira: 4 segundos adentro, 6 afuera, por 3 minutos",n:"Sirve aunque te parezca poco serio. Es lo único que baja pulsaciones al tiro."},
+  {c:"solo",e:["baja","media","alta"],t:"5 min",a:"Llama a alguien de tu casa 5 minutos, sin motivo",n:"Lo que cansa es estar poco en casa. El contacto corto acorta esa distancia."},
+  {c:"solo",e:["baja"],t:"20 min",a:"Duerme 20 minutos donde puedas",n:"Si el cuerpo lo pide a esta hora, es dato, no flojera."},
+  {c:"solo",e:["media","alta"],t:"20 min",a:"Café en otro lado, mirando la calle",n:"Cambiar de escenario cuenta como haber salido."},
+  {c:"solo",e:["baja","media"],t:"5 min",a:"Escribe en una nota qué te tiene apretado hoy. Una frase.",n:"Nombrarlo le baja el volumen. No hay que resolverlo ahora."},
+  {c:"solo",e:["media","alta"],t:"20 min",a:"Come sentado, sin pantalla y sin apurarte",n:"Comer parado entre trabajos es de las cosas que más se acumulan."},
+  {c:"solo",e:["alta"],t:"15 min",a:"Manda un mensaje a alguien que no ves hace rato",n:"Tus pares también se te fueron quedando atrás. Cuesta poco."}
+];
+
+/* ═══════════════════════════════════════════════
+   ACOPLE CON EL PANEL
+   El panel escribe en localStorage el bloque macro en curso
+   (Popular / FQF / Hobbies / Curie …) traducido a uno de los
+   contextos de acá. Clave: 'panel.v5.ctx'.
+   Se lee para preseleccionar "Dónde estás"; si el panel no se
+   ha abierto, o el dato quedó viejo, no se preselecciona nada
+   y la herramienta funciona igual que suelta.
+   ═══════════════════════════════════════════════ */
+const LS_CTX = 'panel.v5.ctx';
+const LS_TL  = 'panel.v5.tiempolibre';
+const VIGENCIA_CTX = 6 * 60 * 60 * 1000;   // 6 h: pasado eso el bloque ya no es el de ahora
+
+function leerCtxPanel(){
+  try{
+    const raw = localStorage.getItem(LS_CTX);
+    if(!raw) return null;
+    const d = JSON.parse(raw);
+    if(!d || !d.ctx || !d.ts) return null;
+    if(Date.now() - d.ts > VIGENCIA_CTX) return null;
+    if(!CONTEXTOS.some(c => c.id === d.ctx)) return null;
+    return d;
+  }catch(e){ return null; }
+}
+
+/* Estado persistente: el correlativo del día y las últimas cartas
+   mostradas, para no repetir al recargar. */
+const hoyISO = () => new Date().toISOString().slice(0,10);
+
+function leerEstado(){
+  try{
+    const d = JSON.parse(localStorage.getItem(LS_TL) || 'null');
+    if(d && d.fecha === hoyISO()) return {fecha:d.fecha, dosis:d.dosis|0, hist:Array.isArray(d.hist)?d.hist:[]};
+  }catch(e){}
+  return {fecha:hoyISO(), dosis:0, hist:[]};
+}
+
+function guardarEstado(){
+  try{ localStorage.setItem(LS_TL, JSON.stringify(estado)); }catch(e){}
+}
+
+let estado = leerEstado();
+let ctxSel=null, eneSel=null;
+
+function pintarChips(cont,items,onSel,preId){
+  cont.innerHTML="";
+  items.forEach(it=>{
+    const b=document.createElement("button");
+    b.className="chip";
+    b.type="button";
+    b.textContent=it.txt;
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("click",()=>{
+      [...cont.children].forEach(c=>c.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      onSel(it.id);
+    });
+    cont.appendChild(b);
+    if(preId && it.id === preId){
+      b.setAttribute("aria-pressed","true");
+      onSel(it.id);
+    }
+  });
+}
+
+const ctxPanel = leerCtxPanel();
+
+pintarChips(document.getElementById("ctx"),CONTEXTOS,id=>{ctxSel=id;revisar();}, ctxPanel && ctxPanel.ctx);
+pintarChips(document.getElementById("ene"),ENERGIAS,id=>{eneSel=id;revisar();});
+
+if(ctxPanel){
+  const p = document.getElementById("pista");
+  p.textContent = ctxPanel.bloque
+    ? `Preseleccionado según tu bloque actual en el panel: ${ctxPanel.bloque}. Cámbialo si no es así.`
+    : "Preseleccionado según el panel. Cámbialo si no es así.";
+  p.hidden = false;
+}
+
+function revisar(){
+  document.getElementById("go").disabled = !(ctxSel && eneSel);
+}
+
+function etiqueta(lista,id){
+  const x=lista.find(i=>i.id===id);
+  return x?x.txt:"";
+}
+
+function sacar(){
+  let pool=CARTAS.filter(c=>c.c===ctxSel && c.e.includes(eneSel));
+  if(pool.length===0) pool=CARTAS.filter(c=>c.c===ctxSel);
+
+  // No repetir lo ya salido hoy mientras queden cartas frescas en este pool.
+  const frescas = pool.filter(c=>!estado.hist.includes(c.a));
+  if(frescas.length) pool = frescas;
+  else estado.hist = [];   // se acabaron: se limpia y vuelve a empezar
+
+  const carta=pool[Math.floor(Math.random()*pool.length)];
+
+  estado.hist.push(carta.a);
+  if(estado.hist.length > 40) estado.hist = estado.hist.slice(-40);
+  estado.dosis++;
+  guardarEstado();
+
+  mostrar(carta);
+}
+
+function mostrar(carta){
+  const n=String(estado.dosis).padStart(2,"0");
+  document.getElementById("salida").innerHTML=`
+    <div class="dosis">
+      <div class="perf"></div>
+      <div class="dosis-cuerpo">
+        <div class="meta">
+          <span>${etiqueta(CONTEXTOS,ctxSel)} · ${etiqueta(ENERGIAS,eneSel)}</span>
+          <span>N.º ${n} · ${carta.t}</span>
+        </div>
+        <p class="accion">${carta.a}</p>
+        <p class="nota">${carta.n}</p>
+        <div class="acciones">
+          <button class="mini" type="button" id="otra">No, otra cosa</button>
+          <button class="mini solida" type="button" id="voy">Voy</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("otra").addEventListener("click",sacar);
+  document.getElementById("voy").addEventListener("click",()=>{
+    document.getElementById("salida").innerHTML=
+      `<div class="listo">Listo. Cierra esto y anda.</div>`;
+  });
+}
+
+document.getElementById("go").addEventListener("click",sacar);
+</script>
+</body>
+</html>

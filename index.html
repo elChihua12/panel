@@ -832,6 +832,7 @@ const ALL_TOOLS = [
     short: 'Sistema',
     items: [
       { id: 'tiempo-libre', icon: '🎲', name: 'Selector Tiempo Libre', desc: 'Tira al azar un panorama desde Notion · handoff a Salidas', href: 'tools/generador.html', status: 'live' },
+      { id: 'gen-tiempo-libre', icon: '🧭', name: 'Generador de Tiempo Libre', desc: 'Qué hago ahora · una sola cosa, según dónde estás y cómo andas', href: 'tools/generador-tiempo-libre.html', status: 'live' },
       { id: 'planificador', icon: '🗺️', name: 'Planificador de Salidas', desc: 'Paradas, mapa, descuentos y exporta a Calendar', href: 'tools/planificador.html', status: 'live' },
       { id: 'os-semanal',   icon: '🗓️', name: 'OS Semanal',              desc: 'Tu semana: foco por día · ¿qué hago? · relación · sheets', href: 'tools/os-semanal.html', status: 'live' }
     ],
@@ -875,6 +876,7 @@ const ALL_TOOLS = [
 // ─── CREACIONES Claude (timeline) ──────────────
 // Bitácora cronológica de artefactos. La fecha es ISO YYYY-MM-DD.
 const CREATIONS = [
+  { date: '2026-08-14', icon: '🧭', name: 'Generador de Tiempo Libre',            desc: 'Complemento del Selector · lee el bloque actual del panel', tag: 'Módulo',         href: 'tools/generador-tiempo-libre.html' },
   { date: '2026-08-14', icon: '📦', name: 'Intermediación CENABAST · skill',      desc: 'CSV + facturas escaneadas → Excel validado, ritmo semanal', tag: 'Automatización', href: 'https://www.notion.so/3359a86ba8ec81ad9d26f798f8f73648', external: true },
   { date: '2026-08-14', icon: '⌨️', name: 'Solicitudes de Pedido · autollenado',  desc: 'AutoHotkey llena Adquisiciones desde compras.csv',         tag: 'Automatización', href: 'https://www.notion.so/3bc9a86ba8ec8174a506e52d7c112ca0', external: true },
   { date: '2026-08-10', icon: '📄', name: 'Memos y Certificados · 5 tipos',       desc: 'Word con logos y correlativos · CENABAST desde Excel',     tag: 'Herramienta',    href: 'https://www.notion.so/3bc9a86ba8ec81b5a429e8660229ed3d', external: true },
@@ -917,26 +919,29 @@ const AGENDA = [
 // Cada bloque define hora + día + qué herramienta sugerir (toolId) + una recomendación (tip).
 // El panel muestra el bloque actual, su recomendación y enlaza a la herramienta al hacer clic.
 // days: 0 = domingo … 6 = sábado.  ← edita libremente para reflejar tu semana real.
+// `ctx` traduce el bloque al contexto del Generador de Tiempo Libre
+// ('casa' · 'tarde' · 'pop' · 'solo'). El panel lo publica en localStorage
+// y esa herramienta preselecciona con él. Si agregas un bloque, ponle su ctx.
 const MACRO_BLOCKS = [
   // ─ L–V · Popular (trabajo farmacia) ─
-  { id: 'pop-am',   name: 'Popular',            start: '08:00', end: '14:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo · Checklist Farmacia' },
-  { id: 'colacion', name: 'Colación',          start: '14:00', end: '15:00', days: [1,2,3,4,5], kind: 'pausa',   toolId: null,                 tip: 'Pausa · come algo' },
-  { id: 'pop-pm',   name: 'Popular',            start: '15:00', end: '17:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo · Checklist Farmacia' },
-  { id: 'inter',    name: 'Intermedio',         start: '17:00', end: '18:30', days: [1,2,3,4,5], kind: 'inter',   toolId: 'guia-ia',            tip: 'Transición · repasa el Centro de Comando IA' },
-  { id: 'fqf',      name: 'FQF',                start: '18:30', end: '21:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Turno FQF · Checklist Farmacia' },
+  { id: 'pop-am',   name: 'Popular',            start: '08:00', end: '14:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo · Checklist Farmacia', ctx: 'pop' },
+  { id: 'colacion', name: 'Colación',          start: '14:00', end: '15:00', days: [1,2,3,4,5], kind: 'pausa',   toolId: null,                 tip: 'Pausa · come algo', ctx: 'solo' },
+  { id: 'pop-pm',   name: 'Popular',            start: '15:00', end: '17:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo · Checklist Farmacia', ctx: 'pop' },
+  { id: 'inter',    name: 'Intermedio',         start: '17:00', end: '18:30', days: [1,2,3,4,5], kind: 'inter',   toolId: 'guia-ia',            tip: 'Transición · repasa el Centro de Comando IA', ctx: 'solo' },
+  { id: 'fqf',      name: 'FQF',                start: '18:30', end: '21:00', days: [1,2,3,4,5], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Turno FQF · Checklist Farmacia', ctx: 'tarde' },
   // ─ L–V · 21:00–23:00 · bloque personal por día ─
-  { id: 'lun-eve',  name: 'Hobbies',            start: '21:00', end: '23:00', days: [1], kind: 'hobbies', toolId: 'os-semanal', tip: 'Recarga 🎮 · OS Semanal' },
-  { id: 'mar-eve',  name: 'Hobbies',            start: '21:00', end: '23:00', days: [2], kind: 'hobbies', toolId: 'os-semanal', tip: 'Hobbies 🎧 · OS Semanal' },
-  { id: 'mie-eve',  name: 'Noche de Pareja',    start: '21:00', end: '23:00', days: [3], kind: 'pareja',  toolId: 'os-semanal', tip: 'Noche de Pareja ❤️ · OS Semanal' },
-  { id: 'jue-eve',  name: 'Música + Protocolo', start: '21:00', end: '23:00', days: [4], kind: 'hobbies', toolId: 'os-semanal', tip: 'Protocolo Jueves 📋 · arma el finde' },
-  { id: 'vie-eve',  name: 'Proyecto IA',        start: '21:00', end: '23:00', days: [5], kind: 'ia',      toolId: 'malla',      tip: 'Proyecto IA 🤖 · estudia con la Malla' },
+  { id: 'lun-eve',  name: 'Hobbies',            start: '21:00', end: '23:00', days: [1], kind: 'hobbies', toolId: 'os-semanal', tip: 'Recarga 🎮 · OS Semanal', ctx: 'casa' },
+  { id: 'mar-eve',  name: 'Hobbies',            start: '21:00', end: '23:00', days: [2], kind: 'hobbies', toolId: 'os-semanal', tip: 'Hobbies 🎧 · OS Semanal', ctx: 'casa' },
+  { id: 'mie-eve',  name: 'Noche de Pareja',    start: '21:00', end: '23:00', days: [3], kind: 'pareja',  toolId: 'os-semanal', tip: 'Noche de Pareja ❤️ · OS Semanal', ctx: 'casa' },
+  { id: 'jue-eve',  name: 'Música + Protocolo', start: '21:00', end: '23:00', days: [4], kind: 'hobbies', toolId: 'os-semanal', tip: 'Protocolo Jueves 📋 · arma el finde', ctx: 'casa' },
+  { id: 'vie-eve',  name: 'Proyecto IA',        start: '21:00', end: '23:00', days: [5], kind: 'ia',      toolId: 'malla',      tip: 'Proyecto IA 🤖 · estudia con la Malla', ctx: 'casa' },
   // ─ S–D · Curie (trabajo) + familia ─
-  { id: 'finde-am', name: 'Mañana libre',       start: '08:00', end: '10:00', days: [6,0], kind: 'libre',   toolId: null,                 tip: 'Mañana libre · sin agenda fija' },
-  { id: 'curie',    name: 'Curie',              start: '10:00', end: '18:00', days: [6,0], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo en Curie · Checklist Farmacia' },
-  { id: 'sab-fam',  name: 'Tarde Familiar',     start: '18:00', end: '21:00', days: [6],   kind: 'familia', toolId: 'planificador',       tip: 'Tarde familiar 🏠 · Planificador de Salidas' },
-  { id: 'dom-fam',  name: 'Cierre Familiar',    start: '18:00', end: '21:00', days: [0],   kind: 'familia', toolId: 'os-semanal',         tip: 'Cierre familiar 🌅 · con Melin y Zayd' },
-  { id: 'sab-eve',  name: 'Pareja noche',       start: '21:00', end: '23:00', days: [6],   kind: 'pareja',  toolId: 'os-semanal',         tip: 'Pareja noche ❤️ · OS Semanal' },
-  { id: 'dom-eve',  name: 'Check-in',           start: '21:00', end: '23:00', days: [0],   kind: 'pareja',  toolId: 'os-semanal',         tip: 'Check-in 🗣️ semanal + descanso' }
+  { id: 'finde-am', name: 'Mañana libre',       start: '08:00', end: '10:00', days: [6,0], kind: 'libre',   toolId: null,                 tip: 'Mañana libre · sin agenda fija', ctx: 'casa' },
+  { id: 'curie',    name: 'Curie',              start: '10:00', end: '18:00', days: [6,0], kind: 'trabajo', toolId: 'checklist-farmacia', tip: 'Trabajo en Curie · Checklist Farmacia', ctx: 'pop' },
+  { id: 'sab-fam',  name: 'Tarde Familiar',     start: '18:00', end: '21:00', days: [6],   kind: 'familia', toolId: 'planificador',       tip: 'Tarde familiar 🏠 · Planificador de Salidas', ctx: 'casa' },
+  { id: 'dom-fam',  name: 'Cierre Familiar',    start: '18:00', end: '21:00', days: [0],   kind: 'familia', toolId: 'os-semanal',         tip: 'Cierre familiar 🌅 · con Melin y Zayd', ctx: 'casa' },
+  { id: 'sab-eve',  name: 'Pareja noche',       start: '21:00', end: '23:00', days: [6],   kind: 'pareja',  toolId: 'os-semanal',         tip: 'Pareja noche ❤️ · OS Semanal', ctx: 'casa' },
+  { id: 'dom-eve',  name: 'Check-in',           start: '21:00', end: '23:00', days: [0],   kind: 'pareja',  toolId: 'os-semanal',         tip: 'Check-in 🗣️ semanal + descanso', ctx: 'casa' }
 ];
 
 </script>
@@ -955,7 +960,8 @@ const LS = {
   INBOX:       'panel.v5.inbox',
   AGENDA_DONE: 'panel.v5.agendaDone',
   PREFS:       'panel.v5.prefs',
-  API:         'panel.v5.api_key'
+  API:         'panel.v5.api_key',
+  CTX:         'panel.v5.ctx'
 };
 
 const $  = (s, r=document) => r.querySelector(s);
@@ -1143,6 +1149,12 @@ function updateNowStrip() {
   const blocks = macroBlocksToday();
   const current = blocks.find(b => nowM >= b.startM && nowM < b.endM);
   const next = blocks.find(b => b.startM > nowM);
+
+  // Publica el contexto del bloque en curso para el Generador de Tiempo Libre.
+  // Sin bloque (madrugada, después de las 23:00) el contexto es 'casa'.
+  set(LS.CTX, { ctx: current ? (current.ctx || null) : 'casa',
+                bloque: current ? current.name : 'Tiempo libre',
+                ts: Date.now() });
 
   const focusEl = $('#nowFocus');
   if (current) {

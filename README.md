@@ -23,8 +23,23 @@ panel/
     ├── planificador.html        ← Planificador de Salidas
     ├── checklist-farmacia.html  (+ .jsx)  ← React, montado con Babel
     ├── os-semanal.html          (+ .jsx)  ← React, montado con Babel
-    └── generador-estudio-qf.html          ← Generador de Unidades · Modelo de Estudio QF
+    ├── generador-estudio-qf.html          ← Generador de Unidades · Modelo de Estudio QF
+    └── generador-tiempo-libre.html        ← "¿Qué hago ahora?" · complemento del Selector
 ```
+
+## Traspaso de datos entre el panel y las herramientas
+
+Las herramientas son páginas aparte, pero comparten origen con el panel, así que
+comparten `localStorage`. Ese es todo el mecanismo — no hay iframes ni postMessage.
+
+| Clave | Quién escribe | Quién lee |
+|---|---|---|
+| `panel.v5.ctx` | El panel, en cada refresco del bloque actual | Generador de Tiempo Libre, para preseleccionar dónde estás |
+| `panel.v5.pendingActivities` | Selector Tiempo Libre | Planificador de Salidas |
+| `panel.v5.api_key` | ⚙ Ajustes del panel | Todos los módulos que llaman a Anthropic |
+
+Quien lee debe funcionar igual si la clave no está: la herramienta se puede abrir
+directo, sin pasar por el panel.
 
 ## API Keys (se guardan solo en tu navegador)
 

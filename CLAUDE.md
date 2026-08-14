@@ -25,6 +25,11 @@ Están todos juntos en `index.html`, en un bloque `<script>` antes de la lógica
 | `AGENDA` | Bloques recurrentes por hora y día. Referencia tools por `toolId`. |
 | `MACRO_BLOCKS` | Bloques grandes de la jornada. También referencian `toolId`. |
 
+Cada `MACRO_BLOCKS` lleva además un `ctx` (`casa` · `tarde` · `pop` · `solo`) que
+traduce el bloque al contexto del Generador de Tiempo Libre. El panel publica el del
+bloque en curso en `panel.v5.ctx` y esa herramienta lo usa para preseleccionar. **Si
+agregas un bloque, ponle su `ctx`** — sin él la preselección queda muda para esa franja.
+
 Reglas: el `id` de una tool es la llave que usan pines, agenda y bloques — único y estable.
 `days` va de 0 (domingo) a 6 (sábado). `status`: `live` (local), `drive`, `notion`.
 `external: true` para lo que abre fuera del panel.
