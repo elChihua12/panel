@@ -798,10 +798,10 @@ const ALL_TOOLS = [
     short: 'Farmacia PAC',
     items: [
       { id: 'calc-disp', icon: '💊', name: 'Calculadora Dispensación v3', desc: 'Cálculo de dosificación · 6 pestañas', href: 'https://www.notion.so/32e9a86ba8ec8114943ad7620464eb00', status: 'notion', external: true },
-      { id: 'pac',       icon: '☑',  name: 'Checklist Mensual PAC',       desc: 'Actividades del mes con progreso',     href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
-      { id: 'posologia', icon: '📐', name: 'Posología de contador (PDF)', desc: 'Inhaladores, gotas, insulina · A5',    href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
-      { id: 'top20',     icon: '📊', name: 'Proyección Utilidades Top 20',desc: 'Excel · márgenes y delta por producto',href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', status: 'notion', external: true },
-      { id: 'checklist-farmacia', icon: '☑', name: 'Checklist Farmacia V3', desc: 'Tareas diarias y mensuales · check-in por turno', href: 'tools/checklist-farmacia.html', status: 'live' }
+      { id: 'checklist-farmacia', icon: '☑', name: 'Checklist Farmacia V3', desc: 'Tareas diarias y mensuales · check-in por turno', href: 'tools/checklist-farmacia.html', status: 'live' },
+      { id: 'cenabast',    icon: '📦', name: 'Intermediación CENABAST',    desc: 'CSV + facturas escaneadas → Excel validado · skill',   href: 'https://www.notion.so/3359a86ba8ec81ad9d26f798f8f73648', status: 'notion', external: true },
+      { id: 'memos',       icon: '📄', name: 'Memos y Certificados',       desc: 'Word con logos y correlativos · 5 tipos de compra',    href: 'https://www.notion.so/3bc9a86ba8ec81b5a429e8660229ed3d', status: 'notion', external: true },
+      { id: 'pedidos',     icon: '⌨️', name: 'Solicitudes de Pedido',      desc: 'Llena el formulario de Adquisiciones desde un CSV',    href: 'https://www.notion.so/3bc9a86ba8ec8174a506e52d7c112ca0', status: 'notion', external: true }
     ],
     files: [
       { name: 'Scraper FP / Meki',          kind: 'ZIP', desc: 'Precios FP + Meki → Excel',     href: DRIVE('1dBVgqVPoUm40-KwiKDBft7g_0eF4TeE9') },
@@ -875,6 +875,9 @@ const ALL_TOOLS = [
 // ─── CREACIONES Claude (timeline) ──────────────
 // Bitácora cronológica de artefactos. La fecha es ISO YYYY-MM-DD.
 const CREATIONS = [
+  { date: '2026-08-14', icon: '📦', name: 'Intermediación CENABAST · skill',      desc: 'CSV + facturas escaneadas → Excel validado, ritmo semanal', tag: 'Automatización', href: 'https://www.notion.so/3359a86ba8ec81ad9d26f798f8f73648', external: true },
+  { date: '2026-08-14', icon: '⌨️', name: 'Solicitudes de Pedido · autollenado',  desc: 'AutoHotkey llena Adquisiciones desde compras.csv',         tag: 'Automatización', href: 'https://www.notion.so/3bc9a86ba8ec8174a506e52d7c112ca0', external: true },
+  { date: '2026-08-10', icon: '📄', name: 'Memos y Certificados · 5 tipos',       desc: 'Word con logos y correlativos · CENABAST desde Excel',     tag: 'Herramienta',    href: 'https://www.notion.so/3bc9a86ba8ec81b5a429e8660229ed3d', external: true },
   { date: '2026-08-14', icon: '📚', name: 'Generador de Unidades QF v1.2',        desc: 'Modelo de Estudio QF · ruta, biblioteca y reglas',  tag: 'Herramienta', href: 'tools/generador-estudio-qf.html' },
   { date: '2026-06-27', icon: '🗺️', name: 'Planificador de Salidas v1.1',          desc: 'Paradas + mapa + Sorpréndeme + descuentos + Calendar', tag: 'Módulo', href: 'tools/planificador.html' },
   { date: '2026-06-27', icon: '🎲', name: 'Selector Tiempo Libre',                 desc: 'Tira al azar desde Notion · handoff a Salidas',     tag: 'Módulo', href: 'tools/generador.html' },
@@ -889,17 +892,16 @@ const CREATIONS = [
   { date: '2026-03-21', icon: '📋', name: '15 Opciones de Trabajo',                desc: 'Catálogo de ingresos extra evaluados',            tag: 'Doc',        href: 'tools/15-opciones.html' },
   { date: '2026-03-15', icon: '✓',  name: 'Opciones Filtrado · 8 + 7 días',        desc: 'Filtro y plan de validación rápida',              tag: 'Doc',        href: 'tools/opciones-filtrado.html' },
   { date: '2026-02-26', icon: '💊', name: 'Calculadora Dispensación v3',           desc: '6 pestañas · cálculo de dosificación',            tag: 'Calc',       href: 'https://www.notion.so/32e9a86ba8ec8114943ad7620464eb00', external: true },
-  { date: '2026-02-14', icon: '📐', name: 'Posología de contador (PDF A5)',        desc: 'Inhaladores, gotas, insulina · imprimible',       tag: 'PDF',        href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', external: true },
-  { date: '2026-02-05', icon: '📊', name: 'Proyección Utilidades Top 20',          desc: 'Excel · márgenes y delta por producto',           tag: 'Excel',      href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', external: true },
-  { date: '2026-01-22', icon: '☑',  name: 'Checklist Mensual PAC',                 desc: 'Actividades del mes con progreso',                 tag: 'Doc',        href: 'https://www.notion.so/32d9a86ba8ec81a99295e2f00d95e2be', external: true }
+  { date: '2026-02-14', icon: '📐', name: 'Posología de contador (PDF A5)',        desc: 'Inhaladores, gotas, insulina · imprimible',       tag: 'PDF',        href: '#' },
+  { date: '2026-02-05', icon: '📊', name: 'Proyección Utilidades Top 20',          desc: 'Excel · márgenes y delta por producto',           tag: 'Excel',      href: '#' },
+  { date: '2026-01-22', icon: '☑',  name: 'Checklist Mensual PAC',                 desc: 'Actividades del mes con progreso',                 tag: 'Doc',        href: '#' }
 ];
 
 // ─── AGENDA · bloques recurrentes ──────────────
 // days: 0 = domingo … 6 = sábado
 const AGENDA = [
   { id: 'guia',    time: '08:30', dur: 15, days: [1,2,3,4,5], name: 'Centro de Comando IA',      meta: 'pre-jornada · 15 min',  toolId: 'guia-ia',   icon: '🧠' },
-  { id: 'pac',     time: '09:00', dur: 30, days: [1],          name: 'Checklist PAC · semanal',   meta: 'lunes · 30 min',        toolId: 'pac',       icon: '☑' },
-  { id: 'top20',   time: '10:00', dur: 25, days: [3],          name: 'Revisar utilidades Top 20', meta: 'miércoles',             toolId: 'top20',     icon: '📊' },
+  { id: 'pac',     time: '09:00', dur: 30, days: [1],          name: 'Checklist PAC · semanal',   meta: 'lunes · 30 min',        toolId: 'checklist-farmacia', icon: '☑' },
   { id: 'malla',   time: '19:00', dur: 60, days: [1,2,3,4,5], name: 'Malla Aprendizaje',         meta: 'L–V · 60 min',          toolId: 'malla',     icon: '🗺️' },
   { id: 'orq',     time: '20:30', dur: 30, days: [2,4],        name: 'Sesión Orquestador IA',     meta: 'martes / jueves',       toolId: 'orquestador', icon: '⚙️' },
   { id: 'fin',     time: '11:00', dur: 45, days: [0],          name: 'Plan Financiero · revisión',meta: 'domingo',               toolId: 'finanzas',  icon: '💸' },
