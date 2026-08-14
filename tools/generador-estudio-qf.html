@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Unidades — Estudio QF</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gauze:#F4F6F5; --ink:#16211E; --ink-soft:#4A5A55; --line:#D6DEDB;
+  --pharm:#14635A; --pharm-deep:#0C4B44; --mint:#E7EFEC; --amber:#B45309;
+  --card:#FFFFFF; --ok:#14635A;
+  --fd:'Archivo',system-ui,sans-serif;
+  --fb:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --fm:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--gauze);color:var(--ink);font-family:var(--fb);font-size:15px;line-height:1.45;padding-bottom:76px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--pharm);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- header ---------- */
+header{background:var(--pharm-deep);color:#fff;padding:14px 16px 12px}
+.brand{font-family:var(--fd);font-weight:900;font-size:17px;letter-spacing:.02em;text-transform:uppercase}
+.brand small{display:block;font-family:var(--fm);font-weight:400;font-size:10px;letter-spacing:.12em;opacity:.75;text-transform:uppercase;margin-top:2px}
+.blister{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.blister i{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);display:block}
+.blister i.f{background:#7BD8C8;border-color:#7BD8C8}
+.blister i.h{background:rgba(123,216,200,.35);border-color:#7BD8C8}
+.hstat{font-family:var(--fm);font-size:10px;letter-spacing:.08em;opacity:.85;margin-top:7px;text-transform:uppercase}
+#offline{display:none;background:var(--amber);color:#fff;font-size:12px;padding:6px 16px;font-family:var(--fm)}
+
+/* ---------- tabs / nav ---------- */
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:11px 4px 9px;font-family:var(--fd);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);border-top:3px solid transparent}
+nav button.on{color:var(--pharm-deep);border-top-color:var(--pharm)}
+main{padding:16px;max-width:680px;margin:0 auto}
+section{display:none}section.on{display:block}
+h2{font-family:var(--fd);font-weight:900;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 10px}
+
+/* ---------- etiqueta de unidad (signature) ---------- */
+.label{background:var(--card);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;margin-bottom:14px}
+.label-top{display:flex;justify-content:space-between;align-items:center;background:var(--mint);border-bottom:1.5px solid var(--ink);padding:7px 12px;font-family:var(--fm);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+.lot{font-weight:700}
+.via{border:1.5px solid var(--ink);border-radius:3px;padding:1px 7px;font-weight:700;background:#fff}
+.via.vB{background:#DCEBFB}.via.vC{background:#FBEFD8}.via.vD{background:#F3E2F5}
+.label-body{padding:14px 14px 12px}
+.dci{font-family:var(--fd);font-weight:700;font-size:19px;line-height:1.22;letter-spacing:-.01em}
+.posol{font-size:12.5px;color:var(--ink-soft);margin-top:5px}
+.posol b{color:var(--amber);font-family:var(--fm);font-size:11px;letter-spacing:.06em}
+.label-actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
+.btn{font-family:var(--fd);font-weight:700;font-size:12.5px;letter-spacing:.04em;padding:10px 14px;border-radius:4px;border:1.5px solid var(--ink)}
+.btn.primary{background:var(--pharm);border-color:var(--pharm);color:#fff}
+.btn.primary:active{background:var(--pharm-deep)}
+.btn.ghost{background:#fff}
+.microcopy{font-size:12px;color:var(--ink-soft);margin-top:10px;border-left:3px solid var(--line);padding-left:9px}
+
+/* ---------- estado ---------- */
+.st{font-family:var(--fm);font-size:10.5px;letter-spacing:.05em;border-radius:3px;padding:3px 8px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);white-space:nowrap}
+.st.s1{border-color:var(--amber);color:var(--amber)}
+.st.s2{border-color:var(--pharm);color:var(--pharm)}
+.st.s3{background:var(--pharm);border-color:var(--pharm);color:#fff}
+
+/* ---------- listas ruta / biblioteca ---------- */
+.mod{margin-bottom:10px;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.mod>button{width:100%;text-align:left;padding:11px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mod-name{font-family:var(--fd);font-weight:700;font-size:13.5px}
+.mod-meta{font-family:var(--fm);font-size:10px;color:var(--ink-soft)}
+.blk{border-top:1px solid var(--line)}
+.blk-h{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--mint)}
+.blk-n{font-family:var(--fm);font-size:10px;font-weight:700;background:var(--ink);color:#fff;border-radius:3px;padding:2px 6px}
+.blk-t{font-weight:600;font-size:13.5px;flex:1}
+.p1{font-family:var(--fm);font-size:9.5px;color:var(--amber);border:1px solid var(--amber);border-radius:3px;padding:1px 5px;font-weight:700}
+.unit{display:flex;align-items:center;gap:8px;padding:9px 12px;border-top:1px dashed var(--line)}
+.unit-t{flex:1;font-size:13px}
+.dotbtn{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;position:relative}
+.dotbtn.s1{border-color:var(--amber)}.dotbtn.s1::after{content:'';position:absolute;inset:7px;border-radius:50%;background:var(--amber);opacity:.45}
+.dotbtn.s2{border-color:var(--pharm)}.dotbtn.s2::after{content:'';position:absolute;inset:7px;border-radius:50%;background:var(--pharm)}
+.dotbtn.s3{border-color:var(--pharm);background:var(--pharm)}.dotbtn.s3::after{content:'✓';position:absolute;inset:0;color:#fff;font-size:14px;line-height:28px;text-align:center}
+.copyx{font-family:var(--fm);font-size:10px;letter-spacing:.04em;border:1px solid var(--ink);border-radius:3px;padding:5px 8px;background:#fff}
+.exam{padding:9px 12px;border-top:1px dashed var(--line);display:flex;align-items:center;gap:9px;background:#FBFCFB;font-size:12.5px}
+.exam input{width:58px;padding:6px;border:1px solid var(--line);border-radius:4px;font-family:var(--fm);font-size:13px;text-align:center}
+.exam .warn{color:var(--amber);font-weight:700;font-size:11.5px}
+#buscar{width:100%;padding:11px 12px;border:1.5px solid var(--ink);border-radius:4px;font-size:14px;background:#fff;margin-bottom:12px}
+
+/* ---------- reglas ---------- */
+.rule{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-bottom:10px}
+.rule h3{font-family:var(--fd);font-size:13px;font-weight:700;margin-bottom:4px}
+.rule p{font-size:13px;color:var(--ink-soft)}
+.danger{color:var(--amber);border-color:var(--amber)}
+.footbtns{display:flex;gap:8px;margin:16px 0}
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-family:var(--fm);font-size:12px;padding:9px 16px;border-radius:4px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Generador de Unidades<small>Modelo de Estudio QF · v1.2 · protocolo en Notion</small></div>
+  <div class="blister" id="blister" aria-label="Progreso de la Ruta P1"></div>
+  <div class="hstat" id="hstat"></div>
+</header>
+<div id="offline">⚠ Memoria persistente no disponible aquí — el progreso de esta vista no se guardará.</div>
+
+<main>
+<!-- HOY -->
+<section id="tab-hoy" class="on">
+  <h2>Unidad dispensada hoy</h2>
+  <div id="hoy"></div>
+  <div class="microcopy">¿Sin tiempo o semana mala? Solo Anki 10 min y esta unidad te espera. Repasar siempre le gana a acumular.</div>
+  <div class="microcopy">Regla del error: si hoy hubo un error real de mostrador, su tarjeta se escribe hoy.</div>
+</section>
+
+<!-- RUTA -->
+<section id="tab-ruta">
+  <h2>Ruta P1 — secuencia dictada</h2>
+  <div id="ruta"></div>
+</section>
+
+<!-- BIBLIOTECA -->
+<section id="tab-bib">
+  <h2>Biblioteca — 8 módulos · a demanda</h2>
+  <input id="buscar" type="search" placeholder="Buscar bloque o unidad… (ej: escabiosis)" aria-label="Buscar">
+  <div id="bib"></div>
+</section>
+
+<!-- REGLAS -->
+<section id="tab-reglas">
+  <h2>Reglas del sistema</h2>
+  <div class="rule"><h3>Ciclo por unidad</h3><p>Copiar prompt → correr en chat nuevo (adjunta el PDF si existe) → vetar/editar cada tarjeta → importar TSV a AnkiDroid → marcar ●● En Anki. Cierre: 1 uso real → ✓ Consolidada.</p></div>
+  <div class="rule"><h3>Techo duro</h3><p>Anki máx. 20 min/día. Si se supera, bajar tarjetas nuevas — nunca saltar repasos.</p></div>
+  <div class="rule"><h3>Examen de bloque diferido</h3><p>Al completar un bloque: generar 12 preguntas tipo caso y responderlas 7 días después, sin repasar antes. &lt;70% → reabrir con unidad de refuerzo.</p></div>
+  <div class="rule"><h3>Cierre semanal (domingo, 10 min)</h3><p>Free recall en papel del tema de la semana + revisar leeches de Anki + actualizar estados aquí.</p></div>
+  <div class="rule"><h3>Unidades multiparte</h3><p>Todas las partes en el MISMO chat, generadas a demanda sesión a sesión — nunca en lote. Pedido tipo: "Continúa con la Parte N. Mantén el formato completo (checkpoints, tarjetas TSV, autoevaluación diferida). De la parte anterior me costó: [X]". Si hacia la Parte 3-4 el formato degrada: chat nuevo con el prompt original + índice de partes + "desarrolla la Parte N".</p></div>
+  <div class="rule"><h3>Diagramas SVG</h3><p>Uno integrador por unidad, al cerrar la última parte (protocolo SVG de Notion, sesión aparte). Antes de construirlo: dibujarlo de memoria y comparar. Por parte: solo boceto en papel en el cierre semanal. Excepción: SVG anticipado si la parte siguiente depende de ver la figura.</p></div>
+  <div class="rule"><h3>Archivo de sesiones (3 capas)</h3><p>Viva: este Generador (estados y malla — no se duplica en HTML). Contenido: base "📚 Archivo de Unidades QF" en Notion — el propio chat pregunta y guarda al cerrar cada parte (una página por unidad). Fría: al cerrar un BLOQUE, pedir el .md compilado → carpeta del PC (sync Drive) → notebook "Mis Unidades QF" en NotebookLM.</p></div>
+  <div class="rule"><h3>Simulación de consejería (Fase 5b)</h3><p>En el mismo chat de la unidad: "Actúa como paciente chileno de baja alfabetización en salud que retira [tema de esta unidad]. Interrúmpeme, malentiende una indicación, pregunta ¿y esto para qué es? Al final, feedback de mi consejería contra la evidencia de la unidad: qué expliqué bien, qué omití."</p></div>
+  <div class="rule"><h3>Convivencia con malla Python</h3><p>Hora sagrada 19:00–19:45 intocable. Unidades nuevas: martes y jueves ~20:00 en FarQFar.</p></div>
+  <h2>Datos</h2>
+  <div class="footbtns">
+    <button class="btn ghost" id="btn-export">Exportar progreso</button>
+    <button class="btn ghost danger" id="btn-reset">Reiniciar todo</button>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button data-t="hoy" class="on">Hoy</button>
+  <button data-t="ruta">Ruta</button>
+  <button data-t="bib">Biblioteca</button>
+  <button data-t="reglas">Reglas</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =============== TEMARIO v2.1 =============== */
+/* unidad: [título, variante A|B|C|D] */
+const BLOCKS=[
+{id:"B0",num:"0",name:"Bloque 0 — Transversales",mod:"T",p:1,units:[
+ ["Farmacocinética ADME aplicada al mostrador","B"],
+ ["Función renal y ajuste de dosis (Cockcroft-Gault)","B"],
+ ["Farmacodinamia: receptores, agonismo, potencia","B"],
+ ["RAM y farmacovigilancia: Red RAM ISP y cómo notificar","C"],
+ ["Mecanismos de interacción: CYP, transportadores, QT","B"]]},
+{id:"B1",num:"1",name:"Antihipertensivos",mod:"M1",p:1,units:[
+ ["Fisiología de la PA: GC×RVP, SRAA y barorreflejo","B"],
+ ["Fisiopatología de la HTA y daño de órgano blanco","B"],
+ ["IECA y ARA-II","A"],
+ ["Diuréticos, calcioantagonistas y β-bloqueadores","A"],
+ ["HTA en Chile: PSCV, GES y guía MINSAL","A"],
+ ["Cierre HTA: caso integrador de mostrador","A"]]},
+{id:"B2",num:"2",name:"Dislipidemias",mod:"M1",p:1,done:true,units:[
+ ["Metabolismo lipídico y riesgo CV","B"],
+ ["Estatinas: potencia, horario, interacciones","A"],
+ ["Ezetimiba y fibratos","A"],
+ ["Metas LDL y control de efectividad (ESC/MINSAL)","A"]]},
+{id:"B3",num:"3",name:"Diabetes 2: antidiabéticos orales",mod:"M1",p:1,units:[
+ ["Fisiopatología de la DM2 y homeostasis de la glucosa","B"],
+ ["Metformina: titulación, GI, B12, función renal","A"],
+ ["Sulfonilureas e hipoglicemia","A"],
+ ["iSGLT2 y aGLP-1: panorama en Chile","A"],
+ ["DM2 en el sistema: GES, PSCV y autocontrol","A"]]},
+{id:"B4",num:"4",name:"Insulinas y dispositivos",mod:"M1",p:1,units:[
+ ["Insulina: fisiología y perfiles (NPH, rápida, análogos)","B"],
+ ["Esquemas, técnica de inyección y rotación de sitios","D"],
+ ["Conservación, transporte y viales vs lápices","D"],
+ ["Hipoglicemia: reconocimiento y rescate","A"]]},
+{id:"B5",num:"5",name:"Anticoagulación y antiagregación",mod:"M1",p:1,units:[
+ ["Hemostasia y cascada de coagulación","B"],
+ ["Warfarina y TACO: INR, interacciones, alimentos","A"],
+ ["DOACs: dabigatrán, rivaroxabán, apixabán","A"],
+ ["AAS y clopidogrel: quién, cuánto, hasta cuándo","A"],
+ ["Cierre: la bolsa del anticoagulado — qué reviso siempre","A"]]},
+{id:"B6",num:"6",name:"Inhaladores: asma y EPOC",mod:"M2",p:1,units:[
+ ["Fisiopatología: asma vs EPOC","B"],
+ ["SABA, LABA, LAMA y corticoides inhalados","A"],
+ ["Técnica inhalatoria y aerocámaras: verificación en 90 s","D"],
+ ["Asma/EPOC en GES y señales de mal control","A"]]},
+{id:"B7",num:"7",name:"Alergia y rinitis",mod:"M2",p:2,units:[
+ ["Fisiopatología de la respuesta alérgica","B"],
+ ["Antihistamínicos: 1ª vs 2ª generación","A"],
+ ["Corticoides nasales y oculares de mostrador","A"]]},
+{id:"B8",num:"8",name:"Antibióticos ambulatorios",mod:"M2",p:1,units:[
+ ["Bases: espectro, PK/PD y resistencia","B"],
+ ["β-lactámicos: amoxicilina ± clavulánico, cefadroxilo","A"],
+ ["Macrólidos, ITU y nitrofurantoína","A"],
+ ["Duraciones correctas por indicación frecuente","A"],
+ ["Receta retenida de ATB: norma y mostrador","C"]]},
+{id:"B9",num:"9",name:"Antivirales y antiparasitarios",mod:"M2",p:2,units:[
+ ["Herpes labial y aciclovir; antigripales OTC","A"],
+ ["Escabiosis: permetrina y manejo del hogar","A"],
+ ["Pediculosis y antiparasitarios internos (albendazol)","A"]]},
+{id:"B10",num:"10",name:"AINEs y dolor agudo",mod:"M3",p:1,units:[
+ ["Fisiología: COX, prostaglandinas e inflamación","B"],
+ ["Paracetamol: dosis, techo y hepatotoxicidad","A"],
+ ["AINEs: riesgo GI, CV y renal — a quién no","A"],
+ ["Tramadol y combinaciones: lo que hay que saber","A"]]},
+{id:"B11",num:"11",name:"Corticoides sistémicos y tópicos",mod:"M3",p:1,units:[
+ ["Eje HHA y fisiología del cortisol","B"],
+ ["Corticoides orales: equivalencias, retiro, RAM","A"],
+ ["Corticoides tópicos: potencias y zonas","A"]]},
+{id:"B12",num:"12",name:"Migraña y cefaleas",mod:"M3",p:2,units:[
+ ["Fisiopatología de la migraña","B"],
+ ["Triptanes y manejo agudo; cefalea por abuso","A"],
+ ["Banderas rojas de cefalea: cuándo derivar ya","A"]]},
+{id:"B13",num:"13",name:"BZD, hipnóticos e insomnio",mod:"M4",p:1,units:[
+ ["GABA y neurofisiología del sueño","B"],
+ ["BZD: vidas medias, dependencia, retiro","A"],
+ ["Zolpidem e higiene del sueño","A"],
+ ["DS 404/405: receta retenida y control de saldo","C"]]},
+{id:"B14",num:"14",name:"ISRS/IRSN: depresión y ansiedad",mod:"M4",p:1,units:[
+ ["Neurotransmisión y fisiopatología de la depresión","B"],
+ ["ISRS: latencia, RAM iniciales, retiro","A"],
+ ["IRSN y otros; síndrome serotoninérgico","A"],
+ ["Consejería: 'no me ha hecho nada' en semana 1","A"]]},
+{id:"B15",num:"15",name:"Psiquiatría II: antipsicóticos y litio",mod:"M4",p:2,units:[
+ ["Dopamina y fisiopatología de la psicosis","B"],
+ ["Antipsicóticos típicos y atípicos: RAM metabólicas","A"],
+ ["Litio y estabilizadores: margen estrecho","A"]]},
+{id:"B16",num:"16",name:"Anticonvulsivantes",mod:"M4",p:2,units:[
+ ["Epilepsia: bases y clasificación mínima","B"],
+ ["Valproato, carbamazepina, fenitoína: niveles e interacciones","A"],
+ ["Levetiracetam y nuevos; adherencia crítica","A"]]},
+{id:"B17",num:"17",name:"Embarazo y lactancia",mod:"M5",p:1,units:[
+ ["Fisiología: placenta, paso de fármacos, lactancia","B"],
+ ["Fármacos seguros y prohibidos por síntoma frecuente","A"],
+ ["Fuentes de consulta rápida y consejería sin alarmar","A"]]},
+{id:"B18",num:"18",name:"Pediatría de mostrador",mod:"M5",p:2,units:[
+ ["Particularidades PK del niño","B"],
+ ["Dosis por peso: antipiréticos y errores típicos","A"],
+ ["SRO, fiebre y cuándo derivar a urgencia","A"]]},
+{id:"B19",num:"19",name:"Geriatría y polifarmacia",mod:"M5",p:1,units:[
+ ["Envejecimiento y cambios PK/PD","B"],
+ ["STOPP/START y Beers: lo esencial","A"],
+ ["La bolsa de 5+ fármacos: banderas y conciliación","A"]]},
+{id:"B20",num:"20",name:"Fitofármacos, vitaminas y suplementos",mod:"M5",p:2,units:[
+ ["Regulación de fitofármacos y suplementos en Chile","C"],
+ ["Interacciones hierba-fármaco de alto riesgo","A"],
+ ["Vitamina D, B12 (↔metformina), hierro: educación","A"]]},
+{id:"B21",num:"21",name:"Tiroides y levotiroxina",mod:"M6",p:2,units:[
+ ["Eje tiroideo: fisiología y fisiopatología","B"],
+ ["Levotiroxina: ayuno, interacciones, TSH","A"]]},
+{id:"B22",num:"22",name:"IBP, ERGE y digestivo agudo",mod:"M6",p:2,units:[
+ ["Secreción ácida y fisiopatología del ERGE","B"],
+ ["IBP: uso correcto y deprescripción","A"],
+ ["Diarrea, constipación y SRO en adultos","A"]]},
+{id:"B23",num:"23",name:"Anticoncepción y salud de la mujer",mod:"M6",p:2,units:[
+ ["Eje hormonal femenino: bases","B"],
+ ["ACO combinados y progestágenos: olvidos (algoritmo)","A"],
+ ["PAE y consejería sin juicio","A"]]},
+{id:"B24",num:"24",name:"Hematínicos y anemias",mod:"M6",p:2,units:[
+ ["Eritropoyesis y clasificación de anemias","B"],
+ ["Hierro oral: formas, tolerancia, educación","A"],
+ ["B12 y fólico: cuándo sospechar déficit","A"]]},
+{id:"B25",num:"25",name:"Osteoporosis y gota",mod:"M6",p:2,units:[
+ ["Remodelado óseo y metabolismo del urato","B"],
+ ["Bifosfonatos: toma correcta y adherencia","A"],
+ ["Alopurinol y colchicina: crisis vs mantención","A"]]},
+{id:"B26",num:"26",name:"Inyectables: técnica y seguridad",mod:"M7",p:2,units:[
+ ["Alcance legal del QF y autorización del box","D"],
+ ["Técnica IM/SC y reconstitución (benzatina incluida)","D"],
+ ["Cortopunzantes, REAS y respuesta a incidentes","D"]]},
+{id:"B27",num:"27",name:"Vacunas e inmunización",mod:"M7",p:2,units:[
+ ["PNI y campañas: qué corresponde en farmacia","D"],
+ ["Cadena de frío de vacunas (↔ NT 147)","C"],
+ ["Consejería de vacunas y manejo de reticencia","D"]]},
+{id:"B28",num:"28",name:"Dispositivos médicos de mostrador",mod:"M7",p:2,units:[
+ ["Registro ISP de dispositivos: lo mínimo legal","C"],
+ ["Glucómetros y tensiómetros: enseñar a usar y validar","D"],
+ ["Aerocámaras, termómetros y oxímetros","D"]]},
+{id:"B29",num:"29",name:"Curación básica de heridas",mod:"M7",p:2,units:[
+ ["Alcance legal: primera respuesta vs acto de enfermería","D"],
+ ["Antisépticos y apósitos: qué sí, qué no, mitos","A"],
+ ["Banderas rojas: pie diabético y derivación","D"]]},
+{id:"B30",num:"30",name:"Urgencias en farmacia",mod:"M7",p:1,units:[
+ ["Anafilaxia: reconocer y actuar (adrenalina)","D"],
+ ["Hipoglicemia y crisis asmática en el local","D"],
+ ["RCP básico y DEA: rol del equipo","D"]]},
+{id:"B31",num:"31",name:"Toxicología de mostrador",mod:"M7",p:1,units:[
+ ["Paracetamol y sobredosis frecuentes","A"],
+ ["Intoxicaciones pediátricas del hogar","A"],
+ ["CITUC y primera respuesta: protocolo local","D"]]},
+{id:"B32",num:"32",name:"Dermatología de mostrador",mod:"M8",p:2,units:[
+ ["Piel: barrera, lesiones elementales","B"],
+ ["Acné: OTC vs receta; isotretinoína y receta retenida","A"],
+ ["Dermatitis y micosis superficiales","A"]]},
+{id:"B33",num:"33",name:"Tópicos y nociones de magistral",mod:"M8",p:2,units:[
+ ["Vehículos: crema vs ungüento vs gel vs loción","B"],
+ ["FTU y cantidad correcta; oclusión","A"],
+ ["Fotoprotección: FPS, UV chileno, consejería","A"]]},
+{id:"B34",num:"34",name:"Salud sexual e ITS",mod:"M8",p:2,units:[
+ ["ITS frecuentes: cuadros y derivación","A"],
+ ["Autotest VIH y consejería sin juicio","D"],
+ ["Herpes genital/labial y tratamiento episódico","A"]]},
+{id:"B35",num:"35",name:"Cesación tabáquica",mod:"M8",p:3,units:[
+ ["Nicotina: dependencia y fisiología","B"],
+ ["TRN y vareniclina: esquemas","A"],
+ ["Consejería breve 5A en mostrador","D"]]},
+{id:"OF",num:"OF",name:"Oftalmología (resto)",mod:"T",p:2,units:[
+ ["Conjuntivitis: bacteriana vs viral vs alérgica","A"],
+ ["Antiinfecciosos oftálmicos y lentes de contacto","A"]]},
+{id:"CF",num:"FIN",name:"Cierre: Farmacia Clínica aplicada",mod:"T",p:1,units:[
+ ["Seguimiento farmacoterapéutico: PRM/RNM (método Dáder)","B"],
+ ["Conciliación de medicamentos","B"],
+ ["Adherencia: cómo medirla y mejorarla","A"],
+ ["Interacciones top-20 del mostrador chileno","A"]]}
+];
+const MODS={T:"Transversales",M1:"M1 · Cardiometabólico",M2:"M2 · Resp-Infeccioso",M3:"M3 · Dolor-Inflamación",M4:"M4 · SNC",M5:"M5 · Poblaciones",M6:"M6 · Endocrino-Digestivo",M7:"M7 · Práctica Asistencial",M8:"M8 · Derma y Especialidades"};
+/* Ruta P1: bloques en orden, con unidades del B0 intercaladas */
+const RUTA=["B1","B3","B4","B5","B0-0","B30","B31","B0-1","B6","B8","B0-2","B10","B11","B0-3","B13","B14","B0-4","B17","B19","OF","CF"];
+
+const PROMPTS={
+A:`UNIDAD DE ESTUDIO CLÍNICO — [TEMA]
+
+Actúa como docente clínico para un Químico Farmacéutico chileno de farmacia
+comunitaria que está REAPRENDIENDO sus bases: domina la práctica diaria pero
+tiene vacíos teóricos de la universidad. Escribe como un buen profesor de
+pregrado, no como un resumen ejecutivo. Busca en la web evidencia actual
+(guías MINSAL, ACC/AHA, ESC, NICE, Cochrane, revisiones recientes) y cita
+cada afirmación clave. Verifica disponibilidad en Chile (registro ISP) y
+cobertura GES/PSCV cuando aplique; si no puedes verificar algo, decláralo.
+
+REGLAS DIDÁCTICAS (mandan sobre cualquier límite de extensión)
+- SIN límite de palabras NI de partes. El límite es de claridad: ningún
+  concepto se menciona sin desarrollarse. Si el tema excede lo que una
+  lección puede desarrollar en detalle, divídelo en tantas partes como
+  haga falta (2, 3, 4 o más — la calidad manda, nunca la compresión).
+  Al dividir: declara al inicio el índice de partes con el alcance de
+  cada una; desarrolla SOLO la Parte 1 en esta respuesta, como lección
+  completa y autocontenida (sus propios checkpoints, tarjetas y
+  autoevaluación diferida); cierra indicando que la siguiente se pide
+  con "continúa con la Parte 2".
+- Patrón fijo por concepto: [qué es, en simple] → [cómo funciona, paso a
+  paso] → [qué significa en mostrador] → [mini-ejemplo concreto].
+- Doble registro: primero lo intuitivo (analogía cotidiana), después la
+  formalización técnica. Nunca al revés.
+- Las tablas solo RESUMEN lo que el texto ya desarrolló; nunca lo sustituyen.
+- Negrita a cada término técnico la primera vez que aparece.
+- Cada 2-3 conceptos, un CHECKPOINT: pregunta de 1 línea; si el lector no
+  puede responderla, debe releer antes de seguir. Respuestas al final.
+- Solo DCI en secciones farmacológicas. Sin nombres comerciales.
+- Señala controversias e incertidumbre de la evidencia.
+
+ENTREGA
+0. PRERREQUISITOS EXPRESS: los 5-8 términos que la unidad asume sabidos,
+   definidos en 1 línea simple cada uno.
+1. LA IDEA EN 5 LÍNEAS: toda la unidad en lenguaje corriente, antes de
+   cualquier detalle.
+2. PREGUNTA MADRE operativa de mostrador + 5 subpreguntas.
+3. DESARROLLO por conceptos: fisiopatología → mecanismo → efecto; cinética
+   comparativa por DCI; posología, duración y horario; parámetro de
+   efectividad terapéutica y cuándo medirlo; interacciones (mecanismo +
+   acción concreta); contraindicaciones absolutas.
+4. CONSEJERÍA: para paciente de nivel educacional básico (máx. 5 frases).
+5. FUENTES EN 3 NIVELES, con orden de consumo sugerido (ligera → gold):
+   LIGERA: entrada generalista y amable para construir el esquema.
+   GOLD STANDARD: la referencia definitiva del tema, cita exacta y por qué.
+   ACCESO ABIERTO: alternativa gratuita si el gold es de pago.
+6. TARJETAS: 12 en TSV (pregunta[TAB]respuesta ≤30 palabras): 4 hechos,
+   4 mecanismo, 4 mini-caso. Solo sobre lo desarrollado en esta unidad.
+7. CASOS: 3 situaciones de mostrador de 3 líneas, resolución al final.
+8. ERRORES FRECUENTES: 3 mitos o errores comunes.
+9. RESPUESTAS DE LOS CHECKPOINTS.
+10. AUTOEVALUACIÓN DIFERIDA: 3 preguntas SIN respuesta, para mañana.
+11. FICHA DE DIAGRAMA (solo si la parte contiene un mecanismo que se
+    beneficie de figura): título, qué pregunta responde la figura,
+    elementos y relaciones a incluir, sugerencia de layout. NO construyas
+    el SVG aquí: la ficha alimenta una sesión de construcción aparte
+    (Protocolo de Esquemas), al cerrar todas las partes de la unidad.
+12. CIERRE DE PARTE (solo si la unidad está dividida): PASE DE
+    CONTINUIDAD de ≤10 líneas — unidad, parte X de N, conceptos ya
+    desarrollados (1 línea c/u), convenciones adoptadas, y qué cubre
+    exactamente la parte siguiente. Permite continuar en este chat o
+    retomar en un chat nuevo pegando el prompt de la unidad + este pase.
+13. ARCHIVO: al cerrar, pregunta si guardas esta parte en la base de Notion
+    "📚 Archivo de Unidades QF" (una página por unidad; cada parte se anexa
+    a la misma página, con Módulo/Bloque/Variante/Estado/Fecha) y hazlo
+    solo si la respuesta es sí.`,
+B:`UNIDAD DE BASES — [TEMA]
+
+Actúa como docente de fisiología y fisiopatología para un QF chileno de
+farmacia comunitaria que está REAPRENDIENDO estas bases: domina la práctica
+diaria pero tiene vacíos teóricos de la universidad. Escribe como un buen
+profesor de pregrado, no como un resumen ejecutivo. Busca fuentes académicas
+actuales y cita lo clave. Regla de oro: conecta CADA concepto con los
+fármacos que un QF dispensa.
+
+REGLAS DIDÁCTICAS (mandan sobre cualquier límite de extensión)
+- SIN límite de palabras NI de partes. El límite es de claridad: ningún
+  concepto se menciona sin desarrollarse. Si el tema excede lo que una
+  lección puede desarrollar en detalle, divídelo en tantas partes como
+  haga falta (2, 3, 4 o más — la calidad manda, nunca la compresión).
+  Al dividir: declara al inicio el índice de partes con el alcance de
+  cada una; desarrolla SOLO la Parte 1 en esta respuesta, como lección
+  completa y autocontenida (sus propios checkpoints, tarjetas y
+  autoevaluación diferida); cierra indicando que la siguiente se pide
+  con "continúa con la Parte 2".
+- Un concepto nuevo por subsección, con patrón fijo: [qué es, en simple] →
+  [cómo funciona, paso a paso] → [por qué le importa a un QF en mostrador]
+  → [mini-ejemplo concreto].
+- Doble registro: primero lo intuitivo (analogía cotidiana), después la
+  formalización técnica. Nunca al revés.
+- Las tablas solo RESUMEN lo que el texto ya desarrolló; nunca lo sustituyen.
+- Negrita a cada término técnico la primera vez que aparece.
+- Cada 2-3 conceptos, un CHECKPOINT: pregunta de 1 línea; si el lector no
+  puede responderla, debe releer antes de seguir. Respuestas al final.
+
+ENTREGA
+0. PRERREQUISITOS EXPRESS: los 5-8 términos que la unidad asume sabidos,
+   definidos en 1 línea simple cada uno.
+1. LA IDEA EN 5 LÍNEAS: toda la unidad en lenguaje corriente, antes de
+   cualquier detalle.
+2. PREGUNTA MADRE clínica (por qué esta base importa en mostrador) + 5
+   subpreguntas.
+3. DESARROLLO por conceptos: anatomía funcional → fisiología normal →
+   regulación (ejes, feedback) → qué se rompe en la enfermedad y en qué
+   orden → puentes farmacológicos: sobre qué punto actúa cada clase.
+4. CONSEJERÍA: el sistema/enfermedad para paciente de nivel básico, con
+   una analogía simple (máx. 5 frases).
+5. FUENTES EN 3 NIVELES, con orden de consumo sugerido (ligera → gold):
+   LIGERA: entrada generalista y amable para construir el esquema.
+   GOLD STANDARD: la referencia definitiva del tema, cita exacta y por qué.
+   ACCESO ABIERTO: alternativa gratuita si el gold es de pago.
+6. TARJETAS: 12 en TSV (pregunta[TAB]respuesta ≤30 palabras): 4 conceptos,
+   4 regulación/mecanismo, 4 puente-a-fármacos. Solo sobre lo desarrollado.
+7. FICHA DE DIAGRAMA (solo si la parte contiene un mecanismo que se
+   beneficie de figura): título, qué pregunta responde la figura,
+   elementos y relaciones a incluir, sugerencia de layout. NO construyas
+   el SVG aquí: la ficha alimenta una sesión de construcción aparte
+   (Protocolo de Esquemas), al cerrar todas las partes de la unidad.
+8. RESPUESTAS DE LOS CHECKPOINTS.
+9. AUTOEVALUACIÓN DIFERIDA: 3 preguntas sin respuesta, para mañana.
+10. CIERRE DE PARTE (solo si la unidad está dividida): PASE DE CONTINUIDAD
+    de ≤10 líneas — unidad, parte X de N, conceptos ya desarrollados,
+    convenciones adoptadas, y qué cubre la parte siguiente. Permite
+    continuar en este chat o retomar en uno nuevo pegando el prompt + el
+    pase.
+11. ARCHIVO: al cerrar, pregunta si guardas esta parte en la base de Notion
+    "📚 Archivo de Unidades QF" (una página por unidad; cada parte se anexa
+    a la misma página, con Módulo/Bloque/Variante/Estado/Fecha) y hazlo
+    solo si la respuesta es sí.`,
+C:`UNIDAD NORMATIVA — [TEMA]
+
+Actúa como asesor regulatorio farmacéutico para un QF chileno, Director
+Técnico en farmacia comunitaria de volumen medio-alto. Busca el TEXTO
+VIGENTE (leychile.cl, ISP, MINSAL) y verifica última modificación y estado;
+si hay proyectos en trámite que la afecten, decláralo con fecha.
+
+REGLAS DIDÁCTICAS
+- La extensión la dicta la claridad: desarrolla, no comprimas. Cada
+  requisito se explica con su porqué sanitario y un ejemplo de mostrador
+  o gestión antes de pasar al siguiente.
+- Si la materia excede una lección clara, divídela en tantas partes como
+  haga falta: índice al inicio, solo la Parte 1 en esta respuesta
+  (autocontenida, con sus tarjetas), las siguientes a pedido. Cada parte
+  cierra con un PASE DE CONTINUIDAD de ≤10 líneas (retomable en este
+  chat o en uno nuevo pegando prompt + pase).
+- Doble registro: primero qué significa en la práctica, después el texto
+  técnico-legal.
+
+ENTREGA
+1. PREGUNTA MADRE operativa: la situación real de mostrador o gestión que
+   esta norma resuelve.
+2. DESARROLLO: qué exige la norma → cómo se ve en la operación diaria →
+   responsabilidades del DT → errores sancionables frecuentes.
+3. Según el tipo: TABLA DE DECISIÓN RÁPIDA (si pasa X → hago Y, máx. 6
+   filas) o PNT EXPRESS implementable de inmediato a costo cero/bajo.
+4. FUENTES: GOLD = link al texto oficial + artículos exactos a leer;
+   LIGERA = una fuente secundaria explicativa de calidad, si existe.
+5. TARJETAS: 10 en TSV: 4 requisitos, 3 casos de mostrador, 3 "qué NO hacer".
+6. AUTOEVALUACIÓN DIFERIDA: 3 preguntas sin respuesta.
+7. ARCHIVO: al cerrar, pregunta si guardas esta parte en la base de Notion
+    "📚 Archivo de Unidades QF" (una página por unidad; cada parte se anexa
+    a la misma página, con Módulo/Bloque/Variante/Estado/Fecha) y hazlo
+    solo si la respuesta es sí.`,
+D:`UNIDAD PROCEDIMENTAL — [TEMA]
+
+Actúa como docente de práctica asistencial para un QF chileno de farmacia
+comunitaria. Busca evidencia y normativa vigente en fuentes oficiales
+(MINSAL, ISP, guías técnicas); cita lo clave.
+
+REGLAS DIDÁCTICAS
+- La extensión la dicta la claridad: cada paso del procedimiento lleva su
+  porqué (qué previene o qué logra), no solo la instrucción.
+- Si el procedimiento excede una lección clara, divídelo en tantas partes
+  como haga falta: índice al inicio, solo la Parte 1 en esta respuesta
+  (autocontenida, con sus tarjetas), las siguientes a pedido. Cada parte
+  cierra con un PASE DE CONTINUIDAD de ≤10 líneas (retomable en este
+  chat o en uno nuevo pegando prompt + pase).
+- Doble registro: primero la lógica del procedimiento, después el detalle
+  técnico.
+
+ENTREGA
+1. ALCANCE LEGAL PRIMERO: qué puede hacer un QF en Chile en esta materia,
+   qué requiere autorización sanitaria del establecimiento, qué es acto
+   exclusivo de otra profesión, y en qué norma está escrito. Si no puedes
+   verificarlo, decláralo — este punto no admite ambigüedad.
+2. DESARROLLO: fundamento → materiales → paso a paso numerado con el
+   porqué de cada paso → errores críticos y cómo reconocerlos → criterios
+   de derivación inmediata.
+3. CHECKLIST DE 1 PÁGINA: verificable, para imprimir y vivir en la farmacia.
+4. CONSEJERÍA: qué explicar al paciente antes/durante/después, nivel básico.
+5. FUENTES: GOLD = la guía técnica o norma de referencia, cita exacta;
+   LIGERA = un recurso didáctico de calidad (video o guía ilustrada), si existe.
+6. TARJETAS: 10 en TSV — 3 de pasos/materiales, 3 de errores críticos,
+   4 de casos "¿derivo o resuelvo?".
+7. AUTOEVALUACIÓN DIFERIDA: 3 preguntas sin respuesta, para mañana.
+8. ARCHIVO: al cerrar, pregunta si guardas esta parte en la base de Notion
+    "📚 Archivo de Unidades QF" (una página por unidad; cada parte se anexa
+    a la misma página, con Módulo/Bloque/Variante/Estado/Fecha) y hazlo
+    solo si la respuesta es sí.`};
+
+/* =============== ESTADO =============== */
+const KEY="qf-generador-v1";
+let S={v:1,s:{},exams:{},seeded:false};
+let hasStorage=typeof window.storage!=="undefined";
+const uid=(b,i)=>b+"-"+i;
+const blk=id=>BLOCKS.find(x=>x.id===id);
+const stateNames=["Pendiente","Abierta","En Anki","Consolidada"];
+
+function rutaUnits(){
+  const out=[];
+  for(const r of RUTA){
+    if(r.includes("-")){const[b,i]=r.split("-");out.push({b:blk(b),i:+i});}
+    else{const b=blk(r);b.units.forEach((_,i)=>out.push({b,i}));}
+  }
+  return out;
+}
+async function load(){
+  if(!hasStorage){document.getElementById("offline").style.display="block";seed();return;}
+  try{const r=await window.storage.get(KEY); if(r&&r.value){S=JSON.parse(r.value);} }
+  catch(e){/* primera vez: no existe la clave */}
+  if(!S.seeded){seed();await save();}
+}
+function seed(){ blk("B2").units.forEach((_,i)=>S.s[uid("B2",i)]=3); S.seeded=true; }
+async function save(){
+  if(!hasStorage)return;
+  try{await window.storage.set(KEY,JSON.stringify(S));}
+  catch(e){document.getElementById("offline").style.display="block";}
+}
+const st=u=>S.s[u]||0;
+
+/* =============== ACCIONES =============== */
+async function cycle(u){S.s[u]=(st(u)+1)%4;await save();renderAll();}
+function promptFor(b,i){
+  const[t,v]=b.units[i];
+  const tema=t+" — Bloque "+b.num+": "+b.name;
+  return PROMPTS[v].replace("[TEMA]",tema);
+}
+async function copyPrompt(bId,i){
+  const b=blk(bId);const text=promptFor(b,i);
+  try{await navigator.clipboard.writeText(text);}
+  catch(e){
+    const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);
+    ta.select();document.execCommand("copy");ta.remove();
+  }
+  toast("Prompt copiado — pégalo en un chat nuevo");
+  if(st(uid(bId,i))===0){S.s[uid(bId,i)]=1;await save();renderAll();}
+}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+
+/* =============== RENDER =============== */
+function nextUnit(){
+  const ru=rutaUnits();
+  const open=ru.find(x=>st(uid(x.b.id,x.i))===1);
+  if(open)return{...open,retomar:true};
+  return ru.find(x=>st(uid(x.b.id,x.i))<2)||null;
+}
+function renderHeader(){
+  const ru=rutaUnits();
+  const done=ru.filter(x=>st(uid(x.b.id,x.i))>=2).length;
+  const cons=Object.values(S.s).filter(x=>x===3).length;
+  document.getElementById("blister").innerHTML=ru.map(x=>{
+    const s=st(uid(x.b.id,x.i));return `<i class="${s>=3?"f":s>=2?"h":""}"></i>`;
+  }).join("");
+  document.getElementById("hstat").textContent=
+    `Ruta P1: ${done}/${ru.length} unidades en mazo · ${cons} consolidadas en total · techo Anki 20 min/día`;
+}
+function unitRow(b,i){
+  const[t,v]=b.units[i];const u=uid(b.id,i);const s=st(u);
+  return `<div class="unit">
+    <button class="dotbtn s${s}" aria-label="Estado: ${stateNames[s]} — tocar para avanzar" onclick="cycle('${u}')"></button>
+    <div class="unit-t">${t} <span class="st s${s}">${stateNames[s]}</span></div>
+    <button class="copyx" onclick="copyPrompt('${b.id}',${i})">Copiar ${v}</button>
+  </div>`;
+}
+function blockDone(b){return b.units.every((_,i)=>st(uid(b.id,i))>=2);}
+function examRow(b){
+  if(!blockDone(b))return"";
+  const sc=S.exams[b.id];
+  return `<div class="exam">Examen diferido (7 días después):
+    <input type="number" min="0" max="100" placeholder="%" value="${sc??""}"
+      onchange="setExam('${b.id}',this.value)">
+    ${sc!==undefined&&sc<70?'<span class="warn">&lt;70% → reabrir con unidad de refuerzo</span>':""}
+    ${sc!==undefined&&sc>=70?'<span class="st s3">Aprobado</span>':""}
+  </div>`;
+}
+async function setExam(bId,v){if(v==="")delete S.exams[bId];else S.exams[bId]=+v;await save();renderAll();}
+function blockCard(b,showUnits){
+  return `<div class="blk">
+    <div class="blk-h"><span class="blk-n">${b.num}</span><span class="blk-t">${b.name}</span>
+    ${b.p===1?'<span class="p1">P1</span>':""}${b.done?'<span class="st s3">✓</span>':""}</div>
+    ${showUnits?b.units.map((_,i)=>unitRow(b,i)).join("")+examRow(b):""}
+  </div>`;
+}
+function renderHoy(){
+  const n=nextUnit();const el=document.getElementById("hoy");
+  if(!n){el.innerHTML=`<div class="label"><div class="label-body"><div class="dci">Ruta P1 completa 🎓</div>
+    <div class="posol">Sigue en la Biblioteca: abre cualquier bloque a demanda.</div></div></div>`;return;}
+  const[t,v]=n.b.units[n.i];const u=uid(n.b.id,n.i);const s=st(u);
+  el.innerHTML=`<div class="label">
+    <div class="label-top"><span class="lot">LOTE U-${n.b.num}.${n.i+1}${n.retomar?" · RETOMAR":""}</span>
+    <span class="via v${v}">Vía ${v}</span></div>
+    <div class="label-body">
+      <div class="dci">${t}</div>
+      <div class="posol">Bloque ${n.b.num} — ${n.b.name} · <b>${n.b.p===1?"RUTA P1":"BIBLIOTECA"}</b> · Estado: ${stateNames[s]}</div>
+      <div class="label-actions">
+        <button class="btn primary" onclick="copyPrompt('${n.b.id}',${n.i})">Copiar prompt</button>
+        <button class="btn ghost" onclick="cycle('${u}')">Avanzar estado →</button>
+      </div>
+      <div class="posol" style="margin-top:10px">Posología: 1 parte ≈ 1 sesión — la unidad se divide en las que el detalle exija · capas → veto de tarjetas → TSV.</div>
+    </div></div>`;
+}
+function renderRuta(){
+  const seen=new Set();const parts=[];
+  for(const r of RUTA){
+    const id=r.includes("-")?r.split("-")[0]:r;
+    if(id==="B0"&&r.includes("-")){
+      const i=+r.split("-")[1];const b=blk("B0");
+      parts.push(`<div class="mod"><div class="blk"><div class="blk-h"><span class="blk-n">B0</span><span class="blk-t">Transversal intercalada</span></div>${unitRow(b,i)}</div></div>`);
+    }else if(!seen.has(id)){seen.add(id);const b=blk(id);
+      parts.push(`<div class="mod">${blockCard(b,true)}</div>`);}
+  }
+  document.getElementById("ruta").innerHTML=parts.join("");
+}
+function renderBib(filter){
+  const f=(filter||"").toLowerCase();
+  const byMod={};
+  for(const b of BLOCKS){(byMod[b.mod]=byMod[b.mod]||[]).push(b);}
+  document.getElementById("bib").innerHTML=Object.keys(MODS).map(m=>{
+    const bs=(byMod[m]||[]).filter(b=>!f||b.name.toLowerCase().includes(f)||b.units.some(u=>u[0].toLowerCase().includes(f)));
+    if(!bs.length)return"";
+    const open=!!f;
+    return `<div class="mod">
+      <button onclick="this.parentNode.querySelector('.mbody').classList.toggle('on');" aria-expanded="${open}">
+        <span class="mod-name">${MODS[m]}</span><span class="mod-meta">${bs.length} bloques</span></button>
+      <div class="mbody" style="display:${open?"block":"none"}">${bs.map(b=>blockCard(b,true)).join("")}</div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".mbody.on").forEach(x=>x.style.display="block");
+  document.querySelectorAll("#bib .mod>button").forEach(btn=>{
+    btn.onclick=()=>{const bo=btn.parentNode.querySelector(".mbody");bo.style.display=bo.style.display==="none"?"block":"none";};
+  });
+}
+function renderAll(){renderHeader();renderHoy();renderRuta();renderBib(document.getElementById("buscar").value);}
+
+/* =============== NAV / EXTRA =============== */
+document.querySelectorAll("nav button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));
+    document.querySelectorAll("main section").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");document.getElementById("tab-"+b.dataset.t).classList.add("on");
+    window.scrollTo(0,0);
+  };
+});
+document.getElementById("buscar").addEventListener("input",e=>renderBib(e.target.value));
+document.getElementById("btn-export").onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="progreso-estudio-qf.json";a.click();
+};
+document.getElementById("btn-reset").onclick=async()=>{
+  if(!confirm("¿Reiniciar TODO el progreso? Esta acción no se puede deshacer."))return;
+  S={v:1,s:{},exams:{},seeded:false};seed();await save();renderAll();toast("Progreso reiniciado");
+};
+window.cycle=cycle;window.copyPrompt=copyPrompt;window.setExam=setExam;
+
+load().then(renderAll);
+</script>
+</body>
+</html>
