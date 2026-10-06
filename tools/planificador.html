@@ -109,7 +109,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
 .spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--terracota);border-radius:50%;animation:sp .7s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 .mode-panel{display:none}.mode-panel.active{display:block}
 /* Modal */
-.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(45,36,24,.45);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+/* z-index alto: Leaflet usa 400-1000 en sus panes/controles y tapaba el modal */
+.overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(45,36,24,.45);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+/* Encierra los z-index internos del mapa para que no compitan con el modal */
+#map,.leaflet-container{position:relative;z-index:0}
 .overlay.open{display:flex}
 .modal{background:var(--cream-soft);border-radius:var(--r-lg);width:100%;max-width:680px;margin:auto;box-shadow:0 12px 48px rgba(45,36,24,.25);overflow:hidden}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line-soft)}
@@ -271,9 +274,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
         <div id="paste-status" style="font-size:.72rem;color:var(--muted-soft);margin-top:5px"></div>
       </div>
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
-        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">🔗 <b>Automático</b> — página oficial fija de beneficios de <b class="url-bank-label">Santander</b>. Claude la abre, encuentra el PDF del mes y lo lee solo. <span style="color:var(--muted-soft)">Ya viene precargada; se actualiza sola cada mes.</span></div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">🔗 <b>Automático</b> — fuente oficial de beneficios de <b class="url-bank-label">Santander</b>. <span id="url-mode-hint"></span> <span style="color:var(--muted-soft)">Ya viene precargada; se actualiza sola cada mes.</span></div>
         <div style="display:flex;gap:6px">
           <input type="text" id="disc-url" placeholder="https://… (página de beneficios del banco)" style="flex:1" onchange="saveBankUrl()">
+          <button class="btn btn-ghost btn-sm" id="url-reset-btn" onclick="resetBankUrl()" title="Volver a la URL oficial recomendada">↺ Por defecto</button>
           <button class="btn btn-ghost btn-sm" id="url-fetch-btn" onclick="fetchFromUrl()">Leer del sitio</button>
         </div>
         <div id="url-fetch-status" style="font-size:.72rem;color:var(--muted-soft);margin-top:5px"></div>
@@ -375,19 +379,129 @@ const BANK_LABEL={santander:'Santander',bci:'BCI',cmr:'CMR Falabella'};
 // sobreescribirlas en ⚙ Descuentos, pero de fábrica ya funcionan mes a mes.
 const DEFAULT_URLS={
   santander:'https://banco.santander.cl/personas/archivos/beneficios-del-mes',
-  bci:'https://www.bci.cl/beneficios',
+  // Bci NO publica PDF mensual: sus descuentos de restaurantes viven en el directorio
+  // "Vivir con Beneficios" (bci.cl/beneficios es solo marketing y no lista locales).
+  bci:'https://www.vivirconbeneficios.cl/descuentos/sabores/restaurantes',
   cmr:'' // Banco Falabella no publica PDF (SPA con datos por API) → solo manual (pegar texto)
 };
+// Estrategia de lectura por banco:
+//   'pdf-vision' = página fija → URL del PDF del mes → se manda el PDF como DOCUMENTO y se lee
+//                  con VISIÓN. Santander publica los restaurantes como LOGOS (imágenes) sin el
+//                  nombre en texto, así que extraer texto del PDF no devuelve nada.
+//   'directorio' = catálogo web navegable (Bci).
+const BANK_MODE={santander:'pdf-vision',bci:'directorio',cmr:'directorio'};
 function bankUrl(bank){const u=getBankUrls()[bank];return(u&&u.trim())?u.trim():DEFAULT_URLS[bank]||'';}
 // Prompt de SALTO DOBLE: abre la página fija → encuentra el enlace del PDF del mes
 // ("Descargar PDF" / "VER PDF") → lo abre y lee las tablas → extrae por día de la semana.
 function discPrompt(bank){
   const label=BANK_LABEL[bank],url=bankUrl(bank);
   const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  const COMUNA_RULE=`Para cada uno: nombre, % de descuento (número; si dice "cortesía" usa 100) y COMUNA. IMPORTANTE sobre la comuna: en Chile la comuna es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú, La Serena, Viña del Mar), NO la ciudad ni la región. Agrúpalos por día de la semana (0=domingo..6=sábado). Si un restaurante aplica varios días, ponlo en cada día; si dice "todos los días" o "de lunes a domingo", en los 7. Vigente en ${monthName}. Usa SOLO lo que aparezca en las páginas, no inventes. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+  if(BANK_MODE[bank]==='directorio'){
+    // Bci: catálogo web paginado por categorías, sin PDF. Se recorre el directorio y se
+    // complementa con búsqueda web, porque cada local trae sus condiciones en su ficha.
+    return `Necesito los descuentos en RESTAURANTES vigentes con tarjeta de crédito ${label} en Chile. Abre ${url} — es el directorio oficial de descuentos del programa de beneficios de ${label} (categoría Sabores/Restaurantes), NO un PDF: es un catálogo web con fichas por local donde cada ficha indica el descuento, los días válidos y la dirección/comuna. Recórrelo y abre también las subcategorías relevantes (Restaurantes, Gourmet, Cafetería) y las páginas siguientes si están paginadas. Si el directorio carga poco contenido, complementa con una búsqueda web de los descuentos ${label} en restaurantes de este mes. Extrae TODOS los restaurantes que encuentres con su % y los días en que aplica. ${COMUNA_RULE}`;
+  }
   return `Abre la página oficial ${url}. En esa página hay un enlace de descarga del PDF de beneficios del mes (texto tipo "Descargar PDF", "VER PDF" o "DESCARGA PDF BENEFICIOS"): sigue ese enlace y LEE EL PDF completo (trae tablas de restaurantes con Restaurante, Descuento, Día y Comuna/Ubicación). Extrae TODOS los restaurantes de la sección Restaurantes que aplican con tarjeta de CRÉDITO ${label} en Chile. Para cada uno: nombre, % de descuento (número; si dice "cortesía" usa 100) y COMUNA. IMPORTANTE sobre la comuna: en Chile la comuna es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú, La Serena, Viña del Mar), NO la ciudad ni la región. Usa el valor de la columna Ubicación/Comuna del PDF tal cual. Agrúpalos por día de la semana (0=domingo..6=sábado). Si un restaurante aplica varios días, ponlo en cada día; si dice "todos los días", en los 7. Vigente en ${monthName}. Usa SOLO lo que aparezca en la página/PDF, no inventes. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
 }
 const WEBFETCH_HEADERS={'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-beta':'web-fetch-2025-09-10','anthropic-dangerous-direct-browser-access':'true'};
 const WEBFETCH_TOOLS=[{type:'web_fetch_20250910',name:'web_fetch',max_uses:5},{type:'web_search_20250305',name:'web_search',max_uses:2}];
+// El modo directorio (Bci) necesita recorrer varias páginas del catálogo → más saltos.
+const DIR_TOOLS=[{type:'web_fetch_20250910',name:'web_fetch',max_uses:14},{type:'web_search_20250305',name:'web_search',max_uses:4}];
+function toolsFor(bank){return BANK_MODE[bank]==='directorio'?DIR_TOOLS:WEBFETCH_TOOLS;}
+const API_URL='https://api.anthropic.com/v1/messages';
+const PLAIN_HEADERS=key=>({'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'});
+function aiText(d){return (d.content||[]).filter(c=>c.type==='text').map(c=>c.text).join(' ');}
+// PASO 1 (pdf-vision): ubicar la URL directa del .pdf del mes. Si la URL guardada ya es un PDF, se usa tal cual.
+async function findPdfUrl(bank,key){
+  const url=bankUrl(bank);
+  if(/\.pdf(\?|#|$)/i.test(url))return url;
+  const prompt=`Abre ${url} y busca el enlace de DESCARGA del PDF de beneficios del mes vigente (el enlace suele decir "Descargar PDF", "VER PDF" o "DESCARGA PDF BENEFICIOS"). Devuelve SOLO la URL absoluta que termina en .pdf, sin explicación, sin backticks y sin texto adicional. Si hay varios PDF, elige el de beneficios/restaurantes del mes actual. Si no encuentras ninguno, responde exactamente NONE.`;
+  const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  const m=aiText(d).match(/https?:\/\/[^\s"'<>)\]]+\.pdf[^\s"'<>)\]]*/i);
+  return m?m[0]:null;
+}
+// PASO 2 (pdf-vision): el PDF va como bloque `document` (la API lo rasteriza por página),
+// así el modelo VE los logos y puede nombrar los restaurantes que no están en texto.
+async function readPdfWithVision(bank,pdfUrl,key){
+  const label=BANK_LABEL[bank];
+  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  const prompt=`Este es el PDF oficial de beneficios de ${label} (Chile), vigente en ${monthName}. Extrae TODOS los restaurantes que aplican con tarjeta de CRÉDITO ${label}.\n\nMUY IMPORTANTE — los nombres NO están como texto: cada restaurante aparece como su LOGO o imagen de marca. Debes MIRAR cada página e identificar visualmente la marca de cada logo para escribir su nombre (ej: reconoces el logo de Papa John's, Juan Maestro, Doggis, Tarragona, etc.). Recorre TODAS las páginas de la sección de restaurantes/gastronomía. Si un logo es ilegible o no puedes identificar la marca con seguridad, omítelo en vez de inventar un nombre.\n\nPara cada restaurante toma el % de descuento y los días en que aplica del texto o los sellos que acompañan al logo (si dice "cortesía" usa 100). Toma también la COMUNA: en Chile la comuna es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú, La Serena, Viña del Mar), NO la ciudad ni la región; si el PDF no indica comuna, deja "".\n\nAgrupa por día de la semana (0=domingo..6=sábado). Si aplica varios días, ponlo en cada día; si dice "todos los días" o "de lunes a domingo", en los 7. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:[{type:'document',source:{type:'url',url:pdfUrl}},{type:'text',text:prompt}]}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return aiJSON(d);
+}
+// ── Lectura del PDF por PASADAS (más precisa que una sola pasada al documento entero).
+// El PDF de Santander es una grilla de tarjetas por categoría: portada, Multiplica millas,
+// SABORES (restaurantes ~p3, comida ~p4, gourmet ~p5), Cuotas, Verdes, Otros, legales.
+// El nombre del local NO existe en la capa de texto: solo está el LOGO. Y el texto que sí
+// hay ("40 %dcto.", "Todos los Jueves", "Válido en local") viene desordenado, así que no se
+// puede emparejar logo↔día leyendo texto: hay que MIRAR cada tarjeta.
+// Estrategia: 1) mapear qué páginas son Sabores → 2) una llamada POR PÁGINA (más recall que
+// pedir todo junto) → 3) fusionar y deduplicar. El PDF se cachea entre llamadas.
+const DOC_BLOCK=url=>({type:'document',source:{type:'url',url},cache_control:{type:'ephemeral'}});
+const emptyDayMap=()=>({0:[],1:[],2:[],3:[],4:[],5:[],6:[]});
+function mergeDayMaps(target,src){
+  for(let d=0;d<7;d++){
+    const cur=target[d]||[];
+    for(const it of (src&&Array.isArray(src[d])?src[d]:[])){
+      if(!it||!it.n||!String(it.n).trim())continue;
+      const n=String(it.n).trim(),c=(it.c||'').trim(),p=+it.p||0;
+      const k=(n+'|'+c).toLowerCase();
+      const ex=cur.find(x=>((x.n||'')+'|'+(x.c||'')).toLowerCase().trim()===k);
+      if(ex){if(p>(+ex.p||0))ex.p=p;}
+      else cur.push({n,p,c});
+    }
+    target[d]=cur;
+  }
+  return target;
+}
+// PASADA 1: qué páginas contienen la categoría Sabores.
+async function pdfSaboresPages(pdfUrl,key,label,monthName){
+  const prompt=`Este es el PDF de beneficios de ${label} (${monthName}). Arriba de cada página hay una barra de categorías (Multiplica millas, Sabores, Cuotas sin interés, Verdes, Otros descuentos) donde la categoría de esa página aparece destacada. Dime en qué números de página está la categoría SABORES (gastronomía: restaurantes, comida, cafeterías, delivery, gourmet). Incluye TODAS sus páginas: las de restaurantes con % por día, las de comida/antojos y las gourmet o premium. NO incluyas la portada, ni otras categorías, ni la página de términos legales. Responde SOLO JSON sin backticks: {"pages":[3,4,5]}`;
+  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:[DOC_BLOCK(pdfUrl),{type:'text',text:prompt}]}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  const arr=(aiJSON(d).pages||[]).map(Number).filter(n=>n>0);
+  return [...new Set(arr)].sort((a,b)=>a-b);
+}
+// PASADA 2: una página a la vez. El prompt describe la ANATOMÍA de la tarjeta para que
+// el modelo empareje logo + % + día + ubicación dentro de cada recuadro.
+async function pdfPageDiscounts(pdfUrl,key,label,monthName,page){
+  const prompt=`Este es el PDF de beneficios de ${label} (Chile), vigente en ${monthName}. Trabaja ÚNICAMENTE con la PÁGINA ${page} e ignora por completo las demás.\n\nESA PÁGINA ES UNA GRILLA DE TARJETAS. Cada tarjeta corresponde a un comercio y contiene:\n• el LOGO del comercio — el nombre NO está escrito como texto, solo está la imagen de marca, así que debes MIRAR el logo e identificar la marca (ej: reconoces el logo de Papa John's, Doggis, Juan Maestro, Tarragona, Kento Sushi…);\n• un sello con el descuento ("40 %dcto.", "50 %dcto.", "20 %dcto.");\n• el o los días en que aplica ("Todos los Jueves", "Lunes", "Martes y Jueves", "Todos los días");\n• letra chica con condiciones ("Válido en local", tope, sitio web).\n\nEMPAREJA cada logo con el % y el día que están DENTRO DE SU MISMA TARJETA. No mezcles el día de una tarjeta con el logo de otra: el orden del texto del PDF está desordenado, la única forma correcta es visual.\n\nUBICACIÓN: los encabezados que agrupan tarjetas indican dónde aplican. "Región Metropolitana" = Santiago (deja la comuna en "" si no dice la comuna exacta); "Regiones" = fuera de Santiago; si sobre un grupo aparece una ciudad o comuna (Viña del Mar, Concón, Zapallar, Maitencillo, Puerto Varas, Concepción, Talca, Valparaíso…), esa es la ubicación de TODAS las tarjetas de ese grupo. Si la tarjeta indica una dirección o local específico, usa su comuna.\n\nVARIAS MARCAS EN UNA TARJETA: si la letra chica enumera locales separados por coma (ej: "Válido con Tarjeta…: Delivery Gourmet, Bar Porfirio, Expendio Montt, Kento Sushi"), crea UNA entrada POR CADA marca de esa lista, todas con el mismo % y días.\n\nRecorre la grilla fila por fila, de izquierda a derecha, SIN SALTARTE NINGUNA TARJETA — incluye también las de comida, cafés, delivery y tiendas de alimentos, no solo restaurantes de mesa. Si un logo no lo reconoces, usa el texto que alcances a leer dentro del propio logo; omítelo solo si es completamente ilegible. No inventes comercios que no estén en la página.\n\nAgrupa por día de la semana (0=domingo, 1=lunes, 2=martes, 3=miércoles, 4=jueves, 5=viernes, 6=sábado). Si aplica varios días, repítelo en cada día; "todos los días" o "de lunes a domingo" = los 7. Si dice "cortesía" usa 100. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
+  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:[DOC_BLOCK(pdfUrl),{type:'text',text:prompt}]}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return aiJSON(d);
+}
+async function readPdfMultiPass(bank,pdfUrl,key,note){
+  const label=BANK_LABEL[bank];
+  const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+  let pages=[];
+  try{note('Ubicando las páginas de Sabores…');pages=await pdfSaboresPages(pdfUrl,key,label,monthName);}catch(e){}
+  if(!pages.length)pages=[3,4,5]; // respaldo: en el formato actual Sabores va en 3–5
+  const out=emptyDayMap();let ok=0;
+  for(let i=0;i<pages.length;i++){
+    note(`Leyendo logos · página ${pages[i]} (${i+1} de ${pages.length})…`);
+    try{mergeDayMaps(out,await pdfPageDiscounts(pdfUrl,key,label,monthName,pages[i]));ok++;}catch(e){}
+  }
+  if(!ok)throw new Error('no se pudo leer ninguna página del PDF');
+  return out;
+}
+// Punto único de extracción: elige la estrategia del banco. `say` reporta progreso (opcional).
+async function extractDiscounts(bank,key,say){
+  const note=say||(()=>{});
+  if(BANK_MODE[bank]==='pdf-vision'){
+    note('Buscando el PDF del mes…');
+    const pdf=await findPdfUrl(bank,key);
+    if(!pdf)throw new Error('no se encontró el PDF del mes en la página oficial');
+    try{return await readPdfMultiPass(bank,pdf,key,note);}
+    catch(e){note('Reintentando con lectura completa del PDF…');return await readPdfWithVision(bank,pdf,key);}
+  }
+  note('Recorriendo el sitio oficial…');
+  const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,tools:toolsFor(bank),messages:[{role:'user',content:discPrompt(bank)}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return aiJSON(d);
+}
 // Muestra los descuentos del banco seleccionado. Si no están frescos para el mes actual
 // y hay API key, los trae AUTOMÁTICAMENTE para esa tarjeta específica.
 async function renderDiscounts(){
@@ -400,21 +514,19 @@ async function renderDiscounts(){
   const fresh=discData.fresh&&discData.fresh[bank]===cur;
   if(!fresh&&getApiKey()){
     document.getElementById('disc-list').innerHTML='<div style="font-size:.79rem;color:var(--muted)"><span class="spin"></span> Buscando descuentos del mes…</div>';
-    await fetchBankDiscounts(bank);updateDiscBadge();
+    await fetchBankDiscounts(bank,m=>{const el=document.getElementById('disc-list');if(el)el.innerHTML=`<div style="font-size:.79rem;color:var(--muted)"><span class="spin"></span> ${m}</div>`;});updateDiscBadge();
   }
   const dow=new Date(date+'T12:00:00').getDay(),rows=(discData[bank]||{})[dow]||[];
   const noKey=!getApiKey();
   document.getElementById('disc-list').innerHTML=rows.length?rows.map(r=>`<div class="drow"><span>${r.n}${r.c?` <span class="dcomuna">· ${r.c}</span>`:''}</span><span class="dpct">${r.p}%</span></div>`).join(''):`<div style="font-size:.79rem;color:var(--muted)">${noKey?'Configura la API key en el Panel para traer descuentos automáticos · ':'Sin descuentos este día · '}<button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.75rem">agregar manual</button></div>`;
 }
 // Trae los descuentos del mes para UNA tarjeta: SALTO DOBLE (página fija → PDF del mes → tablas).
-async function fetchBankDiscounts(bank){
+async function fetchBankDiscounts(bank,say){
   const key=getApiKey();if(!key)return false;
   if(!bankUrl(bank))return false; // sin página/PDF (CMR) → no auto
   const cur=new Date().toISOString().slice(0,7);
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:5000,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:discPrompt(bank)}]})});
-    const d=await r.json();if(d.error)throw new Error(d.error.message);
-    const parsed=aiJSON(d);
+    const parsed=await extractDiscounts(bank,key,say);
     const total=Object.values(parsed).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0);
     if(!total)return false; // no borrar datos previos si vino vacío
     discData[bank]=parsed;discData.auto=true;discData.month=cur;
@@ -431,10 +543,28 @@ function selectBank(b){editorBank=b;document.querySelectorAll('.btab').forEach((
 // URL oficial de beneficios por banco (página fija o PDF). Se guarda en localStorage.
 function getBankUrls(){try{return JSON.parse(localStorage.getItem(`${LS}.disc_urls`))||{};}catch(e){return {};}}
 function saveBankUrl(){const u=getBankUrls();u[editorBank]=document.getElementById('disc-url').value.trim();localStorage.setItem(`${LS}.disc_urls`,JSON.stringify(u));}
+function resetBankUrl(){const u=getBankUrls();delete u[editorBank];localStorage.setItem(`${LS}.disc_urls`,JSON.stringify(u));syncUrlField();document.getElementById('url-fetch-status').textContent='↺ URL restaurada a la oficial recomendada.';}
+// Migración puntual: reemplaza SOLO las URLs guardadas que ya sabemos obsoletas (bci.cl/beneficios
+// era marketing sin locales; la de Santander no expone el PDF del mes) para que tomen el default
+// nuevo. No toca URLs personalizadas por el usuario ni los descuentos guardados.
+const STALE_URLS={bci:[/^https?:\/\/(www\.)?bci\.cl\/beneficios\/?$/i],santander:[/^https?:\/\/(www\.)?banco\.santander\.cl\/beneficios\/?$/i]};
+function migrateBankUrls(){
+  const MK=`${LS}.disc_urls_migr`;
+  if(localStorage.getItem(MK)==='2')return;
+  const u=getBankUrls();let changed=false;
+  for(const b in STALE_URLS){const v=u[b];if(v&&STALE_URLS[b].some(re=>re.test(v.trim()))){delete u[b];changed=true;}}
+  if(changed)localStorage.setItem(`${LS}.disc_urls`,JSON.stringify(u));
+  localStorage.setItem(MK,'2');
+}
+migrateBankUrls();
 function syncUrlField(){
   document.querySelectorAll('.url-bank-label').forEach(e=>e.textContent=BANK_LABEL[editorBank]||editorBank);
   const inp=document.getElementById('disc-url'),btn=document.getElementById('url-fetch-btn'),st=document.getElementById('url-fetch-status');
   const def=DEFAULT_URLS[editorBank]||'';
+  const hint=document.getElementById('url-mode-hint');
+  if(hint)hint.textContent=BANK_MODE[editorBank]==='pdf-vision'?'Claude la abre, encuentra el PDF del mes y lo lee con reconocimiento de logos (los nombres vienen como imágenes).':BANK_MODE[editorBank]==='directorio'?'Es un catálogo web (no hay PDF): Claude recorre las fichas de cada local.':'';
+  const rb=document.getElementById('url-reset-btn');
+  if(rb)rb.disabled=(editorBank==='cmr')||!getBankUrls()[editorBank];
   inp.value=getBankUrls()[editorBank]||def;
   const noPdf=(editorBank==='cmr');
   inp.disabled=noPdf;btn.disabled=noPdf;
@@ -472,11 +602,9 @@ async function fetchFromUrl(){
   const url=bankUrl(editorBank);
   if(!/^https?:\/\//.test(url)){st.textContent='⚠️ Pega primero la URL oficial de beneficios.';return;}
   const btn=document.getElementById('url-fetch-btn');btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span>';
-  st.textContent='Abriendo la página y leyendo el PDF del mes…';
+  st.textContent='Abriendo la página oficial…';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:5000,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:discPrompt(editorBank)}]})});
-    const d=await r.json();if(d.error)throw new Error(d.error.message);
-    const parsed=aiJSON(d);
+    const parsed=await extractDiscounts(editorBank,key,m=>{st.textContent=m;});
     const cur=new Date().toISOString().slice(0,7);
     discData[editorBank]=parsed;discData.auto=true;discData.month=cur;
     discData.fresh=discData.fresh||{};discData.fresh[editorBank]=cur;
