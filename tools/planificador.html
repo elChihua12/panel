@@ -23,7 +23,8 @@
   - Descuentos editables desde UI (⚙️ header) → localStorage['panel.v5.discounts']
   - BCI y CMR agregados como templates editables
   - API key desde localStorage['panel.v5.api_key']
-  - Modelo cambiado a claude-haiku (más económico para Sorpréndeme)
+  - Modelo: claude-sonnet-5-5 en todas las llamadas (oct-2026, antes sonnet-4-6;
+    este comentario decía haiku, pero el código nunca lo usó)
 
   INTEGRACIÓN: Generador Aleatorio escribe panel.v5.pendingActivity
   → Este módulo lo lee en Modo 2 al activar la tab
@@ -417,7 +418,7 @@ async function findPdfUrl(bank,key){
   const url=bankUrl(bank);
   if(/\.pdf(\?|#|$)/i.test(url))return url;
   const prompt=`Abre ${url} y busca el enlace de DESCARGA del PDF de beneficios del mes vigente (el enlace suele decir "Descargar PDF", "VER PDF" o "DESCARGA PDF BENEFICIOS"). Devuelve SOLO la URL absoluta que termina en .pdf, sin explicación, sin backticks y sin texto adicional. Si hay varios PDF, elige el de beneficios/restaurantes del mes actual. Si no encuentras ninguno, responde exactamente NONE.`;
-  const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:prompt}]})});
+  const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:1500,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:prompt}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
   const m=aiText(d).match(/https?:\/\/[^\s"'<>)\]]+\.pdf[^\s"'<>)\]]*/i);
   return m?m[0]:null;
@@ -428,7 +429,7 @@ async function readPdfWithVision(bank,pdfUrl,key){
   const label=BANK_LABEL[bank];
   const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
   const prompt=`Este es el PDF oficial de beneficios de ${label} (Chile), vigente en ${monthName}. Extrae TODOS los restaurantes que aplican con tarjeta de CRÉDITO ${label}.\n\nMUY IMPORTANTE — los nombres NO están como texto: cada restaurante aparece como su LOGO o imagen de marca. Debes MIRAR cada página e identificar visualmente la marca de cada logo para escribir su nombre (ej: reconoces el logo de Papa John's, Juan Maestro, Doggis, Tarragona, etc.). Recorre TODAS las páginas de la sección de restaurantes/gastronomía. Si un logo es ilegible o no puedes identificar la marca con seguridad, omítelo en vez de inventar un nombre.\n\nPara cada restaurante toma el % de descuento y los días en que aplica del texto o los sellos que acompañan al logo (si dice "cortesía" usa 100). Toma también la COMUNA: en Chile la comuna es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú, La Serena, Viña del Mar), NO la ciudad ni la región; si el PDF no indica comuna, deja "".\n\nAgrupa por día de la semana (0=domingo..6=sábado). Si aplica varios días, ponlo en cada día; si dice "todos los días" o "de lunes a domingo", en los 7. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
-  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:[{type:'document',source:{type:'url',url:pdfUrl}},{type:'text',text:prompt}]}]})});
+  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:8000,messages:[{role:'user',content:[{type:'document',source:{type:'url',url:pdfUrl}},{type:'text',text:prompt}]}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
   return aiJSON(d);
 }
@@ -460,7 +461,7 @@ function mergeDayMaps(target,src){
 // PASADA 1: qué páginas contienen la categoría Sabores.
 async function pdfSaboresPages(pdfUrl,key,label,monthName){
   const prompt=`Este es el PDF de beneficios de ${label} (${monthName}). Arriba de cada página hay una barra de categorías (Multiplica millas, Sabores, Cuotas sin interés, Verdes, Otros descuentos) donde la categoría de esa página aparece destacada. Dime en qué números de página está la categoría SABORES (gastronomía: restaurantes, comida, cafeterías, delivery, gourmet). Incluye TODAS sus páginas: las de restaurantes con % por día, las de comida/antojos y las gourmet o premium. NO incluyas la portada, ni otras categorías, ni la página de términos legales. Responde SOLO JSON sin backticks: {"pages":[3,4,5]}`;
-  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:[DOC_BLOCK(pdfUrl),{type:'text',text:prompt}]}]})});
+  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:800,messages:[{role:'user',content:[DOC_BLOCK(pdfUrl),{type:'text',text:prompt}]}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
   const arr=(aiJSON(d).pages||[]).map(Number).filter(n=>n>0);
   return [...new Set(arr)].sort((a,b)=>a-b);
@@ -469,7 +470,7 @@ async function pdfSaboresPages(pdfUrl,key,label,monthName){
 // el modelo empareje logo + % + día + ubicación dentro de cada recuadro.
 async function pdfPageDiscounts(pdfUrl,key,label,monthName,page){
   const prompt=`Este es el PDF de beneficios de ${label} (Chile), vigente en ${monthName}. Trabaja ÚNICAMENTE con la PÁGINA ${page} e ignora por completo las demás.\n\nESA PÁGINA ES UNA GRILLA DE TARJETAS. Cada tarjeta corresponde a un comercio y contiene:\n• el LOGO del comercio — el nombre NO está escrito como texto, solo está la imagen de marca, así que debes MIRAR el logo e identificar la marca (ej: reconoces el logo de Papa John's, Doggis, Juan Maestro, Tarragona, Kento Sushi…);\n• un sello con el descuento ("40 %dcto.", "50 %dcto.", "20 %dcto.");\n• el o los días en que aplica ("Todos los Jueves", "Lunes", "Martes y Jueves", "Todos los días");\n• letra chica con condiciones ("Válido en local", tope, sitio web).\n\nEMPAREJA cada logo con el % y el día que están DENTRO DE SU MISMA TARJETA. No mezcles el día de una tarjeta con el logo de otra: el orden del texto del PDF está desordenado, la única forma correcta es visual.\n\nUBICACIÓN: los encabezados que agrupan tarjetas indican dónde aplican. "Región Metropolitana" = Santiago (deja la comuna en "" si no dice la comuna exacta); "Regiones" = fuera de Santiago; si sobre un grupo aparece una ciudad o comuna (Viña del Mar, Concón, Zapallar, Maitencillo, Puerto Varas, Concepción, Talca, Valparaíso…), esa es la ubicación de TODAS las tarjetas de ese grupo. Si la tarjeta indica una dirección o local específico, usa su comuna.\n\nVARIAS MARCAS EN UNA TARJETA: si la letra chica enumera locales separados por coma (ej: "Válido con Tarjeta…: Delivery Gourmet, Bar Porfirio, Expendio Montt, Kento Sushi"), crea UNA entrada POR CADA marca de esa lista, todas con el mismo % y días.\n\nRecorre la grilla fila por fila, de izquierda a derecha, SIN SALTARTE NINGUNA TARJETA — incluye también las de comida, cafés, delivery y tiendas de alimentos, no solo restaurantes de mesa. Si un logo no lo reconoces, usa el texto que alcances a leer dentro del propio logo; omítelo solo si es completamente ilegible. No inventes comercios que no estén en la página.\n\nAgrupa por día de la semana (0=domingo, 1=lunes, 2=martes, 3=miércoles, 4=jueves, 5=viernes, 6=sábado). Si aplica varios días, repítelo en cada día; "todos los días" o "de lunes a domingo" = los 7. Si dice "cortesía" usa 100. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
-  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:[DOC_BLOCK(pdfUrl),{type:'text',text:prompt}]}]})});
+  const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:8000,messages:[{role:'user',content:[DOC_BLOCK(pdfUrl),{type:'text',text:prompt}]}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
   return aiJSON(d);
 }
@@ -498,7 +499,7 @@ async function extractDiscounts(bank,key,say){
     catch(e){note('Reintentando con lectura completa del PDF…');return await readPdfWithVision(bank,pdf,key);}
   }
   note('Recorriendo el sitio oficial…');
-  const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,tools:toolsFor(bank),messages:[{role:'user',content:discPrompt(bank)}]})});
+  const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:8000,tools:toolsFor(bank),messages:[{role:'user',content:discPrompt(bank)}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
   return aiJSON(d);
 }
@@ -582,7 +583,7 @@ async function parsePasted(){
   st.textContent='Ordenando los descuentos por día…';
   const prompt=`Del siguiente texto de beneficios de ${BANK_LABEL[editorBank]} (tarjeta de crédito, Chile), extrae los restaurantes con su % de descuento y su COMUNA, agrupados por día de la semana (0=domingo..6=sábado). La COMUNA en Chile es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú), NO la ciudad ni la región — usa la columna Ubicación/Comuna tal cual. Si un descuento aplica "todos los días", ponlo en los 7. Si dice "cortesía" usa 100. Si un día no tiene, deja []. Usa SOLO lo que aparezca en el texto, no inventes. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}\n\nTEXTO:\n${raw.slice(0,12000)}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const parsed=aiJSON(d);
     const cur=new Date().toISOString().slice(0,7);
@@ -801,7 +802,7 @@ async function aiLocate(id){
   const prev=s.geo;s.geo={status:'pending'};renderStops();
   const prompt=`Busca EN LA WEB la ubicación exacta de "${s.name}" en ${city} (referencia: "${s.addr}"). Necesito la dirección como aparece en su ficha (calle y número reales) y su COMUNA EXACTA — la comuna debe corresponder realmente a esa calle y número (verifícala, es el error más común). Si alguna fuente muestra coordenadas, inclúyelas. NO inventes números ni coordenadas. Responde SOLO JSON sin backticks:\n{"address":"calle número","comuna":"comuna","lat":-33.4|null,"lng":-70.6|null}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,tools:[{type:'web_search_20250305',name:'web_search',max_uses:3}],messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:1200,tools:[{type:'web_search_20250305',name:'web_search',max_uses:3}],messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const p=aiJSON(d);
     if(p.address)s.addr=p.address+(p.comuna?', '+p.comuna:'');
@@ -940,7 +941,7 @@ async function runSurprise(){
   const dayN=date?DAYS[new Date(date+'T12:00:00').getDay()]:'';
   const prompt=`Planificador salidas familiares Chile. Busca EN LA WEB lugares REALES y vigentes (que sigan abiertos hoy) y diseña una salida de 5-7 paradas:\nCiudad:${city}\nFecha:${date?`${date}(${dayN})`:'pronto'}\nPresupuesto:${budget||'moderado'}\nGrupo:${FAMILY.adults} adultos,${ages||'sin niños'}\nPreferencias:${prefs||'sorpréndeme'}\nREGLAS: usa SOLO lugares reales que confirmes en la web (parques, museos, malls, cafés/restaurantes con nombre propio y ficha). Cada parada debe traer su dirección REAL (calle+número) y su comuna EXACTA según la ficha — la comuna debe corresponder a esa dirección, no la inventes. Si no confirmas el número, deja calle+comuna. Descripciones concretas (qué es y por qué), nada de frases genéricas o ambiguas.\nSOLO JSON sin backticks:\n{"titulo":"...","descripcion":"...","stops":[{"name":"nombre real del lugar","address":"calle y número reales","comuna":"comuna exacta","category":"shopping|food|entertainment|pets|other","priority":"fixed|optional","openTime":"HH:MM|null","closeTime":"HH:MM|null","notes":"...|null"}]}`;
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,tools:[{type:'web_search_20250305',name:'web_search',max_uses:6}],messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:4000,tools:[{type:'web_search_20250305',name:'web_search',max_uses:6}],messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const plan=aiJSON(d);
     window.__sPlan=plan;
