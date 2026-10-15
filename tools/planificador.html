@@ -131,6 +131,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
 .disc-edit-row input[type=text]{flex:1}.disc-edit-row input[type=number]{width:70px;flex-shrink:0}
 .month-badge{font-family:var(--f-data);font-size:.69rem;padding:2px 7px;border-radius:8px;font-weight:500}
 .mb-ok{background:var(--ok-bg);color:var(--ok)}.mb-warn{background:var(--warn-bg);color:var(--warn)}
+.disc-aviso{font-size:.75rem;color:var(--warn);background:var(--warn-bg);border-radius:8px;padding:6px 9px;margin-bottom:8px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -236,7 +237,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--terracota)}select{cur
       <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;padding:4px 8px;font-size:.80rem">
       <button class="btn btn-ghost btn-sm" onclick="saveApiKey()">Guardar</button>
     </div>
-    <div class="callout">Claude diseña la salida completa y geocodifica cada parada automáticamente. Usa Haiku (~$0.003/consulta).</div>
+    <div class="callout">Claude diseña la salida completa con búsqueda web y geocodifica cada parada automáticamente. Usa Sonnet 5.5.</div>
     <div class="s-form">
       <div class="fg"><label>Ciudad / Zona</label><input type="text" id="ss-city" value="Santiago, Chile"></div>
       <div class="fg"><label>Fecha</label><input type="date" id="ss-date"></div>
@@ -298,7 +299,7 @@ const LS='panel.v5';
 let FAMILY={adults:2,children:[{name:'Melin',born:new Date('2021-01-16'),active:true},{name:'Zayd',born:new Date('2026-02-23'),active:true}]};
 const CAT={shopping:{color:'#2a5cb8',label:'🛒 Compras'},food:{color:'#8c4a14',label:'🍜 Comida'},entertainment:{color:'#5a3ea8',label:'🎮 Entretención'},pets:{color:'#2e7d32',label:'🐾 Mascotas'},other:{color:'#5a4a37',label:'📍 Otro'}};
 const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-const DEFAULT_DISC={month:new Date().toISOString().slice(0,7),
+const DEFAULT_DISC={month:mesActual(),
   santander:{0:[{n:'Don Carlos',p:40},{n:'La Yunta',p:40},{n:'Enebro',p:40},{n:'Hijo del Sol',p:30}],1:[{n:'Kevin Bacon',p:40},{n:'La Burguesía',p:40},{n:'Social Bar',p:40},{n:'Caoba Bar',p:40}],2:[{n:'Quercus',p:40},{n:'Rishtedar',p:40},{n:'Sol Sublime',p:40},{n:'Domani',p:40}],3:[{n:"Chilli's",p:40},{n:'Berlin Döner',p:40},{n:'Madre Pizza',p:30},{n:'Rocoto',p:30}],4:[{n:'Ramblas Bar',p:40},{n:'Miscelaneo',p:40},{n:'Prima Bar',p:40},{n:'Cascade Bistró',p:40}],5:[{n:'Infiltrados',p:40},{n:'Rossie La Loca',p:40},{n:'Hitomi Tomi',p:40},{n:'El Mesón Patag.',p:40}],6:[{n:'Piano Gourmet',p:40},{n:'Gracielo Bar',p:40},{n:'Magda Bistró',p:40},{n:'Taringa',p:40}]},
   bci:{0:[],1:[],2:[],3:[],4:[],5:[],6:[]},
   cmr:{0:[],1:[],2:[],3:[],4:[],5:[],6:[]}
@@ -341,13 +342,34 @@ function loadDiscounts(){
   try{const s=localStorage.getItem(`${LS}.discounts`);if(s)discData=JSON.parse(s);}catch(e){}
   updateDiscBadge();
 }
+// ── Cambio de mes ────────────────────────────────────────────────
+// Los bancos tardan unos días en publicar el PDF del mes nuevo (o la página queda
+// caída). Antes: se leía el PDF VIEJO, se guardaba como mes nuevo y no se volvía a
+// intentar en todo el mes; y si fallaba, reintentaba (y cobraba) en CADA apertura.
+// Ahora: cada banco guarda de qué mes son sus datos (mesDatos), se detecta el mes
+// del PDF en su portada, se conservan los datos anteriores mientras tanto y el
+// reintento automático es como máximo cada 12 h (el botón "reintentar" lo fuerza).
+function mesActual(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+function nombreMes(ym){if(!ym)return '';const[y,m]=ym.split('-').map(Number);return new Date(y,m-1,15).toLocaleDateString('es-CL',{month:'long'});}
+const REINTENTO_MS=12*3600e3;
+const AUTO_BANKS=()=>['santander','bci','cmr'].filter(bk=>bankUrl(bk));
+function mesDe(bank){return (discData.mesDatos&&discData.mesDatos[bank])||(discData.fresh&&discData.fresh[bank])||discData.month||'';}
+function guardarDisc(){localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));}
 function updateDiscBadge(){
   const b=document.getElementById('disc-month-badge');
-  if(!discData.month){b.className='month-badge mb-warn';b.textContent='Sin mes';return;}
-  const[y,m]=discData.month.split('-').map(Number),now=new Date();
-  const ok=y===now.getFullYear()&&m===(now.getMonth()+1);
-  b.className=`month-badge ${ok?'mb-ok':'mb-warn'}`;b.textContent=discData.month;
-  b.title=discData.auto?'Descuentos traídos con búsqueda web del mes en curso':'Descuentos ingresados manualmente';
+  const cur=mesActual();
+  if(!getApiKey()){ // sin key: solo carga manual → manda el mes guardado al editar
+    if(!discData.month){b.className='month-badge mb-warn';b.textContent='Sin mes';return;}
+    const ok=discData.month===cur;
+    b.className=`month-badge ${ok?'mb-ok':'mb-warn'}`;b.textContent=discData.month;
+    b.title='Descuentos ingresados manualmente';return;
+  }
+  const pend=AUTO_BANKS().filter(bk=>!(discData.fresh&&discData.fresh[bk]===cur));
+  b.className=`month-badge ${pend.length?'mb-warn':'mb-ok'}`;
+  b.textContent=pend.length?`${cur} · ${pend.length} pendiente${pend.length>1?'s':''}`:cur;
+  b.title=pend.length
+    ?pend.map(bk=>`${BANK_LABEL[bk]}: ${(discData.espera&&discData.espera[bk])||'sin actualizar'}${mesDe(bk)?` (mostrando ${nombreMes(mesDe(bk))})`:''}`).join('\n')
+    :'Descuentos del mes en curso';
 }
 // Extrae el JSON de una respuesta de la API (con búsqueda web el texto llega en varios bloques)
 function aiJSON(d){
@@ -360,20 +382,20 @@ function aiJSON(d){
 // Por cada banco hace el SALTO DOBLE: página fija → PDF del mes → tablas de restaurantes.
 // Si no hay key, o un banco falla, conserva sus datos previos (nunca los borra).
 async function autoRefreshDiscounts(){
-  const cur=new Date().toISOString().slice(0,7);
-  if(discData.month===cur)return; // ya está al día este mes
-  const key=getApiKey();
-  if(!key){updateDiscBadge();return;} // sin key → queda el editor manual
+  const cur=mesActual();
+  if(!getApiKey()){updateDiscBadge();return;} // sin key → queda el editor manual
+  // Solo bancos con página automática (CMR es manual), sin datos de este mes
+  // y sin un intento en las últimas 12 h.
+  // Al abrir solo se reintentan bancos cuyos datos son de un mes ANTERIOR (cambio de mes);
+  // un banco que nunca se cargó se trae cuando lo eliges (así no gasta sin que lo pidas).
+  const pend=AUTO_BANKS().filter(bk=>mesDe(bk)&&mesDe(bk)<cur&&!(discData.fresh&&discData.fresh[bk]===cur)&&!enEspera(bk));
+  if(!pend.length){updateDiscBadge();return;}
   const b=document.getElementById('disc-month-badge');
   b.className='month-badge mb-warn';b.innerHTML='<span class="spin"></span>';b.title='Actualizando descuentos del mes…';
-  let any=false;
-  for(const bk of ['santander','bci','cmr']){
-    if(!bankUrl(bk))continue; // CMR (sin PDF) queda para carga manual
-    const ok=await fetchBankDiscounts(bk);any=any||ok;
-  }
-  if(any){discData.month=cur;localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));}
+  for(const bk of pend)await fetchBankDiscounts(bk);
   updateDiscBadge();renderDiscounts();
 }
+function enEspera(bank){const t=discData.intento&&discData.intento[bank];return !!t&&Date.now()-t<REINTENTO_MS;}
 function onDateChange(){renderDiscounts();}
 const BANK_LABEL={santander:'Santander',bci:'BCI',cmr:'CMR Falabella'};
 // Páginas FIJAS de beneficios (siempre apuntan al PDF del mes vigente). El usuario puede
@@ -401,7 +423,7 @@ function discPrompt(bank){
   if(BANK_MODE[bank]==='directorio'){
     // Bci: catálogo web paginado por categorías, sin PDF. Se recorre el directorio y se
     // complementa con búsqueda web, porque cada local trae sus condiciones en su ficha.
-    return `Necesito los descuentos en RESTAURANTES vigentes con tarjeta de crédito ${label} en Chile. Abre ${url} — es el directorio oficial de descuentos del programa de beneficios de ${label} (categoría Sabores/Restaurantes), NO un PDF: es un catálogo web con fichas por local donde cada ficha indica el descuento, los días válidos y la dirección/comuna. Recórrelo y abre también las subcategorías relevantes (Restaurantes, Gourmet, Cafetería) y las páginas siguientes si están paginadas. Si el directorio carga poco contenido, complementa con una búsqueda web de los descuentos ${label} en restaurantes de este mes. Extrae TODOS los restaurantes que encuentres con su % y los días en que aplica. ${COMUNA_RULE}`;
+    return `Necesito los descuentos en RESTAURANTES vigentes con tarjeta de crédito ${label} en Chile. Abre ${url} — es el directorio oficial de descuentos del programa de beneficios de ${label} (categoría Sabores/Restaurantes), NO un PDF: es un catálogo web con fichas por local donde cada ficha indica el descuento, los días válidos y la dirección/comuna. Recórrelo y abre también las subcategorías relevantes (Restaurantes, Gourmet, Cafetería) y las páginas siguientes si están paginadas. Si el directorio carga poco contenido, complementa con una búsqueda web de los descuentos ${label} en restaurantes de este mes. Extrae TODOS los restaurantes que encuentres con su % y los días en que aplica. ${COMUNA_RULE}\nAgrega además al JSON la clave "_mes" con el mes de vigencia que indique la fuente (formato "AAAA-MM"), o null si no lo indica. Si la página oficial no carga o no muestra locales, NO uses artículos o noticias de meses anteriores: devuelve los días vacíos.`;
   }
   return `Abre la página oficial ${url}. En esa página hay un enlace de descarga del PDF de beneficios del mes (texto tipo "Descargar PDF", "VER PDF" o "DESCARGA PDF BENEFICIOS"): sigue ese enlace y LEE EL PDF completo (trae tablas de restaurantes con Restaurante, Descuento, Día y Comuna/Ubicación). Extrae TODOS los restaurantes de la sección Restaurantes que aplican con tarjeta de CRÉDITO ${label} en Chile. Para cada uno: nombre, % de descuento (número; si dice "cortesía" usa 100) y COMUNA. IMPORTANTE sobre la comuna: en Chile la comuna es la unidad municipal exacta (ej: Providencia, Las Condes, Ñuñoa, Vitacura, Santiago, Maipú, La Serena, Viña del Mar), NO la ciudad ni la región. Usa el valor de la columna Ubicación/Comuna del PDF tal cual. Agrúpalos por día de la semana (0=domingo..6=sábado). Si un restaurante aplica varios días, ponlo en cada día; si dice "todos los días", en los 7. Vigente en ${monthName}. Usa SOLO lo que aparezca en la página/PDF, no inventes. Si un día no tiene, deja []. Responde SOLO JSON sin backticks:\n{"0":[{"n":"Nombre","p":40,"c":"Comuna"}],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]}`;
 }
@@ -417,7 +439,7 @@ function aiText(d){return (d.content||[]).filter(c=>c.type==='text').map(c=>c.te
 async function findPdfUrl(bank,key){
   const url=bankUrl(bank);
   if(/\.pdf(\?|#|$)/i.test(url))return url;
-  const prompt=`Abre ${url} y busca el enlace de DESCARGA del PDF de beneficios del mes vigente (el enlace suele decir "Descargar PDF", "VER PDF" o "DESCARGA PDF BENEFICIOS"). Devuelve SOLO la URL absoluta que termina en .pdf, sin explicación, sin backticks y sin texto adicional. Si hay varios PDF, elige el de beneficios/restaurantes del mes actual. Si no encuentras ninguno, responde exactamente NONE.`;
+  const prompt=`Abre ${url} y busca el enlace de DESCARGA del PDF de beneficios del mes vigente (el enlace suele decir "Descargar PDF", "VER PDF" o "DESCARGA PDF BENEFICIOS"). Devuelve SOLO la URL absoluta que termina en .pdf, sin explicación, sin backticks y sin texto adicional. Si hay varios PDF, elige el de beneficios/restaurantes de ${new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'})}; si solo está el del mes anterior, devuelve ese igual. Si no encuentras ninguno, responde exactamente NONE.`;
   const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:1500,tools:WEBFETCH_TOOLS,messages:[{role:'user',content:prompt}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
   const m=aiText(d).match(/https?:\/\/[^\s"'<>)\]]+\.pdf[^\s"'<>)\]]*/i);
@@ -460,11 +482,13 @@ function mergeDayMaps(target,src){
 }
 // PASADA 1: qué páginas contienen la categoría Sabores.
 async function pdfSaboresPages(pdfUrl,key,label,monthName){
-  const prompt=`Este es el PDF de beneficios de ${label} (${monthName}). Arriba de cada página hay una barra de categorías (Multiplica millas, Sabores, Cuotas sin interés, Verdes, Otros descuentos) donde la categoría de esa página aparece destacada. Dime en qué números de página está la categoría SABORES (gastronomía: restaurantes, comida, cafeterías, delivery, gourmet). Incluye TODAS sus páginas: las de restaurantes con % por día, las de comida/antojos y las gourmet o premium. NO incluyas la portada, ni otras categorías, ni la página de términos legales. Responde SOLO JSON sin backticks: {"pages":[3,4,5]}`;
+  const prompt=`Este es el PDF de beneficios de ${label} (${monthName}). Arriba de cada página hay una barra de categorías (Multiplica millas, Sabores, Cuotas sin interés, Verdes, Otros descuentos) donde la categoría de esa página aparece destacada. Dime en qué números de página está la categoría SABORES (gastronomía: restaurantes, comida, cafeterías, delivery, gourmet). Incluye TODAS sus páginas: las de restaurantes con % por día, las de comida/antojos y las gourmet o premium. NO incluyas la portada, ni otras categorías, ni la página de términos legales. Indica también el MES DE VIGENCIA que dice la portada o el encabezado del PDF (ej: "Beneficios noviembre 2026" → "2026-11"); si no lo dice en ninguna parte, usa null. Responde SOLO JSON sin backticks: {"pages":[3,4,5],"mes":"2026-11"}`;
   const r=await fetch(API_URL,{method:'POST',headers:PLAIN_HEADERS(key),body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:800,messages:[{role:'user',content:[DOC_BLOCK(pdfUrl),{type:'text',text:prompt}]}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
-  const arr=(aiJSON(d).pages||[]).map(Number).filter(n=>n>0);
-  return [...new Set(arr)].sort((a,b)=>a-b);
+  const j=aiJSON(d);
+  const arr=(j.pages||[]).map(Number).filter(n=>n>0);
+  const mes=/^\d{4}-\d{2}$/.test(String(j.mes||''))?j.mes:null;
+  return {pages:[...new Set(arr)].sort((a,b)=>a-b),mes};
 }
 // PASADA 2: una página a la vez. El prompt describe la ANATOMÍA de la tarjeta para que
 // el modelo empareje logo + % + día + ubicación dentro de cada recuadro.
@@ -474,11 +498,13 @@ async function pdfPageDiscounts(pdfUrl,key,label,monthName,page){
   const d=await r.json();if(d.error)throw new Error(d.error.message);
   return aiJSON(d);
 }
-async function readPdfMultiPass(bank,pdfUrl,key,note){
+async function readPdfMultiPass(bank,pdfUrl,key,note,yaTengo){
   const label=BANK_LABEL[bank];
   const monthName=new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-  let pages=[];
-  try{note('Ubicando las páginas de Sabores…');pages=await pdfSaboresPages(pdfUrl,key,label,monthName);}catch(e){}
+  let pages=[],mes=null;
+  try{note('Ubicando las páginas de Sabores…');({pages,mes}=await pdfSaboresPages(pdfUrl,key,label,monthName));}catch(e){}
+  // PDF de un mes anterior que ya leímos → no repetir las pasadas caras
+  if(mes&&mes<mesActual()&&yaTengo&&yaTengo>=mes)return {datos:null,mes};
   if(!pages.length)pages=[3,4,5]; // respaldo: en el formato actual Sabores va en 3–5
   const out=emptyDayMap();let ok=0;
   for(let i=0;i<pages.length;i++){
@@ -486,22 +512,25 @@ async function readPdfMultiPass(bank,pdfUrl,key,note){
     try{mergeDayMaps(out,await pdfPageDiscounts(pdfUrl,key,label,monthName,pages[i]));ok++;}catch(e){}
   }
   if(!ok)throw new Error('no se pudo leer ninguna página del PDF');
-  return out;
+  return {datos:out,mes};
 }
 // Punto único de extracción: elige la estrategia del banco. `say` reporta progreso (opcional).
-async function extractDiscounts(bank,key,say){
+// Devuelve {datos, mes}: `mes` = mes de vigencia detectado en la fuente (o null si no lo dice).
+async function extractDiscounts(bank,key,say,yaTengo){
   const note=say||(()=>{});
   if(BANK_MODE[bank]==='pdf-vision'){
     note('Buscando el PDF del mes…');
     const pdf=await findPdfUrl(bank,key);
-    if(!pdf)throw new Error('no se encontró el PDF del mes en la página oficial');
-    try{return await readPdfMultiPass(bank,pdf,key,note);}
-    catch(e){note('Reintentando con lectura completa del PDF…');return await readPdfWithVision(bank,pdf,key);}
+    if(!pdf)throw new Error('la página no muestra el PDF (puede estar en cambio de mes)');
+    try{return await readPdfMultiPass(bank,pdf,key,note,yaTengo);}
+    catch(e){note('Reintentando con lectura completa del PDF…');return {datos:await readPdfWithVision(bank,pdf,key),mes:null};}
   }
   note('Recorriendo el sitio oficial…');
   const r=await fetch(API_URL,{method:'POST',headers:{...WEBFETCH_HEADERS,'x-api-key':key},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:8000,tools:toolsFor(bank),messages:[{role:'user',content:discPrompt(bank)}]})});
   const d=await r.json();if(d.error)throw new Error(d.error.message);
-  return aiJSON(d);
+  const datos=aiJSON(d);
+  const mes=/^\d{4}-\d{2}$/.test(String(datos._mes||''))?datos._mes:null;delete datos._mes;
+  return {datos,mes};
 }
 // Muestra los descuentos del banco seleccionado. Si no están frescos para el mes actual
 // y hay API key, los trae AUTOMÁTICAMENTE para esa tarjeta específica.
@@ -511,30 +540,47 @@ async function renderDiscounts(){
   if(!bank||!date){sec.style.display='none';return;}
   sec.style.display='block';
   document.getElementById('disc-bank-label').textContent=BANK_LABEL[bank]||bank;
-  const cur=new Date().toISOString().slice(0,7);
+  const cur=mesActual();
   const fresh=discData.fresh&&discData.fresh[bank]===cur;
-  if(!fresh&&getApiKey()){
+  if(!fresh&&getApiKey()&&bankUrl(bank)&&!enEspera(bank)){
     document.getElementById('disc-list').innerHTML='<div style="font-size:.79rem;color:var(--muted)"><span class="spin"></span> Buscando descuentos del mes…</div>';
     await fetchBankDiscounts(bank,m=>{const el=document.getElementById('disc-list');if(el)el.innerHTML=`<div style="font-size:.79rem;color:var(--muted)"><span class="spin"></span> ${m}</div>`;});updateDiscBadge();
   }
   const dow=new Date(date+'T12:00:00').getDay(),rows=(discData[bank]||{})[dow]||[];
   const noKey=!getApiKey();
-  document.getElementById('disc-list').innerHTML=rows.length?rows.map(r=>`<div class="drow"><span>${r.n}${r.c?` <span class="dcomuna">· ${r.c}</span>`:''}</span><span class="dpct">${r.p}%</span></div>`).join(''):`<div style="font-size:.79rem;color:var(--muted)">${noKey?'Configura la API key en el Panel para traer descuentos automáticos · ':'Sin descuentos este día · '}<button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.75rem">agregar manual</button></div>`;
+  const viejo=!noKey&&bankUrl(bank)&&!(discData.fresh&&discData.fresh[bank]===mesActual());
+  const aviso=viejo?`<div class="disc-aviso">${mesDe(bank)?`Mostrando descuentos de ${nombreMes(mesDe(bank))}`:'Sin descuentos de este mes'}${discData.espera&&discData.espera[bank]?` · ${BANK_LABEL[bank]} ${discData.espera[bank]}`:''} · <button class="btn btn-ghost btn-sm" onclick="reintentarBanco('${bank}')" style="padding:2px 7px;font-size:.75rem">reintentar</button></div>`:'';
+  document.getElementById('disc-list').innerHTML=aviso+(rows.length?rows.map(r=>`<div class="drow"><span>${r.n}${r.c?` <span class="dcomuna">· ${r.c}</span>`:''}</span><span class="dpct">${r.p}%</span></div>`).join(''):`<div style="font-size:.79rem;color:var(--muted)">${noKey?'Configura la API key en el Panel para traer descuentos automáticos · ':'Sin descuentos este día · '}<button class="btn btn-ghost btn-sm" onclick="openDiscEditor()" style="padding:2px 7px;font-size:.75rem">agregar manual</button></div>`);
 }
 // Trae los descuentos del mes para UNA tarjeta: SALTO DOBLE (página fija → PDF del mes → tablas).
-async function fetchBankDiscounts(bank,say){
+// Trae los descuentos del mes para UNA tarjeta. Nunca borra los datos previos:
+// si el banco aún muestra el mes anterior o la página está caída, se quedan los
+// que había y se reintenta automáticamente como máximo cada 12 h.
+async function fetchBankDiscounts(bank,say,{forzar=false}={}){
   const key=getApiKey();if(!key)return false;
   if(!bankUrl(bank))return false; // sin página/PDF (CMR) → no auto
-  const cur=new Date().toISOString().slice(0,7);
+  if(!forzar&&enEspera(bank))return false;
+  const cur=mesActual();
+  for(const k of ['fresh','mesDatos','intento','espera'])discData[k]=discData[k]||{};
+  discData.intento[bank]=Date.now();guardarDisc();
   try{
-    const parsed=await extractDiscounts(bank,key,say);
-    const total=Object.values(parsed).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0);
-    if(!total)return false; // no borrar datos previos si vino vacío
-    discData[bank]=parsed;discData.auto=true;discData.month=cur;
-    discData.fresh=discData.fresh||{};discData.fresh[bank]=cur;
-    localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
-    return true;
-  }catch(e){return false;}
+    const {datos,mes}=await extractDiscounts(bank,key,say,mesDe(bank));
+    const total=datos?Object.values(datos).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0):0;
+    if(mes&&mes<cur){ // la fuente sigue en un mes anterior
+      if(total&&!(mesDe(bank)>=mes)){discData[bank]=datos;discData.mesDatos[bank]=mes;}
+      discData.espera[bank]=`aún publica ${nombreMes(mes)}`;
+      guardarDisc();return false;
+    }
+    if(!total){discData.espera[bank]='la página no entregó descuentos (puede estar en cambio de mes)';guardarDisc();return false;}
+    discData[bank]=datos;discData.auto=true;discData.month=cur;
+    discData.fresh[bank]=cur;discData.mesDatos[bank]=cur;delete discData.espera[bank];
+    guardarDisc();return true;
+  }catch(e){discData.espera[bank]=e.message;guardarDisc();return false;}
+}
+async function reintentarBanco(bank){
+  const el=document.getElementById('disc-list');
+  await fetchBankDiscounts(bank,m=>{if(el)el.innerHTML=`<div style="font-size:.79rem;color:var(--muted)"><span class="spin"></span> ${m}</div>`;},{forzar:true});
+  updateDiscBadge();renderDiscounts();
 }
 
 function openDiscEditor(){document.getElementById('disc-overlay').classList.add('open');renderEditorRows();syncUrlField();document.getElementById('disc-last-update').textContent=discData.month?`Datos de: ${discData.month}`:'Sin datos guardados';}
@@ -586,10 +632,11 @@ async function parsePasted(){
     const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     const parsed=aiJSON(d);
-    const cur=new Date().toISOString().slice(0,7);
+    const cur=mesActual();
+    for(const k of ['fresh','mesDatos','espera'])discData[k]=discData[k]||{};
     discData[editorBank]=parsed;discData.auto=true;discData.month=cur;
-    discData.fresh=discData.fresh||{};discData.fresh[editorBank]=cur;
-    localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
+    discData.fresh[editorBank]=cur;discData.mesDatos[editorBank]=cur;delete discData.espera[editorBank];
+    guardarDisc();
     renderEditorRows();updateDiscBadge();renderDiscounts();
     const n=Object.values(parsed).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0);
     st.textContent=n?`✓ ${n} descuentos ordenados. Revisa las pestañas de días y guarda.`:'No se detectaron descuentos en el texto — revisa que hayas copiado la lista.';
@@ -605,14 +652,18 @@ async function fetchFromUrl(){
   const btn=document.getElementById('url-fetch-btn');btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span>';
   st.textContent='Abriendo la página oficial…';
   try{
-    const parsed=await extractDiscounts(editorBank,key,m=>{st.textContent=m;});
-    const cur=new Date().toISOString().slice(0,7);
+    const {datos,mes}=await extractDiscounts(editorBank,key,m=>{st.textContent=m;}); // manual: siempre lee completo
+    const parsed=datos||{};
+    const cur=mesActual(),deMes=mes||cur;
+    for(const k of ['fresh','mesDatos','espera'])discData[k]=discData[k]||{};
     discData[editorBank]=parsed;discData.auto=true;discData.month=cur;
-    discData.fresh=discData.fresh||{};discData.fresh[editorBank]=cur;
-    localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));
+    discData.mesDatos[editorBank]=deMes;
+    if(deMes>=cur){discData.fresh[editorBank]=cur;delete discData.espera[editorBank];}
+    else discData.espera[editorBank]=`aún publica ${nombreMes(deMes)}`;
+    guardarDisc();
     renderEditorRows();updateDiscBadge();renderDiscounts();
     const n=Object.values(parsed).reduce((a,x)=>a+(Array.isArray(x)?x.length:0),0);
-    st.textContent=n?`✓ ${n} descuentos leídos desde el sitio oficial.`:'No se detectaron descuentos — revisa la URL o usa "Pegar texto".';
+    st.textContent=n?`✓ ${n} descuentos leídos desde el sitio oficial${deMes<cur?` (ojo: el PDF es de ${nombreMes(deMes)})`:''}.`:'No se detectaron descuentos — revisa la URL o usa "Pegar texto".';
   }catch(e){st.textContent='✗ No se pudo leer: '+e.message+' (revisa la URL o edita manual).';}
   btn.disabled=false;btn.textContent=old;
 }
@@ -625,7 +676,7 @@ function renderEditorRows(){
 function updateDiscRow(i,f,v){if(!discData[editorBank])discData[editorBank]={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};if(!discData[editorBank][editorDay])discData[editorBank][editorDay]=[];discData[editorBank][editorDay][i][f]=v;}
 function addDiscRow(){if(!discData[editorBank])discData[editorBank]={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};if(!discData[editorBank][editorDay])discData[editorBank][editorDay]=[];discData[editorBank][editorDay].push({n:'',p:40,c:''});renderEditorRows();}
 function removeDiscRow(i){discData[editorBank][editorDay].splice(i,1);renderEditorRows();}
-function saveDiscounts(){discData.month=new Date().toISOString().slice(0,7);localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));updateDiscBadge();renderDiscounts();closeDiscEditor();}
+function saveDiscounts(){discData.month=mesActual();localStorage.setItem(`${LS}.discounts`,JSON.stringify(discData));updateDiscBadge();renderDiscounts();closeDiscEditor();}
 
 let cityCenter=null,cityViewbox=null,cityBiasFor=null;
 // Sesga las búsquedas a la ciudad: geocodifica el centro una vez y arma un viewbox alrededor.
