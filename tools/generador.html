@@ -386,7 +386,43 @@ body {
 }
 .btn-ghost:hover { border-color: var(--terracota); background: var(--paper); }
 
-/* Botón Asignar — preparado para handoff, pendiente de integración */
+/* Línea de info bajo el botón */
+.info-line {
+  text-align: center;
+  font-family: var(--f-data);
+  font-size: .7rem;
+  color: var(--muted);
+  margin: .6rem 0 0;
+  line-height: 1.7;
+}
+.info-line .warn { color: var(--rust); }
+.linkish {
+  background: none; border: 0; padding: 0;
+  font: inherit; color: var(--terracota-deep);
+  text-decoration: underline; cursor: pointer;
+}
+
+/* Historial de la sesión */
+.historial { margin-top: 1rem; }
+.hist-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: var(--f-data); font-size: .66rem; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--muted); margin-bottom: .45rem;
+}
+.hist-head .linkish { text-transform: none; letter-spacing: 0; }
+.hist-row {
+  display: flex; gap: 10px; align-items: baseline; width: 100%;
+  text-align: left; padding: 8px 11px; margin-bottom: 5px;
+  background: var(--cream-soft); border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm); cursor: pointer; font-family: var(--f-ui);
+  transition: border-color .12s, background .12s;
+}
+.hist-row:hover { border-color: var(--terracota); background: var(--paper); }
+.hist-row.actual { border-color: var(--terracota); }
+.hist-cat  { flex: 0 0 auto; font-family: var(--f-data); font-size: .64rem; color: var(--muted); white-space: nowrap; }
+.hist-name { flex: 1 1 auto; font-size: .84rem; color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
+
+/* Botón Asignar → handoff al Planificador */
 .btn-assign {
   padding: 6px 13px;
   border-radius: var(--r-btn);
@@ -467,6 +503,9 @@ body {
     Tirar al azar
   </button>
 
+  <!-- INFO: tamaño de la lista, descartados, actualizar -->
+  <div class="info-line" id="infoLine" style="display:none"></div>
+
   <!-- STATUS -->
   <div class="status" id="statusMsg"></div>
 
@@ -483,138 +522,257 @@ body {
     <div class="res-fields" id="resAllFields" style="display:none"></div>
     <div class="res-actions">
       <button class="btn-ghost"  onclick="tirar()">🔀 Otro</button>
+      <button class="btn-ghost"  onclick="marcarVisto()" title="No volverá a salir en este navegador">👁 Ya lo vi</button>
       <button class="btn-ghost"  id="notionBtn" style="display:none">📋 Ver en Notion</button>
-      <!-- HANDOFF: botón preparado — integración pendiente en chat de Design -->
+      <!-- HANDOFF → Planificador (panel.v5.pendingActivities) -->
       <button class="btn-assign" id="assignBtn" onclick="prepareHandoff()" style="display:none">📅 Asignar a momento</button>
     </div>
   </div>
 
+  <!-- HISTORIAL DE LA SESIÓN -->
+  <div class="historial" id="historial" style="display:none"></div>
+
   <div class="footer">
-    Panel Bastián · Módulo Generador v1.0 · Claude Haiku via API
+    Panel Bastián · Generador v2.1 · Notion vía proxy · sin IA
   </div>
 
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  FUENTES DE DATOS — NOTION COLLECTIONS
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  GENERADOR v2.1 — sortea UNA cosa desde tus bases de Notion.
+//  No usa IA: lee Notion vía proxy (Vercel) y sortea en el navegador.
+//
+//  Cómo sortea:
+//   1. Categoría elegida → usa esa. "Todo" → sortea una categoría
+//      ponderada por su tamaño (= cada ítem de la base igual de probable).
+//   2. Pide a Notion SOLO esa categoría (filtro del lado del servidor).
+//   3. Guarda la lista 6 h en este navegador → próximas tiradas instantáneas.
+//   4. Azar puro: puede repetir, como un dado.
+//   5. "Ya lo vi" lo saca para siempre de los sorteos (solo en este navegador).
+//   6. Lo que va saliendo queda listado abajo mientras la pestaña siga abierta.
+// ═══════════════════════════════════════════════════════════════
+
+// ── FUENTES ──
+// options = categoría → cantidad aprox. de ítems (Notion, 14-10-2026).
+// La cantidad solo pondera "Todo" y se corrige sola cada vez que se
+// descarga una lista. Una categoría nueva en Notion se agrega aquí.
 const MODES = {
   lugares: {
     label: 'Lugar', emoji: '📍',
-    collection: 'collection://3359a86b-a8ec-8058-9b3d-000bbb083025',
-    filterOptions: ['Comida','Comida Region','Delivery o Retiro','Extranjero','Paseo','Naturaleza','Weas Baratas'],
-    fields: ['Nombre','Descripcion','Comuna','Horario','Nota','Link','Select','url'],
-    nameField: 'Nombre', notaField: 'Nota', linkField: 'Link',
+    sources: { main: {
+      collection: 'collection://3359a86b-a8ec-8058-9b3d-000bbb083025',
+      nameField: 'Nombre', notaField: 'Nota', linkField: 'Link',
+      options: { 'Comida':329, 'Comida Region':66, 'Delivery o Retiro':29, 'Extranjero':442, 'Paseo':97,
+                 'Naturaleza':145, 'Weas Baratas':61, 'Tips para Viajar':64, 'Tips para acampar':23 },
+    }},
     ratingField: 'Select',
-    ratingMap: { 'WenoWeno':'⭐ WenoWeno', 'Ahi nomas':'✓ Ahí nomás', 'Malo':'✗ Malo' }
+    ratingMap: { 'WenoWeno':'⭐ WenoWeno', 'Ahi nomas':'✓ Ahí nomás', 'Malo':'✗ Malo' },
   },
   comida: {
     label: 'Comida', emoji: '🍳',
-    multiSource: true,
     sources: {
       ideas: {
         collection: 'collection://3509a86b-a8ec-8025-9111-000b8bb658ee',
-        fields: ['Nombre','Categoria','Nota','RRSS','Link','url'],
-        nameField: 'Nombre', notaField: 'Nota', linkField: 'Link'
+        nameField: 'Nombre', notaField: 'Nota', linkField: 'Link',
+        options: { 'Ideas sin receta':618, 'Especificos':65, 'Como comprar xd':57, 'como comer Tutorial':18, 'Como almacenar':58 },
       },
       recetas: {
         collection: 'collection://34c9a86b-a8ec-8090-907f-000b9cdf1fbb',
-        fields: ['Name','Categoria','Link','url'],
-        nameField: 'Name', notaField: null, linkField: 'Link'
-      }
+        nameField: 'Name', notaField: null, linkField: 'Link',
+        options: { 'Salado':459, 'Dulce':67, 'Cocktail':55 },
+      },
     },
-    filterGroups: [
-      { source: 'ideas',   options: ['Ideas sin receta','Especificos','Como comprar xd','como comer Tutorial','Como almacenar'] },
-      { source: 'recetas', options: ['Salado','Dulce','Cocktail'] }
-    ],
-    notaField: 'Nota', linkField: 'Link', ratingField: null
   },
   ocio: {
     label: 'Ocio', emoji: '🎮',
-    collection: 'collection://3519a86b-a8ec-80bf-be17-000b0584b979',
-    filterOptions: ['Juegos','Musica','Juego Mesa','Libros Practicos','Libros','Manga','Anime','Serie','Peliculas','Juegos con melin'],
-    fields: ['Nombre','Categoria','Plataforma1','Gracia','Veredicto','Link','url'],
-    nameField: 'Nombre', notaField: 'Gracia', linkField: 'Link',
+    sources: { main: {
+      collection: 'collection://3519a86b-a8ec-80bf-be17-000b0584b979',
+      nameField: 'Nombre', notaField: 'Gracia', linkField: 'Link',
+      options: { 'Peliculas':1350, 'Musica':512, 'Serie':266, 'Anime':176, 'Cortos':59, 'Manga':185, 'Libros':282,
+                 'Libros Practicos':15, 'Juegos':2970, 'Juego Mesa':123, 'Juegos con melin':86, 'otros juegos':194,
+                 'Emulacion':9, 'Dinamicas y otros':94 },
+    }},
     ratingField: 'Veredicto',
-    ratingMap: { 'Wena':'⭐ Wena', 'Mala':'✗ Mala' }
+    ratingMap: { 'Wena':'⭐ Wena', 'Mala':'✗ Mala' },
   },
   mias: {
     label: 'Idea mía', emoji: '💡',
-    collection: 'collection://3419a86b-a8ec-80dd-897d-000b244fccee',
-    filterOptions: ['Ejercicio','Laborales','Invertir','Aprender otros','Aprender Farma','Comprar'],
-    fields: ['Nombre','Categoria','Nota','Otro','Link','url'],
-    nameField: 'Nombre', notaField: 'Nota', linkField: 'Link', ratingField: null
+    sources: { main: {
+      collection: 'collection://3419a86b-a8ec-80dd-897d-000b244fccee',
+      nameField: 'Nombre', notaField: 'Nota', linkField: 'Link',
+      options: { 'Ideas Sueltas xd':381, 'Aprender otros':283, 'Invertir':210, 'Ejercicio':151,
+                 'Aprender Farma':129, 'Comprar':93, 'Laborales':7 },
+    }},
   },
   melin: {
     label: 'Guagua Melín-Zayd', emoji: '👶',
-    collection: 'collection://33e9a86b-a8ec-80d8-8800-000b9a7e5a4d',
-    filterOptions: ['Eventos','Cosas que se hacen','Cosas que se compran','Cosas para ver','Cosas para aprender','Cosas a tener en mente'],
-    fields: ['Nombre','Categoria','Texto','Nota','Link','url'],
-    nameField: 'Nombre', notaField: 'Texto', linkField: 'Link', ratingField: null
-  }
+    sources: { main: {
+      collection: 'collection://33e9a86b-a8ec-80d8-8800-000b9a7e5a4d',
+      nameField: 'Nombre', notaField: 'Texto', linkField: 'Link',
+      options: { 'Cosas que se hacen':280, 'Cosas a tener en mente':264, 'Cosas que se compran':167,
+                 'Cosas para ver':115, 'Cosas para aprender':21, 'Eventos':18 },
+    }},
+  },
 };
 
-// ═══════════════════════════════════════════
-//  ESTADO
-// ═══════════════════════════════════════════
-let currentMode    = 'lugares';
-let selectedFilter = '';
-let selectedSource = null;
-let isLoading      = false;
-let lastItem       = null;   // persiste el resultado para el handoff
+// Categorías que NO entran al sorteo de "Todo" (siguen disponibles con su chip).
+// Ej: ['Tips para Viajar','Tips para acampar'] si no quieres tips como "plan".
+const FUERA_DE_TODO = [];
+
+// ── AJUSTES ──
+const NOTION_API     = 'https://analizador-de-acciones.vercel.app';
+const CACHE_TTL_MS   = 6 * 60 * 60 * 1000;    // listas guardadas 6 h
+const MAX_LISTAS_LS  = 4;                     // máx. listas guardadas a la vez
+const MAX_HISTORIAL  = 50;                    // ítems listados por sesión
+const LS             = 'gen.v2';              // prefijo propio (no choca con panel.v5)
+
+// ── ESTADO ──
+let currentMode = 'lugares';
+let selected    = null;        // { src, cat } o null = Todo
+let isLoading   = false;
+let lastItem    = null;        // ítem en pantalla (para handoff / ya lo vi)
+let lastList    = null;        // { src, cat, total, parcial }
+const memoria   = new Map();   // listas ya descargadas en esta sesión
+
+window.addEventListener('DOMContentLoaded', () => { renderFilters(); renderInfo(); renderHistorial(); });
 
 // ═══════════════════════════════════════════
-//  API KEY
+//  AZAR — entero uniforme en [0, n)
+//  crypto.getRandomValues + rechazo = sin sesgo de módulo.
 // ═══════════════════════════════════════════
-const NOTION_API = 'https://analizador-de-acciones.vercel.app';
+function azar(n) {
+  if (n <= 1) return 0;
+  if (!window.crypto?.getRandomValues) return Math.floor(Math.random() * n);
+  const lim = Math.floor(0x100000000 / n) * n;
+  const b = new Uint32Array(1);
+  do { crypto.getRandomValues(b); } while (b[0] >= lim);
+  return b[0] % n;
+}
 
-// Notion se consulta vía proxy en Vercel (api/notion.js). El token vive como variable
-// de entorno en Vercel — el navegador no necesita ninguna llave.
-window.addEventListener('DOMContentLoaded', () => { renderFilters(); });
+// Elige uno de `opciones` con probabilidad proporcional a `peso(op)`
+function azarPonderado(opciones, peso) {
+  const pesos = opciones.map(o => Math.max(1, Math.round(peso(o)) || 1));
+  let r = azar(pesos.reduce((a, b) => a + b, 0));
+  for (let i = 0; i < opciones.length; i++) { if (r < pesos[i]) return opciones[i]; r -= pesos[i]; }
+  return opciones[opciones.length - 1];
+}
+
+// Sin tildes / mayúsculas / espacios: "Películas" == "peliculas "
+function norm(s) { return String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase(); }
+
+// Id corto y estable de una fila (para "ya lo vi")
+function idDe(item, nameField) { return String(item?.url || item?.[nameField] || '').slice(-16); }
+
+// ── Almacenamiento seguro (puede fallar en modo privado o por cuota) ──
+function lsGet(k, def, st = localStorage) { try { const v = st.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } }
+function lsSet(k, v, st = localStorage)   { try { st.setItem(k, JSON.stringify(v)); return true; } catch { return false; } }
+function lsDel(k, st = localStorage)      { try { st.removeItem(k); } catch {} }
+const SS = (() => { try { return window.sessionStorage; } catch { return undefined; } })();
 
 // ═══════════════════════════════════════════
 //  MODO Y FILTROS
 // ═══════════════════════════════════════════
 function setMode(mode) {
-  currentMode = mode; selectedFilter = ''; selectedSource = null;
-  document.querySelectorAll('.mode-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.mode === mode)
-  );
-  renderFilters();
-  hideResult();
-  document.getElementById('errorBox').classList.remove('visible');
+  currentMode = mode; selected = null;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  renderFilters(); hideResult(); hideError(); hideStatus();
+  lastList = null; renderInfo(); renderHistorial();
+}
+
+function chipsDe(m) {
+  const out = [];
+  for (const [src, cfg] of Object.entries(m.sources))
+    for (const cat of Object.keys(cfg.options)) out.push({ src, cat });
+  return out;
 }
 
 function renderFilters() {
   const m = MODES[currentMode];
   let html = `<div class="filter-label">Filtrar por categoría</div><div class="chips">`;
-  if (m.multiSource && m.filterGroups) {
-    html += `<button class="chip active" onclick="selectChipSource(this,'',null)">Todo</button>`;
-    m.filterGroups.forEach(g =>
-      g.options.forEach(o =>
-        html += `<button class="chip" onclick="selectChipSource(this,'${o}','${g.source}')">${o}</button>`
-      )
-    );
-  } else {
-    html += `<button class="chip active" onclick="selectChip(this,'')">Todo</button>`;
-    m.filterOptions.forEach(o =>
-      html += `<button class="chip" onclick="selectChip(this,'${o}')">${o}</button>`
-    );
-  }
+  html += `<button class="chip active" data-i="-1">Todo</button>`;
+  chipsDe(m).forEach((c, i) => html += `<button class="chip" data-i="${i}">${escHtml(c.cat)}</button>`);
   html += `</div>`;
-  document.getElementById('filterWrap').innerHTML = html;
+  const wrap = document.getElementById('filterWrap');
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.chip').forEach(el => el.onclick = () => {
+    wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    const i = Number(el.dataset.i);
+    selected = i < 0 ? null : chipsDe(MODES[currentMode])[i];
+  });
 }
 
-function selectChip(el, val) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  selectedFilter = val; selectedSource = null;
+// Tamaño conocido de una categoría: el último medido, o el de la tabla de arriba
+function tamano(modeKey, c) {
+  const cfg = MODES[modeKey].sources[c.src];
+  const medidos = lsGet(`${LS}.conteos`, {});
+  return medidos[`${cfg.collection}|${c.cat}`] ?? cfg.options[c.cat] ?? 1;
 }
-function selectChipSource(el, val, source) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  selectedFilter = val; selectedSource = source;
+
+// ═══════════════════════════════════════════
+//  OBTENER LISTA (memoria → navegador → Notion)
+// ═══════════════════════════════════════════
+async function obtenerLista(src, cat, { forzar = false } = {}) {
+  const cfg = MODES[currentMode].sources[src];
+  const key = `${cfg.collection}|${cat}`;
+
+  if (!forzar) {
+    if (memoria.has(key) && Date.now() - memoria.get(key).t < CACHE_TTL_MS) return memoria.get(key);
+    const g = lsGet(`${LS}.lista.${key}`, null);
+    if (g && Date.now() - g.t < CACHE_TTL_MS && Array.isArray(g.items)) {
+      const lista = { key, t: g.t, items: g.items, parcial: false };
+      memoria.set(key, lista); return lista;
+    }
+  }
+
+  showStatus(`Consultando Notion: ${escHtml(cat)}…`);
+  const qs = new URLSearchParams({ ds: cfg.collection, cat });
+  if (forzar) qs.set('fresh', '1');
+  const r = await fetch(`${NOTION_API}/api/notion?${qs}`);
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    throw new Error(r.status === 504
+      ? 'Notion tardó demasiado (504). Intenta de nuevo en un momento.'
+      : `Notion ${r.status}: ${e?.error || r.statusText}`);
+  }
+  const data = await r.json();
+
+  // Limpieza: sin nombre fuera; categoría verificada también aquí
+  // (por si el proxy es antiguo y no filtró del lado de Notion).
+  const c = norm(cat);
+  const items = (data.items || [])
+    .filter(it => String(it?.[cfg.nameField] ?? '').trim())
+    .filter(it => String(it?.Categoria ?? '').split(',').map(norm).includes(c))
+    .map(compactar);
+
+  const lista = { key, t: Date.now(), items, parcial: !!data.parcial };
+  memoria.set(key, lista);
+  if (!lista.parcial) {                         // una lista incompleta NO se guarda
+    guardarLista(key, items);
+    const medidos = lsGet(`${LS}.conteos`, {});  // tamaño real → mejora la ponderación de "Todo"
+    medidos[key] = items.length; lsSet(`${LS}.conteos`, medidos);
+  }
+  return lista;
+}
+
+// Quita campos vacíos para que la lista ocupe poco en el navegador
+function compactar(it) {
+  const o = {};
+  for (const [k, v] of Object.entries(it)) if (v !== null && v !== '' && v !== false) o[k] = v;
+  return o;
+}
+
+// Guarda la lista; si no cabe, borra las más viejas y reintenta
+function guardarLista(key, items) {
+  const idxKey = `${LS}.indice`;
+  let idx = lsGet(idxKey, []).filter(k => k !== key);
+  idx.push(key);
+  while (idx.length > MAX_LISTAS_LS) lsDel(`${LS}.lista.${idx.shift()}`);
+  let ok = lsSet(`${LS}.lista.${key}`, { t: Date.now(), items });
+  while (!ok && idx.length > 1) { lsDel(`${LS}.lista.${idx.shift()}`); ok = lsSet(`${LS}.lista.${key}`, { t: Date.now(), items }); }
+  if (!ok) idx = idx.filter(k => k !== key);   // no cupo: queda solo en memoria
+  lsSet(idxKey, idx);
 }
 
 // ═══════════════════════════════════════════
@@ -622,53 +780,41 @@ function selectChipSource(el, val, source) {
 // ═══════════════════════════════════════════
 async function tirar() {
   if (isLoading) return;
-
   const m = MODES[currentMode];
-  isLoading = true; hideResult(); hideError();
-  showStatus('Consultando Notion...'); setSpinning(true);
+  isLoading = true; hideResult(); hideError(); setSpinning(true);
 
   try {
-    let activeCollection, activeNameField, activeFields, activeNotaField;
+    // 1. Categoría: la elegida, o una ponderada por tamaño si es "Todo"
+    let elec = selected;
+    if (!elec) {
+      const pool = chipsDe(m).filter(c => !FUERA_DE_TODO.includes(c.cat));
+      elec = azarPonderado(pool, c => tamano(currentMode, c));
+    }
+    const cfg = m.sources[elec.src];
 
-    if (m.multiSource && m.sources) {
-      const srcKey = selectedSource || (Math.random() < .5 ? 'ideas' : 'recetas');
-      const src = m.sources[srcKey];
-      activeCollection = src.collection;
-      activeNameField  = src.nameField || 'Nombre';
-      activeFields     = src.fields;
-      activeNotaField  = src.notaField;
-    } else {
-      activeCollection = m.collection;
-      activeNameField  = m.nameField || 'Nombre';
-      activeFields     = m.fields;
-      activeNotaField  = m.notaField;
+    // 2. Lista de esa categoría
+    const lista = await obtenerLista(elec.src, elec.cat);
+    lastList = { src: elec.src, cat: elec.cat, total: lista.items.length, parcial: lista.parcial };
+
+    // 3. Quitar solo lo marcado "Ya lo vi"
+    const vistos = new Set(lsGet(`${LS}.vistos.${cfg.collection}`, []));
+    const pool = lista.items.filter(it => !vistos.has(idDe(it, cfg.nameField)));
+    if (!pool.length) {
+      renderInfo();
+      showStatus(lista.items.length
+        ? `Ya marcaste todo "${escHtml(elec.cat)}" como visto.`
+        : `"${escHtml(elec.cat)}" está vacía en Notion.`);
+      return;
     }
 
-    // Consulta el proxy de Notion en Vercel (token server-side). Devuelve las filas aplanadas.
-    const response = await fetch(`${NOTION_API}/api/notion?ds=${encodeURIComponent(activeCollection)}`);
-    if (!response.ok) {
-      const e = await response.json().catch(() => ({}));
-      throw new Error(`Notion ${response.status}: ${e?.error || response.statusText}`);
-    }
-    const data = await response.json();
-    let items = data.items || [];
-
-    // Filtra en el cliente: descarta filas sin nombre y aplica la categoría elegida.
-    items = items.filter(it => {
-      const nm = it?.[activeNameField];
-      if (!nm || !String(nm).trim()) return false;
-      if (selectedFilter && it?.Categoria !== selectedFilter) return false;
-      return true;
-    });
-
-    if (!items.length) { showStatus('Sin resultados. Prueba con otro filtro.'); return; }
-
+    // 4. Sorteo puro (puede repetir)
+    const item = pool[azar(pool.length)];
     hideStatus();
-    const random = items[Math.floor(Math.random() * items.length)];
-    lastItem = { ...random, _mode: currentMode, _nameField: activeNameField, _notaField: activeNotaField };
-    showResult(random, m, activeNameField, activeNotaField);
+    mostrar(item, currentMode, elec.src);
+    agregarHistorial(item, currentMode, elec.src);
+    renderInfo();
 
-  } catch(err) {
+  } catch (err) {
     hideStatus();
     showError(err.message || 'Error. Abre la consola (F12) para más detalle.');
     console.error('[Generador]', err);
@@ -677,70 +823,144 @@ async function tirar() {
   }
 }
 
-function extractItems(data) {
-  for (const block of (data?.content || [])) {
-    if (block.type === 'text' && block.text) {
-      const t = block.text.trim();
-      const m = t.match(/\[[\s\S]*?\]/);
-      if (m) { try { return JSON.parse(m[0]); } catch(e){} }
-      try { const p = JSON.parse(t); if (Array.isArray(p)) return p; } catch(e){}
-    }
-    if (block.type === 'mcp_tool_result') {
-      const inner = block?.content?.[0]?.text;
-      if (inner) {
-        try { const p = JSON.parse(inner); if (Array.isArray(p)) return p; } catch(e){}
-        const m = inner.match(/\[[\s\S]*?\]/);
-        if (m) { try { return JSON.parse(m[0]); } catch(e){} }
-      }
-    }
+// Muestra un ítem y lo deja como "actual" (handoff, ya lo vi)
+function mostrar(item, modeKey, src) {
+  const cfg = MODES[modeKey].sources[src];
+  lastItem = { ...item, _mode: modeKey, _nameField: cfg.nameField, _src: src };
+  showResult(item, modeKey, cfg);
+}
+
+// ═══════════════════════════════════════════
+//  HISTORIAL DE LA SESIÓN (sessionStorage: muere al cerrar la pestaña)
+// ═══════════════════════════════════════════
+function agregarHistorial(item, modeKey, src) {
+  const h = lsGet(`${LS}.historial`, [], SS);
+  h.unshift({ item, mode: modeKey, src });
+  if (h.length > MAX_HISTORIAL) h.length = MAX_HISTORIAL;
+  lsSet(`${LS}.historial`, h, SS);
+  renderHistorial();
+}
+
+function renderHistorial() {
+  const el = document.getElementById('historial');
+  if (!el) return;
+  const h = lsGet(`${LS}.historial`, [], SS);
+  if (!h.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const actual = lastItem ? idDe(lastItem, lastItem._nameField) : null;
+  const filas = h.map((e, i) => {
+    const m = MODES[e.mode], cfg = m?.sources[e.src];
+    if (!cfg) return '';
+    const nombre = e.item?.[cfg.nameField] || 'Sin nombre';
+    const esActual = i === 0 && idDe(e.item, cfg.nameField) === actual;
+    return `<button class="hist-row${esActual ? ' actual' : ''}" data-i="${i}">
+      <span class="hist-cat">${m.emoji} ${escHtml(e.item?.Categoria || m.label)}</span>
+      <span class="hist-name">${escHtml(nombre)}</span></button>`;
+  }).join('');
+  el.innerHTML = `<div class="hist-head"><span>Salieron en esta sesión (${h.length})</span>
+    <button class="linkish" onclick="limpiarHistorial()">limpiar</button></div>${filas}`;
+  el.querySelectorAll('.hist-row').forEach(b => b.onclick = () => {
+    const e = lsGet(`${LS}.historial`, [], SS)[Number(b.dataset.i)];
+    if (!e) return;
+    hideStatus(); hideError();
+    mostrar(e.item, e.mode, e.src);
+    el.querySelectorAll('.hist-row').forEach(x => x.classList.toggle('actual', x === b));
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  el.style.display = 'block';
+}
+
+function limpiarHistorial() { lsDel(`${LS}.historial`, SS); renderHistorial(); }
+
+// ═══════════════════════════════════════════
+//  "YA LO VI" — fuera de los sorteos (en este navegador)
+// ═══════════════════════════════════════════
+function marcarVisto() {
+  if (!lastItem) return;
+  const cfg = MODES[lastItem._mode].sources[lastItem._src];
+  const k = `${LS}.vistos.${cfg.collection}`;
+  const v = new Set(lsGet(k, []));
+  v.add(idDe(lastItem, cfg.nameField));
+  lsSet(k, [...v]);
+  renderInfo();
+  tirar();                       // y pasa directo a otro
+}
+
+function restablecerVistos() {
+  for (const cfg of Object.values(MODES[currentMode].sources)) lsDel(`${LS}.vistos.${cfg.collection}`);
+  renderInfo();
+}
+
+async function actualizarLista() {
+  if (!lastList || isLoading) return;
+  isLoading = true; setSpinning(true); hideError();
+  try {
+    const l = await obtenerLista(lastList.src, lastList.cat, { forzar: true });
+    lastList.total = l.items.length; lastList.parcial = l.parcial;
+    hideStatus(); renderInfo();
+  } catch (err) { hideStatus(); showError(err.message); }
+  finally { isLoading = false; setSpinning(false); }
+}
+
+// Línea de información bajo el botón: tamaño de la lista y descartados
+function renderInfo() {
+  const el = document.getElementById('infoLine');
+  if (!el) return;
+  const nVistos = Object.values(MODES[currentMode].sources)
+    .reduce((a, cfg) => a + lsGet(`${LS}.vistos.${cfg.collection}`, []).length, 0);
+  const partes = [];
+  if (lastList) {
+    partes.push(`${escHtml(lastList.cat)}: ${lastList.total.toLocaleString('es-CL')} en la lista`);
+    if (lastList.parcial) partes.push(`<span class="warn">⚠ lista incompleta (Notion tardó)</span>`);
+    partes.push(`<button class="linkish" onclick="actualizarLista()">↻ actualizar</button>`);
   }
-  return null;
+  if (nVistos) partes.push(`${nVistos} descartado${nVistos > 1 ? 's' : ''} · <button class="linkish" onclick="restablecerVistos()">restablecer</button>`);
+  el.innerHTML = partes.join(' · ');
+  el.style.display = partes.length ? 'block' : 'none';
 }
 
 // ═══════════════════════════════════════════
 //  MOSTRAR RESULTADO
 // ═══════════════════════════════════════════
-function showResult(item, m, nameField, notaField) {
-  const nombre    = item?.[nameField] || 'Sin nombre';
+function showResult(item, modeKey, cfg) {
+  const m = MODES[modeKey];
+  const nombre    = item?.[cfg.nameField] || 'Sin nombre';
   const categoria = item?.Categoria || '';
-  const nota      = notaField ? (item?.[notaField] || null) : null;
-  const link      = m.linkField ? (item?.[m.linkField] || null) : null;
+  const nota      = cfg.notaField ? (item?.[cfg.notaField] || null) : null;
+  const link      = cfg.linkField ? (item?.[cfg.linkField] || null) : null;
   const notionUrl = item?.url || null;
 
   document.getElementById('resBadge').textContent = `${m.emoji} ${categoria || m.label}`;
   document.getElementById('resName').textContent  = nombre;
 
   let meta = '';
-  if (currentMode === 'lugares') {
-    if (item?.Comuna)    meta += item.Comuna;
-    if (item?.Horario)   meta += (meta ? ' · ' : '') + item.Horario;
+  if (modeKey === 'lugares') {
+    if (item?.Comuna)      meta += item.Comuna;
+    if (item?.Horario)     meta += (meta ? ' · ' : '') + item.Horario;
     if (item?.Descripcion) meta += (meta ? '\n' : '') + item.Descripcion;
-    if (m.ratingField && item?.[m.ratingField] && m.ratingMap)
-      meta += (meta ? ' · ' : '') + (m.ratingMap[item[m.ratingField]] || item[m.ratingField]);
-  } else if (currentMode === 'ocio') {
+  } else if (modeKey === 'ocio') {
     if (item?.Plataforma1) meta += item.Plataforma1;
-    if (m.ratingField && item?.[m.ratingField] && m.ratingMap)
-      meta += (meta ? ' · ' : '') + (m.ratingMap[item[m.ratingField]] || item[m.ratingField]);
-  } else if (currentMode === 'comida') {
+  } else if (modeKey === 'comida') {
     if (item?.RRSS) meta += item.RRSS;
   }
+  if (m.ratingField && item?.[m.ratingField] && m.ratingMap)
+    meta += (meta ? ' · ' : '') + (m.ratingMap[item[m.ratingField]] || item[m.ratingField]);
   const metaEl = document.getElementById('resMeta');
   metaEl.textContent   = meta;
   metaEl.style.display = meta ? 'block' : 'none';
 
   const notaEl = document.getElementById('resNota');
-  if (nota?.trim()) { notaEl.textContent = nota; notaEl.style.display = 'block'; }
+  if (String(nota ?? '').trim()) { notaEl.textContent = nota; notaEl.style.display = 'block'; }
   else { notaEl.style.display = 'none'; }
 
   document.getElementById('resLink').innerHTML = link
-    ? `<a href="${link}" target="_blank" class="res-link">🔗 Ver referencia</a>` : '';
+    ? `<a href="${escAttr(link)}" target="_blank" rel="noopener" class="res-link">🔗 Ver referencia</a>` : '';
 
   const notionBtn = document.getElementById('notionBtn');
   if (notionUrl) { notionBtn.style.display = 'flex'; notionBtn.onclick = () => window.open(notionUrl, '_blank'); }
   else { notionBtn.style.display = 'none'; }
 
-  // ── Todas las columnas de la fila (para no tener que abrir Notion) ──
-  const skip = new Set([nameField, 'url', 'id']);
+  // Todas las columnas de la fila (para no tener que abrir Notion)
+  const skip = new Set([cfg.nameField, 'url', 'id']);
   const rows = Object.entries(item)
     .filter(([k, v]) => !k.startsWith('_') && !skip.has(k) && v != null && String(v).trim() !== '')
     .map(([k, v]) => `<div class="rf-row"><span class="rf-key">${escHtml(k)}</span><span class="rf-val">${fmtVal(v)}</span></div>`)
@@ -749,18 +969,14 @@ function showResult(item, m, nameField, notaField) {
   allEl.innerHTML = rows ? `<div class="rf-title">Todos los campos</div>${rows}` : '';
   allEl.style.display = rows ? 'block' : 'none';
 
-  // Botón Asignar — siempre visible cuando hay resultado
   document.getElementById('assignBtn').style.display = 'flex';
-
   document.getElementById('resultCard').classList.add('visible');
 }
 
 // ═══════════════════════════════════════════
-//  HANDOFF — PENDIENTE DE INTEGRACIÓN
-//  Este bloque escribe en localStorage el item seleccionado
-//  para que el Planificador de Salidas lo recoja al abrirse.
-//  Clave: 'panel.v5.pendingActivity'
-//  Integración definitiva: chat de Design del Dashboard Final
+//  HANDOFF → Planificador de Salidas
+//  Agrega el ítem a localStorage['panel.v5.pendingActivities'] (cola, máx 8);
+//  el Planificador la lee al abrir su Modo 2.
 // ═══════════════════════════════════════════
 function prepareHandoff() {
   if (!lastItem) return;
@@ -772,27 +988,19 @@ function prepareHandoff() {
     link:       lastItem.Link || null,
     timestamp:  new Date().toISOString()
   };
-  // COLA: se AGREGA a la lista (antes sobreescribía → solo quedaba 1).
-  let list = [];
-  try { list = JSON.parse(localStorage.getItem('panel.v5.pendingActivities') || '[]'); } catch(e) {}
+  let list = lsGet('panel.v5.pendingActivities', []);
   if (!Array.isArray(list)) list = [];
-  if (!list.some(x => x.nombre === item.nombre)) list.push(item); // sin duplicar por nombre
-  if (list.length > 8) list = list.slice(-8);                     // tope de 8 en la cola
-  localStorage.setItem('panel.v5.pendingActivities', JSON.stringify(list));
+  if (!list.some(x => x.nombre === item.nombre)) list.push(item);   // sin duplicar por nombre
+  if (list.length > 8) list = list.slice(-8);                        // tope de 8
+  lsSet('panel.v5.pendingActivities', list);
 
-  // Feedback visual temporal
   const btn = document.getElementById('assignBtn');
   const orig = btn.textContent;
   btn.textContent = `✓ Agregada (${list.length}) — abre el Planificador`;
   btn.style.background = 'var(--moss)';
   btn.style.color = 'var(--cream-soft)';
   btn.style.borderColor = 'var(--moss)';
-  setTimeout(() => {
-    btn.textContent = orig;
-    btn.style.background = '';
-    btn.style.color = '';
-    btn.style.borderColor = '';
-  }, 2500);
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; }, 2500);
 }
 
 // ═══════════════════════════════════════════
@@ -805,15 +1013,16 @@ function setSpinning(on) {
   btn.disabled = on;
   icon.textContent = on ? '⟳' : '🎲';
 }
-function showStatus(msg) { const el = document.getElementById('statusMsg'); el.innerHTML = msg; el.classList.add('visible'); }function hideStatus()    { document.getElementById('statusMsg').classList.remove('visible'); }
+function showStatus(msg) { const el = document.getElementById('statusMsg'); el.innerHTML = msg; el.classList.add('visible'); }
+function hideStatus()    { document.getElementById('statusMsg').classList.remove('visible'); }
 function hideResult()    { document.getElementById('resultCard').classList.remove('visible'); }
 function showError(msg)  { const el = document.getElementById('errorBox'); el.textContent = '⚠ ' + msg; el.classList.add('visible'); }
 function hideError()     { document.getElementById('errorBox').classList.remove('visible'); }
-// Escapa HTML y convierte URLs en enlaces — para mostrar columnas de forma segura.
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function fmtVal(v){
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return escHtml(s).replace(/"/g,'&quot;'); }
+function fmtVal(v) {
   const raw = Array.isArray(v) ? v.join(', ') : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-  return escHtml(raw).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--terracota)">$1</a>');
+  return escHtml(raw).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:var(--terracota)">$1</a>');
 }
 </script>
 </body>
