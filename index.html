@@ -856,7 +856,9 @@ const ALL_TOOLS = [
   {
     cat: 'Familia / Hogar',
     short: 'Hogar',
-    items: [],
+    items: [
+      { id: 'vacaciones', icon: '🌴', name: '¿Cuándo pido vacaciones?', desc: 'Vacaciones, administrativos y findes · feriados de Chile · ritmo parejo', href: 'tools/vacaciones.html', status: 'live' }
+    ],
     files: [
       { name: 'Plano Casa',    kind: 'JSX', desc: 'Plano arquitectónico base · 50 m²',        href: DRIVE('1wTQUZpbia4z1FH9nMDrfokkzHvEVbwmR') },
       { name: 'Plano Casa v2', kind: 'JSX', desc: '3 propuestas: escalera · solar · huerto',  href: DRIVE('1rHXaIbroagFZUlLI-FgbM_m2gWe9PeLZ') }
@@ -876,6 +878,7 @@ const ALL_TOOLS = [
 // ─── CREACIONES Claude (timeline) ──────────────
 // Bitácora cronológica de artefactos. La fecha es ISO YYYY-MM-DD.
 const CREATIONS = [
+  { date: '2026-10-16', icon: '🌴', name: '¿Cuándo pido vacaciones?',              desc: 'Generador de vacaciones · verano, resto y administrativos con ritmo parejo', tag: 'Herramienta', href: 'tools/vacaciones.html' },
   { date: '2026-08-14', icon: '🧭', name: 'Generador de Tiempo Libre',            desc: 'Complemento del Selector · lee el bloque actual del panel', tag: 'Módulo',         href: 'tools/generador-tiempo-libre.html' },
   { date: '2026-08-14', icon: '📦', name: 'Intermediación CENABAST · skill',      desc: 'CSV + facturas escaneadas → Excel validado, ritmo semanal', tag: 'Automatización', href: 'https://www.notion.so/3359a86ba8ec81ad9d26f798f8f73648', external: true },
   { date: '2026-08-14', icon: '⌨️', name: 'Solicitudes de Pedido · autollenado',  desc: 'AutoHotkey llena Adquisiciones desde compras.csv',         tag: 'Automatización', href: 'https://www.notion.so/3bc9a86ba8ec8174a506e52d7c112ca0', external: true },

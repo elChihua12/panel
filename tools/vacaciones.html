@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c9956f">
+<title>¿Cuándo pido vacaciones?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@1,9..144,600&display=swap" rel="stylesheet">
+<style>
+/* ═══ TOKENS · earthy (panel V5) ═══ */
+:root{
+  --cream:#f5f0e8;--cream-soft:#fdfaf3;--paper:#fbf6ec;--beige:#ede4d3;--beige-deep:#e3d6bd;--line:#d8c9aa;--line-soft:#e8dcc4;
+  --terracota:#c9956f;--terracota-deep:#b07a52;--ocre:#b8864a;--ocre-soft:#d4a861;--moss:#7a8d5c;--rust:#a4492c;
+  --ink:#2d2418;--ink-soft:#5a4a37;--muted:#8a7860;--muted-soft:#a89880;
+  --ok:#5a7a40;--ok-bg:#eef3e8;--warn:#9a6d33;--warn-bg:#fdf0db;--err:#a4492c;--err-bg:#fcede8;
+  --slate:#5d7288;
+  --glow1:rgba(201,149,111,.12);--glow2:rgba(184,134,74,.07);
+  --shadow-sm:0 2px 10px rgba(45,36,24,.06);
+  --r-xs:8px;--r-sm:12px;--r-md:14px;--r-lg:20px;--r-btn:11px;
+  --f-ui:'Geist',-apple-system,"Segoe UI",system-ui,sans-serif;
+  --f-data:'Geist Mono',ui-monospace,Menlo,Consolas,monospace;
+  --f-rx:'Fraunces',Georgia,"Times New Roman",serif;
+  --on-dark:#fdfaf3;--on-light:#2d2418;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --cream:#1c1813;--cream-soft:#26201a;--paper:#221d17;--beige:#302920;--beige-deep:#3b3227;--line:#4c4132;--line-soft:#3a3126;
+    --terracota:#d4a27c;--terracota-deep:#e2b591;--ocre:#d1a263;--ocre-soft:#d4a861;--moss:#9aae7b;--rust:#e27e60;
+    --ink:#f1e9dc;--ink-soft:#d6c8b3;--muted:#ae9d85;--muted-soft:#8f7f69;
+    --ok:#8fb070;--ok-bg:#26301d;--warn:#dcae66;--warn-bg:#342a18;--err:#e27e60;--err-bg:#3a221a;--slate:#93a8c0;
+    --glow1:rgba(201,149,111,.08);--glow2:rgba(184,134,74,.05);--shadow-sm:0 2px 10px rgba(0,0,0,.28);
+    --on-dark:#1c1813;--on-light:#1c1813;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --cream:#1c1813;--cream-soft:#26201a;--paper:#221d17;--beige:#302920;--beige-deep:#3b3227;--line:#4c4132;--line-soft:#3a3126;
+  --terracota:#d4a27c;--terracota-deep:#e2b591;--ocre:#d1a263;--ocre-soft:#d4a861;--moss:#9aae7b;--rust:#e27e60;
+  --ink:#f1e9dc;--ink-soft:#d6c8b3;--muted:#ae9d85;--muted-soft:#8f7f69;
+  --ok:#8fb070;--ok-bg:#26301d;--warn:#dcae66;--warn-bg:#342a18;--err:#e27e60;--err-bg:#3a221a;--slate:#93a8c0;
+  --glow1:rgba(201,149,111,.08);--glow2:rgba(184,134,74,.05);--shadow-sm:0 2px 10px rgba(0,0,0,.28);
+  --on-dark:#1c1813;--on-light:#1c1813;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:var(--f-ui);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(ellipse 70% 45% at 85% -5%,var(--glow1) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at -5% 105%,var(--glow2) 0%,transparent 60%),var(--cream);background-color:var(--cream);min-height:100%}
+::selection{background:var(--terracota);color:var(--cream-soft)}
+.wrap{max-width:1140px;margin:0 auto;padding:22px clamp(14px,3vw,22px) 90px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--terracota-deep);outline-offset:2px}
+
+/* header */
+.back{display:inline-block;font-family:var(--f-data);font-size:.68rem;color:var(--muted);text-decoration:none;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.back:hover{color:var(--terracota-deep)}
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.hdr-left{display:flex;align-items:center;gap:12px}
+.mark{width:34px;height:34px;border-radius:11px;background:var(--ink);position:relative;flex-shrink:0}
+.mark::before{content:"";position:absolute;inset:8px 8px auto auto;width:9px;height:9px;border-radius:50%;background:var(--terracota)}
+h1{margin:0;font-weight:700;font-size:clamp(1.35rem,4vw,1.74rem);letter-spacing:-.035em;line-height:1.05}
+h1 .dot{color:var(--terracota)}
+.hdr-sub{font-size:.8rem;color:var(--muted);margin-top:4px}
+
+/* section eyebrow */
+.row-h{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;margin:34px 0 12px}
+.row-h-title{font-size:.76rem;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.16em;margin:0}
+.row-h-sub{font-size:.76rem;color:var(--muted-soft)}
+
+/* controls */
+.seg-mini{display:inline-flex;gap:3px;background:var(--beige);border-radius:var(--r-btn);padding:3px}
+.seg-mini button{border:0;background:transparent;border-radius:8px;padding:6px 14px;font-size:.78rem;color:var(--ink-soft);font-weight:500}
+.seg-mini button:hover{color:var(--ink)}
+.seg-mini button[aria-pressed="true"]{background:var(--ink);color:var(--cream-soft)}
+.tabs{display:flex;gap:5px;background:var(--beige);padding:4px;border-radius:var(--r-md);margin-bottom:12px;max-width:640px}
+.tab{flex:1;padding:8px 10px;border:0;border-radius:var(--r-sm);font-size:.81rem;font-weight:500;color:var(--muted);background:transparent;white-space:nowrap;transition:all .18s}
+.tab[aria-pressed="true"]{background:var(--cream-soft);color:var(--ink);box-shadow:var(--shadow-sm)}
+.tab:hover:not([aria-pressed="true"]){color:var(--ink-soft)}
+.sub{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:12px;min-height:30px}
+.sub-lbl{font-size:.73rem;font-weight:500;color:var(--ink-soft)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;padding:4px 12px 4px 10px;border-radius:20px;border:1px solid var(--line);background:var(--cream-soft);color:var(--muted);transition:all .15s}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line);transition:all .15s}
+.chip:hover{border-color:var(--terracota)}
+.chip[aria-pressed="true"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.chip[aria-pressed="true"]::before{background:var(--ok)}
+select.sel{font-size:.8rem;padding:5px 8px;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--cream-soft);color:var(--ink)}
+.btn{font-size:.84rem;font-weight:500;border-radius:var(--r-btn);border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;white-space:nowrap;padding:10px 18px;line-height:1}
+.btn-solid{background:var(--ink);color:var(--cream-soft);border-color:var(--ink)}
+.btn-solid:hover{background:var(--terracota-deep);border-color:var(--terracota-deep)}
+.btn-ghost{background:var(--cream-soft);color:var(--ink-soft);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--terracota);color:var(--ink)}
+.btn-sm{padding:6px 10px;font-size:.75rem}
+.btn-rm{background:var(--err-bg);color:var(--err);border-color:rgba(164,73,44,.2);padding:5px 9px;font-size:.74rem}
+.btn-rm:hover{background:var(--err);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.clearbox{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px 8px}
+.clearbox .q{font-size:.76rem;color:var(--err);font-weight:500}
+
+/* cards */
+.card{background:var(--cream-soft);border:1px solid var(--line-soft);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--shadow-sm)}
+.ctitle{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0}
+.callout{background:var(--beige);border-left:3px solid var(--terracota);padding:9px 12px;border-radius:0 var(--r-xs) var(--r-xs) 0;font-size:.82rem;color:var(--ink-soft);margin-top:12px;line-height:1.55;max-width:760px}
+.callout.ok{border-left-color:var(--ok)}
+.callout.err{background:var(--err-bg);border-left-color:var(--err);color:var(--err)}
+.callout:empty{display:none}
+
+/* saldo: blísteres */
+.packs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.pack-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}
+.num{font-family:var(--f-data);font-size:.95rem;font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+.num small{font-size:.7rem;color:var(--muted);font-weight:400}
+.num.over{color:var(--err)}
+.foil{background:var(--beige);border-radius:var(--r-md);padding:12px 14px;display:flex;flex-wrap:wrap;gap:14px 20px}
+.grp{display:grid;gap:7px;align-content:start}
+.grp-l{font-family:var(--f-data);font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.row{display:flex;flex-wrap:wrap;gap:8px;max-width:150px}
+.pill{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.5) 0 16%,transparent 18%),var(--ok);box-shadow:0 0 0 2.5px var(--beige-deep)}
+.pill.used,.tabl.used,.sachet.used{background:transparent;box-shadow:inset 0 2px 3px rgba(45,36,24,.16),0 0 0 2.5px var(--beige-deep)}
+.pill.over,.tabl.over{background:var(--err-bg);box-shadow:0 0 0 2.5px var(--err)}
+.tabl{width:40px;height:18px;border-radius:9px;background:var(--ocre-soft);position:relative;box-shadow:0 0 0 2.5px var(--beige-deep)}
+.tabl::after{content:"";position:absolute;left:50%;top:4px;bottom:4px;width:2px;margin-left:-1px;background:rgba(45,36,24,.25);border-radius:1px}
+.tabl.half{background:linear-gradient(90deg,transparent 50%,var(--ocre-soft) 50%);box-shadow:inset 0 2px 3px rgba(45,36,24,.12),0 0 0 2.5px var(--beige-deep)}
+.tabl.res{background:repeating-linear-gradient(135deg,var(--line) 0 3px,transparent 3px 6px);box-shadow:0 0 0 2.5px var(--line)}
+.tabl.used::after,.tabl.res::after{background:var(--line)}
+.sachet{width:40px;height:34px;border-radius:5px;background:var(--slate);outline:1.5px dashed rgba(253,250,243,.5);outline-offset:-5px;box-shadow:0 0 0 2.5px var(--beige-deep)}
+.sachet.used{outline-color:var(--line)}
+.sachet.over{background:var(--err-bg);box-shadow:0 0 0 2.5px var(--err)}
+
+/* receta */
+.rx{display:grid;grid-template-columns:auto 1fr;gap:4px 20px;max-width:760px;padding:20px 22px 22px}
+.rp{font-family:var(--f-rx);font-style:italic;font-weight:600;font-size:2.5rem;line-height:1;color:var(--terracota-deep)}
+.rx-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.rx-when{font-family:var(--f-data);font-size:.74rem;color:var(--muted);letter-spacing:.04em}
+.stag{font-size:.68rem;padding:2px 8px;border-radius:8px;font-weight:500;background:var(--beige-deep);color:var(--ink-soft)}
+.big{font-weight:700;font-size:clamp(1.5rem,4.4vw,2rem);letter-spacing:-.03em;line-height:1.1;margin:6px 0 12px}
+.rx ul{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px;font-size:.9rem;color:var(--ink-soft)}
+.rx li{padding-left:18px;position:relative}
+.rx li::before{content:"";position:absolute;left:0;top:.42em;width:10px;height:10px;border-radius:3px;background:var(--c,var(--ink))}
+.cost{margin:0 0 16px;color:var(--muted);font-size:.82rem}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.count{font-family:var(--f-data);font-size:.72rem;color:var(--muted)}
+.empty{margin:0;color:var(--muted);font-size:.86rem;max-width:56ch}
+.empty-box{font-size:.84rem;color:var(--muted);text-align:center;padding:24px 12px;border:1px dashed var(--line);border-radius:var(--r-md)}
+
+/* calendario */
+.legend{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.72rem;color:var(--muted)}
+.legend li{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:4px;display:inline-block}
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:26px 30px}
+.mname{font-size:.9rem;font-weight:600;margin:0 0 8px;text-transform:capitalize;letter-spacing:-.01em}
+.g7{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dow{font-family:var(--f-data);font-size:.6rem;color:var(--muted-soft);text-align:center;padding-bottom:2px}
+.day{aspect-ratio:1;border:0;border-radius:var(--r-xs);background:transparent;font-family:var(--f-data);font-weight:500;font-size:.78rem;font-variant-numeric:tabular-nums;color:var(--ink);position:relative;padding:0;transition:background-color .12s}
+.day.we{background:var(--beige);color:var(--ink-soft)}
+.day.hol{color:var(--rust);font-weight:600}
+.day.hol::after{content:"";position:absolute;left:50%;bottom:3px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--rust)}
+.day.nat{background:var(--err-bg);color:var(--rust)}
+.day.long{background:repeating-linear-gradient(135deg,var(--line) 0 2.5px,transparent 2.5px 6px);cursor:not-allowed}
+.day.v{background:var(--ok);color:var(--on-dark)}
+.day.a{background:var(--ocre-soft);color:var(--on-light)}
+.day.h{background:linear-gradient(135deg,var(--ocre-soft) 0 50%,transparent 50%);box-shadow:inset 0 0 0 1.5px var(--ocre-soft)}
+.day.w{background:var(--slate);color:var(--on-dark)}
+.day.v::after,.day.w::after{background:var(--on-dark)}
+.day.eve::before{content:"";position:absolute;top:3px;right:3px;width:0;height:0;border-top:7px solid var(--terracota-deep);border-left:7px solid transparent;border-top-right-radius:3px}
+.day.blk{background:repeating-linear-gradient(45deg,var(--beige-deep) 0 2px,transparent 2px 6px);color:var(--muted);cursor:not-allowed}
+.day.past{opacity:.28;cursor:default}
+.day .pay{position:absolute;top:1px;left:3px;font-size:.55rem;font-weight:600;color:var(--moss);line-height:1}
+.day.v .pay,.day.w .pay{color:var(--on-dark)}
+.day.sch{box-shadow:inset 0 0 0 2px var(--terracota-deep)}
+.hols .schl b{color:var(--terracota-deep)}
+.rit{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.track{position:relative;height:18px;background:var(--beige);border-radius:9px;margin-top:10px}
+.rseg{position:absolute;top:3px;bottom:3px;background:var(--ok);border-radius:6px;min-width:6px}
+.rseg.adm{background:var(--ocre-soft)}
+.rgap{position:absolute;top:50%;transform:translate(-50%,-50%);font-family:var(--f-data);font-size:.62rem;color:var(--ink-soft);line-height:1;pointer-events:none}
+.rgap.far{color:var(--err);font-weight:600}
+.farT{color:var(--err);font-weight:600}
+.rtick{position:absolute;top:-5px;bottom:-5px;border-left:2px dashed var(--terracota-deep);margin-left:-1px}
+.rtick.open{border-left-style:solid}
+.tlabels{position:relative;height:16px;margin-top:5px;font-family:var(--f-data);font-size:.64rem;color:var(--muted)}
+.rlab{position:absolute;top:0;white-space:nowrap}
+.rlab.end{transform:translateX(-100%)}
+.rit-h{display:grid;gap:4px;margin-bottom:2px}
+.hols .eve b{color:var(--terracota-deep)}
+.day:not(.past):not(.long):hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.blank{aspect-ratio:1}
+.hols{list-style:none;margin:8px 0 0;padding:0;font-size:.72rem;color:var(--muted);display:grid;gap:2px}
+.hols b{font-family:var(--f-data);color:var(--rust);font-weight:500;display:inline-block;min-width:1.7em}
+
+/* plan */
+.plan{max-width:760px}
+.drow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 14px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.drow:last-child{border-bottom:0}
+.dt{font-size:.88rem;font-weight:600}
+.dd{font-size:.76rem;color:var(--muted)}
+.total{font-family:var(--f-data);font-size:.74rem;color:var(--muted);margin:10px 0 0}
+.req-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 8px}
+textarea.req{width:100%;min-height:150px;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--paper);padding:10px 12px;font-family:var(--f-ui);font-size:.82rem;line-height:1.6;color:var(--ink);resize:vertical}
+
+/* ajustes */
+details.settings{max-width:760px}
+details.settings summary{cursor:pointer;list-style:none}
+details.settings summary::-webkit-details-marker{display:none}
+details.settings summary::after{content:" +";color:var(--muted)}
+details.settings[open] summary::after{content:" −"}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 14px;margin-top:14px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label,.fg span{font-size:.73rem;font-weight:500;color:var(--ink-soft)}
+.fg input{font-size:.83rem;padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--cream-soft);color:var(--ink);width:100%}
+.fg input:focus{border-color:var(--terracota);outline:none}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.84rem;margin-top:14px}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:var(--ok);flex:none}
+.check small{display:block;color:var(--muted);font-size:.74rem}
+.foot{margin-top:34px;font-size:.72rem;color:var(--muted-soft)}
+.toast{position:fixed;left:50%;bottom:0;transform:translate(-50%,16px);opacity:0;visibility:hidden;background:var(--ink);color:var(--cream-soft);padding:10px 16px;border-radius:var(--r-sm);margin-bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:min(92vw,520px);font-size:.84rem;box-shadow:0 10px 30px rgba(45,36,24,.2);transition:transform .2s,opacity .2s,visibility .2s;z-index:5}
+.toast.on{transform:translate(-50%,0);opacity:1;visibility:visible}
+@media (max-width:560px){
+  .rx{grid-template-columns:1fr;padding:18px 16px}
+  .rp{font-size:2rem}
+  .tab{font-size:.76rem;padding:8px 6px}
+  .packs{gap:8px}
+  .packs .card{padding:12px 14px}
+  .pack-h{margin-bottom:8px}
+  .foil{padding:10px 12px;gap:10px 16px}
+  .pill{width:18px;height:18px}
+  .row{gap:7px;max-width:126px}
+  .tabl{width:34px;height:15px}
+  .sachet{width:34px;height:28px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← Panel</a>
+  <header class="hdr">
+    <div class="hdr-left">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <h1>¿Cuándo pido vacaciones<span class="dot">?</span></h1>
+        <div class="hdr-sub">Saldo, feriados de Chile y una sugerencia a la vez.</div>
+      </div>
+    </div>
+    <div class="seg-mini" id="years" role="group" aria-label="Año"></div>
+  </header>
+
+  <div class="row-h"><h2 class="row-h-title">Saldo</h2><span class="row-h-sub" id="saldoSub"></span></div>
+  <section class="packs" id="packs" aria-label="Saldo disponible"></section>
+  <p class="callout" id="rule"></p>
+
+  <div class="row-h">
+    <h2 class="row-h-title">Sugerencia</h2>
+    <div class="clearbox" id="clearBox"></div>
+  </div>
+  <div class="tabs" id="modes" role="group" aria-label="Qué planificar"></div>
+  <div class="sub" id="subctl"></div>
+  <article class="card rx" id="rx" aria-live="polite"></article>
+
+  <div class="row-h">
+    <h2 class="row-h-title">Calendario</h2>
+    <ul class="legend">
+      <li><span class="sw" style="background:var(--ok)"></span>Vacaciones</li>
+      <li><span class="sw" style="background:var(--ocre-soft)"></span>Administrativo</li>
+      <li><span class="sw" style="background:linear-gradient(135deg,var(--ocre-soft) 0 50%,transparent 50%);box-shadow:inset 0 0 0 1.5px var(--ocre-soft)"></span>Medio día</li>
+      <li><span class="sw" style="background:var(--slate)"></span>Finde libre</li>
+      <li><span class="sw" style="background:var(--err-bg);box-shadow:inset 0 0 0 1.5px var(--rust)"></span>Feriado libre</li>
+      <li><span class="sw" style="background:repeating-linear-gradient(135deg,var(--line) 0 2px,transparent 2px 5px);box-shadow:inset 0 0 0 1px var(--line)"></span>Finde largo, no se ofrece</li>
+      <li><span class="sw" style="position:relative;background:var(--beige)"><span style="position:absolute;top:0;right:0;border-top:7px solid var(--terracota-deep);border-left:7px solid transparent"></span></span>Salida 12:00</li>
+      <li><b style="font-family:var(--f-data);color:var(--moss);font-size:.7rem">$</b>Pago</li>
+      <li><span class="sw" style="background:repeating-linear-gradient(45deg,var(--beige-deep) 0 2px,transparent 2px 5px);box-shadow:inset 0 0 0 1px var(--line)"></span>No se piden días</li>
+      <li><span class="sw" style="box-shadow:inset 0 0 0 2px var(--terracota-deep)"></span>Inicio de clases</li>
+    </ul>
+  </div>
+  <section class="card"><div class="months" id="months"></div></section>
+
+  <div class="row-h"><h2 class="row-h-title">Tu plan</h2><span class="row-h-sub" id="planSub"></span></div>
+  <section class="card plan" id="plan"></section>
+
+  <div class="row-h"></div>
+  <details class="card settings">
+    <summary class="ctitle">Ajustes del año</summary>
+    <div id="settings"></div>
+  </details>
+
+  <p class="foot">Feriados nacionales 2026 y 2027 según feriados.cl (fuente BCN). Irrenunciables según Ley 19.973. <span id="sync"></span></p>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+const HOLIDAYS={
+"2026-01-01":"Año Nuevo","2026-04-03":"Viernes Santo","2026-04-04":"Sábado Santo","2026-05-01":"Día del Trabajo","2026-05-21":"Glorias Navales","2026-06-21":"Pueblos Indígenas","2026-06-29":"San Pedro y San Pablo","2026-07-16":"Virgen del Carmen","2026-08-15":"Asunción de la Virgen","2026-09-18":"Independencia","2026-09-19":"Glorias del Ejército","2026-10-12":"Encuentro de Dos Mundos","2026-10-31":"Iglesias Evangélicas","2026-11-01":"Todos los Santos","2026-12-08":"Inmaculada Concepción","2026-12-25":"Navidad",
+"2027-01-01":"Año Nuevo","2027-03-26":"Viernes Santo","2027-03-27":"Sábado Santo","2027-05-01":"Día del Trabajo","2027-05-21":"Glorias Navales","2027-06-21":"Pueblos Indígenas","2027-06-28":"San Pedro y San Pablo","2027-07-16":"Virgen del Carmen","2027-08-15":"Asunción de la Virgen","2027-09-17":"Fiestas Patrias (adicional)","2027-09-18":"Independencia","2027-09-19":"Glorias del Ejército","2027-10-11":"Encuentro de Dos Mundos","2027-10-31":"Iglesias Evangélicas","2027-11-01":"Todos los Santos","2027-12-08":"Inmaculada Concepción","2027-12-25":"Navidad"
+};
+const IRR=new Set(["2026-01-01","2026-05-01","2026-09-18","2026-09-19","2026-12-25","2027-01-01","2027-05-01","2027-09-18","2027-09-19","2027-12-25"]);
+/* Vísperas de irrenunciable: la salida es a las 12:00 */
+const EVES={"09-17":"Víspera de Fiestas Patrias","12-24":"Víspera de Navidad","12-31":"Víspera de Año Nuevo"};
+const EVE_HORA="12:00";
+const YEARS=[2026,2027];
+const MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const MESC=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const DC=["lun","mar","mié","jue","vie","sáb","dom"];
+const DL=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+const MODES=[["verano","Verano"],["resto","Resto"],["adm","Administrativos"]];
+const SPLITS=[["5","5 juntos"],["2+3","2 + 3"],["2+2+1","2 + 2 + 1"]];
+const pad=n=>String(n).padStart(2,"0");
+const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const NOW=new Date(), TODAY=keyOf(NOW), THIS_YEAR=NOW.getFullYear();
+const $=id=>document.getElementById(id);
+
+const plans={};
+let year=2027, days=[], mode=null, month="", optIdx=0, list=[], piece=null;
+let db=null, saving=false, saveTimer=null; const pending=new Set();
+
+function defaultPlan(){return {vac:15,adm:6,fds:3,admReserva:2,admMedios:1,admGroup:2,summerW:1,workHol:true,rule10:true,even:true,blockSep:true,noHalf:true,split:"5",summerFrom:"01-01",summerTo:"03-07",school:"03-03",schoolMode:"incluir",marks:{},wk:{}};}
+const SCHOOL_MODES=[["incluir","Estar libre ese día"],["antes","Terminar antes"],["igual","Da igual"]];
+function P(){return plans[year];}
+function normalize(d){
+  const p=defaultPlan();
+  if(d&&typeof d==="object"){
+    for(const k of ["vac","adm","fds","admReserva","admMedios","admGroup","summerW"]) if(typeof d[k]==="number"&&d[k]>=0) p[k]=d[k];
+    if(SCHOOL_MODES.some(s=>s[0]===d.schoolMode)) p.schoolMode=d.schoolMode;
+    for(const k of ["workHol","rule10","even","blockSep","noHalf"]) if(typeof d[k]==="boolean") p[k]=d[k];
+    if(SPLITS.some(s=>s[0]===d.split)) p.split=d.split;
+    for(const k of ["summerFrom","summerTo","school"]) if(typeof d[k]==="string"&&/^\d\d-\d\d$/.test(d[k])) p[k]=d[k];
+    if(d.marks&&typeof d.marks==="object") for(const k in d.marks){ if(["V","A","H"].includes(d.marks[k])) p.marks[k]=d.marks[k]; }
+    if(d.wk&&typeof d.wk==="object") for(const k in d.wk){ if(d.wk[k]) p.wk[k]=true; }
+  }
+  return p;
+}
+function buildDays(y){
+  const arr=[], d=new Date(y,0,1);
+  while(d.getFullYear()===y){
+    const k=keyOf(d);
+    arr.push({k,y,m:d.getMonth(),dd:d.getDate(),dow:(d.getDay()+6)%7,hol:HOLIDAYS[k]||null,irr:IRR.has(k),eve:EVES[k.slice(5)]||null,past:k<TODAY});
+    d.setDate(d.getDate()+1);
+  }
+  return arr;
+}
+
+/* ---------- reglas del día ---------- */
+const isWE=x=>x.dow>=5;
+function satIdx(i){const x=days[i]; if(!x) return -1; return x.dow===5?i:(x.dow===6?i-1:-1);}
+function natFree(x){return !!x.hol && (x.irr || !P().workHol);}
+function workedHol(x){return !!x && !!x.hol && !natFree(x);}
+function weekendNeedsW(i){const s=satIdx(i); const sat=days[s], sun=days[s+1]; return !((sat?natFree(sat):false)&&(sun?natFree(sun):false));}
+/* Finde largo: pegado a un feriado normal (trabajado) en viernes o lunes. Se cubre como un solo periodo. */
+function weekendLong(i){const s=satIdx(i); if(s<0) return false; return workedHol(days[s-1])||workedHol(days[s+2]);}
+function longHol(i){const s=satIdx(i); return workedHol(days[s-1])?days[s-1]:days[s+2];}
+/* Reglas de días que no se piden: semana del 18/09 y la siguiente, y días de media jornada (vísperas). */
+function sepRange(){const d=new Date(year,8,18), mon=new Date(year,8,18-((d.getDay()+6)%7)); return [keyOf(mon),keyOf(new Date(year,mon.getMonth(),mon.getDate()+13))];}
+function blockedDay(x){if(!P().blockSep) return false; const [a,z]=sepRange(); return x.k>=a&&x.k<=z;}
+function halfDay(x){return P().noHalf&&!!x.eve&&!isWE(x)&&!natFree(x);}
+function noTake(x){return !natFree(x)&&(blockedDay(x)||halfDay(x));}
+function wkOn(i){const s=satIdx(i); return s>=0 && !!days[s] && !!P().wk[days[s].k];}
+function isFree(i){
+  const x=days[i]; if(!x) return false;
+  if(natFree(x)) return true;
+  if(isWE(x)) return wkOn(i);
+  if(x.hol) return false;
+  const m=P().marks[x.k]; return m==="V"||m==="A";
+}
+function occupied(i){const x=days[i]; if(isWE(x)) return wkOn(i); return !!P().marks[x.k];}
+const sFrom=()=>year+"-"+P().summerFrom, sTo=()=>year+"-"+P().summerTo;
+const summerPast=()=>sTo()<TODAY;
+
+function usage(){
+  const p=P(); let v=0,aFull=0,aHalf=0;
+  for(const k in p.marks){const m=p.marks[k]; if(m==="V")v++; else if(m==="A")aFull++; else if(m==="H")aHalf+=.5;}
+  const w=Object.keys(p.wk).length;
+  const libres=Math.max(0,p.adm-p.admReserva-p.admMedios);
+  const usedLibres=aFull+Math.max(0,aHalf-p.admMedios);
+  return {v,aFull,aHalf,w,vL:p.vac-v,wL:p.fds-w,libres,usedLibres,libresL:libres-usedLibres,mediosUsed:Math.min(aHalf,p.admMedios),reservaUsed:Math.max(0,usedLibres-libres)};
+}
+function fractions(){
+  const runs=[]; let cur=null;
+  for(let i=0;i<days.length;i++){
+    const x=days[i]; if(isWE(x)||x.hol) continue;
+    if(P().marks[x.k]==="V"){ if(!cur){cur={i,j:i,n:0};runs.push(cur);} cur.j=i; cur.n++; }
+    else cur=null;
+  }
+  return runs;
+}
+/* Pago: último día hábil de cada mes (incluye diciembre del año anterior). */
+const dnum=k=>{const [y,m,d]=k.split("-").map(Number);return Math.round(new Date(y,m-1,d,12).getTime()/864e5);};
+const payCache={};
+function paydays(){
+  if(payCache[year]) return payCache[year];
+  const res=[];
+  for(let m=-1;m<12;m++){
+    const d=new Date(m<0?year-1:year,(m<0?11:m)+1,0);
+    for(;;){const k=keyOf(d),dw=(d.getDay()+6)%7; if(dw<5&&!HOLIDAYS[k]) break; d.setDate(d.getDate()-1);}
+    res.push(keyOf(d));
+  }
+  return payCache[year]=res;
+}
+const isPay=k=>paydays().includes(k);
+function payInfo(c){
+  const a=days[c.i].k,b=days[c.j].k, ps=paydays();
+  const inside=ps.filter(k=>k>=a&&k<=b);
+  const last=ps.filter(k=>k<a).pop();
+  return {inside,last,after:last?dnum(a)-dnum(last):99};
+}
+const schoolK=()=>year+"-"+P().school;
+const hasSchool=()=>!summerPast()&&schoolK()>=TODAY;
+const fmtK=k=>{const [y,m,d]=k.split("-").map(Number);const dt=new Date(y,m-1,d);return DC[(dt.getDay()+6)%7]+" "+d+" "+MESC[m-1];};
+/* Ritmo parejo: el tramo de verano es la base; los descansos se reparten a intervalos iguales
+   hasta la misma fecha del año siguiente. N descansos = 1 + partes del reparto. */
+function rhythm(){
+  const b=budget(); if(!b.longFr) return null;
+  const vb=planBlocks().filter(x=>x.V>0||x.A>0);
+  const base=vb.find(x=>x.i<=b.longFr.i&&x.j>=b.longFr.j); if(!base) return null;
+  const g=P().admGroup, admGroups=g>0?Math.floor(usage().libres/g):0;
+  const n=P().split.split("+").length+1+admGroups;
+  const x0=days[base.i], d1=new Date(x0.y+1,x0.m,x0.dd);
+  const b0=dnum(x0.k), b1=dnum(keyOf(d1)), L=b1-b0, per=L/n;
+  const targets=[]; for(let k=1;k<n;k++){const t=keyOf(new Date(x0.y,x0.m,x0.dd+Math.round(k*per))); targets.push({k:t,n:dnum(t),filled:null});}
+  const others=vb.filter(x=>x!==base).map(x=>({x,s:dnum(days[x.i].k)})).sort((a,c)=>a.s-c.s);
+  for(const o of others){let best=null; for(const t of targets){if(t.filled) continue; if(!best||Math.abs(t.n-o.s)<Math.abs(best.n-o.s)) best=t;} if(best){best.filled=o;o.t=best;o.off=o.s-best.n;}}
+  const starts=[b0,...others.map(o=>o.s),b1], gaps=[]; for(let k=1;k<starts.length;k++) gaps.push(starts[k]-starts[k-1]);
+  /* Trabajo seguido: desde el día siguiente al último día libre hasta el día anterior al próximo descanso. */
+  const seq=[base,...others.map(o=>o.x).filter(x=>x.i>base.j)].sort((a,c)=>a.i-c.i);
+  const lastDay=keyOf(new Date(x0.y+1,x0.m,x0.dd-1));
+  const work=seq.map((x,k)=>{const nx=seq[k+1]; const from=dnum(days[x.j].k)+1, to=nx?dnum(days[nx.i].k)-1:b1-1;
+    return {n:to-from+1,from,to,fromK:days[x.j+1]?days[x.j+1].k:null,toK:nx?days[nx.i-1].k:lastDay};});
+  const restDays=seq.reduce((a,x)=>a+(x.j-x.i+1),0);
+  const avgRest=seq.length>1?(restDays-(base.j-base.i+1))/(seq.length-1):3;
+  const workPar=(L-restDays-Math.max(0,n-seq.length)*avgRest)/n;
+  return {base,b0,b1,L,per,n,admGroups,targets,others,gaps,work,workPar,avgRest,next:keyOf(d1),open:targets.filter(t=>!t.filled)};
+}
+function workAround(c,R){
+  const bl=[R.base,...R.others.map(o=>o.x)]; let pe=null,ns=null;
+  for(const x of bl){if(x.j<c.i&&(pe===null||x.j>pe)) pe=x.j; if(x.i>c.j&&(ns===null||x.i<ns)) ns=x.i;}
+  const bef=pe!==null?dnum(days[c.i].k)-dnum(days[pe].k)-1:null;
+  const aft=(ns!==null?dnum(days[ns].k):R.b1)-dnum(days[c.j].k)-1;
+  return {bef,aft};
+}
+function budget(){
+  const p=P(), u=usage(), fr=fractions();
+  const longFr=fr.find(f=>f.n>=10)||null;
+  const reserveOn=p.rule10&&!summerPast();
+  const needLong=reserveOn&&!longFr;
+  const vacFree=needLong?Math.max(0,u.vL-10):Math.max(0,u.vL);
+  const wFree=needLong?Math.max(0,u.wL-p.summerW):Math.max(0,u.wL);
+  return {u,fr,longFr,reserveOn,needLong,vacFree,wFree};
+}
+function restPieces(b){
+  const scheme=P().split.split("+").map(Number);
+  const rest=b.fr.filter(f=>f!==b.longFr);
+  const rem=scheme.slice(); let mismatch=false;
+  for(const f of rest){const ix=rem.indexOf(f.n); if(ix>=0) rem.splice(ix,1); else mismatch=true;}
+  const sum=rem.reduce((a,c)=>a+c,0);
+  if(mismatch||sum>b.vacFree) return b.vacFree>0?[b.vacFree]:[];
+  return rem.sort((a,c)=>c-a);
+}
+
+/* ---------- generador ---------- */
+function candidates(){
+  const out=[], N=days.length;
+  const zeroFree=i=>i>=0&&i<N&&isFree(i);
+  for(let i=0;i<N;i++){
+    const xi=days[i];
+    if(xi.past||occupied(i)) continue;
+    if(noTake(xi)) continue;
+    if(!isWE(xi)&&workedHol(xi)) continue;
+    if(isWE(xi)&&!natFree(xi)&&weekendLong(i)) continue;
+    if(xi.dow===6&&!natFree(xi)) continue;
+    if(zeroFree(i-1)) continue;
+    let h=0,W=0,pend=false,wkS=-1;
+    for(let j=i;j<N&&j<i+26;j++){
+      const x=days[j];
+      if(occupied(j)) break;
+      if(noTake(x)) break;
+      if(!isWE(x)&&workedHol(x)) break;
+      if(isWE(x)){
+        if(!natFree(x)){
+          if(weekendLong(j)) break;
+          const sI=satIdx(j); if(wkS!==sI){W++;wkS=sI;}
+          pend=(x.dow===5);
+        } else pend=false;
+      } else if(!x.hol) h++;
+      if(pend) continue;
+      if(zeroFree(j+1)) continue;
+      if(h+W===0) continue;
+      out.push({i,j,h,W,free:j-i+1,eff:(j-i+1)/(h+W)});
+    }
+  }
+  return out;
+}
+function touchesV(c){
+  const p=P();
+  for(let k=c.i-1;k>=0;k--){const x=days[k]; if(isWE(x)||x.hol) continue; if(p.marks[x.k]==="V") return true; break;}
+  for(let k=c.j+1;k<days.length;k++){const x=days[k]; if(isWE(x)||x.hol) continue; if(p.marks[x.k]==="V") return true; break;}
+  return false;
+}
+function gen(b){
+  const u=b.u;
+  const planned=[]; for(let k=0;k<days.length;k++) if(occupied(k)) planned.push(k);
+  const dist=c=>{let m=60; for(const q of planned){const d=q<c.i?c.i-q:q>c.j?q-c.j:0; if(d<m)m=d;} return m;};
+  const all=candidates().filter(c=>{
+    if(mode==="verano"){
+      if(!(b.needLong&&c.h===10&&u.vL>=10&&c.W<=Math.min(P().summerW,u.wL))) return false;
+      const a=days[c.i].k,z=days[c.j].k,sc=schoolK(),sm=hasSchool()?P().schoolMode:"igual";
+      if(a<sFrom()) return false;
+      if(sm==="incluir") return a<=sc&&z>=sc&&dnum(z)-dnum(sc)<=14;
+      if(sm==="antes") return z<sc&&z<=sTo();
+      return z<=sTo();
+    }
+    if(c.W>b.wFree) return false;
+    if(month!==""){const mm=+month; if(!(days[c.i].m<=mm&&mm<=days[c.j].m)) return false;}
+    if(mode==="resto") return piece!=null&&c.h===piece&&piece<=b.vacFree&&!touchesV(c);
+    const g=P().admGroup;
+    if(g>0) return c.h===g&&c.h<=Math.floor(u.libresL)&&(P().even||c.eff>1);
+    return c.h>=1&&c.h<=Math.min(2,Math.floor(u.libresL))&&c.eff>1;
+  });
+  const R=((mode==="resto"||(mode==="adm"&&P().admGroup>0))&&P().even)?rhythm():null;
+  all.forEach(c=>{c.dist=dist(c);c.pay=payInfo(c).after;});
+  if(R) all.forEach(c=>{
+    /* Tramos parejos medidos desde el último día libre, con la plata como prioridad (partir cerca del pago). */
+    const wa=workAround(c,R), par=R.workPar, rest=Math.max(2,R.avgRest);
+    const pend=Math.max(1,R.n-1-R.others.length);
+    const gap=wa.aft+(wa.bef??0)+(c.j-c.i+1);
+    const mRaw=Math.round((gap+rest)/(par+rest))-1;
+    const mGap=Math.min(pend,Math.max(1,mRaw));
+    const lp=(gap-mGap*rest)/(mGap+1); /* tramo parejo dentro de este hueco */
+    let sc=wa.bef!==null?(wa.bef-lp)**2:0;
+    if(mRaw<1) sc+=1e4; /* hueco demasiado corto para otro descanso */
+    if(c.i<=R.base.j) sc+=1e5; /* antes del verano: pertenece al ciclo anterior */
+    if(mGap<=1) sc+=(wa.aft-lp)**2;
+    sc+=3*Math.max(0,c.pay-10)**2-20*c.free;
+    c.sc=sc;
+  });
+  if(mode==="verano") all.sort((a,c)=>c.eff-a.eff||c.free-a.free||a.pay-c.pay||a.i-c.i);
+  else if(R) all.sort((a,c)=>a.sc-c.sc||a.i-c.i);
+  else all.sort((a,c)=>c.eff-a.eff||c.free-a.free||c.dist-a.dist||a.i-c.i);
+  const picked=[];
+  for(const c of all){
+    if(mode==="verano"?picked.some(q=>Math.abs(c.i-q.i)<5):picked.some(q=>!(c.j<q.i-4||c.i>q.j+4))) continue;
+    picked.push(c); if(picked.length>=15) break;
+  }
+  return picked;
+}
+function split(c){
+  const type=mode==="adm"?"A":"V";
+  const dts=[],wks=[],hols=[];
+  for(let k=c.i;k<=c.j;k++){
+    const x=days[k];
+    if(x.hol) hols.push(k);
+    if(isWE(x)){ if(!natFree(x)){const sI=satIdx(k); if(!wks.includes(sI)) wks.push(sI);} }
+    else if(!x.hol) dts.push(k);
+  }
+  return {type,dts,wks,hols};
+}
+function applyCand(c){
+  const s=split(c), p=P();
+  s.dts.forEach(k=>p.marks[days[k].k]=s.type);
+  s.wks.forEach(k=>p.wk[days[k].k]=true);
+  optIdx=0; piece=null;
+  if(mode==="verano") mode="resto";
+  save(); render();
+  toast("Agendado. Queda en el calendario y en «Tu plan».");
+}
+
+/* ---------- texto ---------- */
+const sd=i=>{const x=days[i];return DC[x.dow]+" "+x.dd+" "+MESC[x.m];};
+function range(a,b){
+  const x=days[a],y=days[b];
+  if(a===b) return "el "+sd(a);
+  if(x.m===y.m) return "del "+DC[x.dow]+" "+x.dd+" al "+DC[y.dow]+" "+y.dd+" "+MESC[y.m];
+  return "del "+sd(a)+" al "+sd(b);
+}
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const plural=(n,one,many)=>n+" "+(n===1?one:many);
+const longD=i=>{const x=days[i];return DL[x.dow]+" "+pad(x.dd)+"/"+pad(x.m+1)+"/"+x.y;};
+function wkTxt(k){const x=days[k],y=days[k+1]; if(!y) return x.dd+" "+MESC[x.m]; return x.m===y.m?(x.dd+"–"+y.dd+" "+MESC[x.m]):(x.dd+" "+MESC[x.m]+"–"+y.dd+" "+MESC[y.m]);}
+const fmt=n=>{const r=Math.round(n*2)/2; const s=String(Math.trunc(r)); return (r%1)?(s==="0"?"½":s+"½"):s;};
+const mdTxt=md=>{const [m,d]=md.split("-").map(Number); return d+" "+MESC[m-1];};
+
+/* ---------- render ---------- */
+function render(){renderYears();renderPacks();renderRx();renderMonths();renderPlan();renderSettings();}
+
+function renderYears(){
+  $("years").innerHTML=YEARS.map(y=>`<button type="button" data-y="${y}" aria-pressed="${y===year}">${y===THIS_YEAR?y+" · lo que queda":y}</button>`).join("");
+}
+function renderPacks(){
+  const p=P(), b=budget(), u=b.u;
+  const head=(l,t,unit)=>l<0?`<span class="num over">te pasaste por ${fmt(-l)}</span>`:`<span class="num">${fmt(l)} <small>de ${fmt(t)} ${unit}</small></span>`;
+  // vacaciones
+  const pills=(n,used,over)=>{let h="";for(let k=0;k<n;k++)h+=`<span class="pill ${k<used?"used":""}"></span>`;for(let k=0;k<over;k++)h+=`<span class="pill over"></span>`;return h;};
+  let vacHtml="";
+  if(b.reserveOn||b.longFr){
+    const summerN=Math.min(10,p.vac), restN=Math.max(0,p.vac-summerN);
+    const longUsed=b.longFr?Math.min(b.longFr.n,summerN):0;
+    const restUsedRaw=u.v-longUsed;
+    const restUsed=Math.min(restUsedRaw,restN), over=Math.max(0,restUsedRaw-restN);
+    vacHtml=`<div class="grp"><span class="grp-l">Verano</span><div class="row">${pills(summerN,longUsed,0)}</div></div>
+      <div class="grp"><span class="grp-l">Resto · ${p.split.replace(/\+/g," + ")}</span><div class="row">${pills(restN,restUsed,over)}</div></div>`;
+  } else {
+    vacHtml=`<div class="grp"><span class="grp-l">Vacaciones</span><div class="row">${pills(p.vac,Math.min(u.v,p.vac),Math.max(0,u.v-p.vac))}</div></div>`;
+  }
+  // administrativos
+  const tabl=(n,fill,cls)=>{let h="";for(let k=0;k<n;k++){const f=Math.min(1,Math.max(0,fill-k)); h+=`<span class="tabl ${f>=1?"used":f>0?"half":cls}"></span>`;}return h;};
+  let resH=""; for(let k=0;k<Math.ceil(p.admReserva);k++){resH+=`<span class="tabl ${u.reservaUsed-k>0?"over":"res"}"></span>`;}
+  const admHead=u.libresL<0?`<span class="num over">usando la reserva</span>`:`<span class="num">${fmt(u.libresL)} <small>libres de ${fmt(u.libres)}</small></span>`;
+  const sachets=(n,used,over)=>{let h="";for(let k=0;k<n;k++)h+=`<span class="sachet ${k<used?"used":""}"></span>`;for(let k=0;k<over;k++)h+=`<span class="sachet over"></span>`;return h;};
+  let sach="";
+  if(b.reserveOn||b.longFr){
+    const sN=Math.min(p.summerW,p.fds), yN=Math.max(0,p.fds-sN);
+    let sUsed=0; if(b.longFr){const bl=planBlocks().find(x=>x.i<=b.longFr.i&&x.j>=b.longFr.j); sUsed=bl?Math.min(bl.W,sN):0;}
+    const yRaw=u.w-sUsed, yUsed=Math.min(yRaw,yN);
+    sach=`<div class="grp"><span class="grp-l">Verano</span><div class="row">${sachets(sN,sUsed,0)}</div></div><div class="grp"><span class="grp-l">Durante el año</span><div class="row">${sachets(yN,yUsed,Math.max(0,yRaw-yN))}</div></div>`;
+  } else sach=`<div class="grp"><span class="grp-l">Periodos completos</span><div class="row" style="max-width:none">${sachets(p.fds,Math.min(u.w,p.fds),Math.max(0,u.w-p.fds))}</div></div>`;
+  $("packs").innerHTML=`
+  <div class="card"><div class="pack-h"><h3 class="ctitle">Vacaciones</h3>${head(u.vL,p.vac,"días")}</div><div class="foil" aria-hidden="true">${vacHtml}</div></div>
+  <div class="card"><div class="pack-h"><h3 class="ctitle">Administrativos</h3>${admHead}</div><div class="foil" aria-hidden="true">
+    <div class="grp"><span class="grp-l">Libres${p.admGroup>0?` · de a ${p.admGroup}`:""}</span><div class="row">${tabl(Math.ceil(u.libres),Math.min(u.usedLibres,u.libres),"")}</div></div>
+    ${p.admMedios>0?`<div class="grp"><span class="grp-l">Medios días</span><div class="row">${tabl(Math.ceil(p.admMedios),u.mediosUsed,"")}</div></div>`:""}
+    <div class="grp"><span class="grp-l">Emergencia</span><div class="row">${resH}</div></div>
+  </div></div>
+  <div class="card"><div class="pack-h"><h3 class="ctitle">Fines de semana</h3>${head(u.wL,p.fds,"")}</div><div class="foil" aria-hidden="true">${sach}</div></div>`;
+  $("saldoSub").textContent=`${year}`;
+  const r=$("rule");
+  if(u.reservaUsed>0){r.className="callout err";r.textContent="Estás usando los administrativos de emergencia. Quita algún administrativo del plan para devolverlos a la reserva.";return;}
+  if(!b.reserveOn&&!b.longFr){r.className="callout";r.textContent="";return;}
+  if(b.longFr){
+    const inSummer=days[b.longFr.i].k>=sFrom()&&days[b.longFr.j].k<=sTo();
+    r.className="callout ok";r.textContent=`Tramo de 10 días listo: ${range(b.longFr.i,b.longFr.j)}${inSummer?"":" (queda fuera del verano)"}. Te quedan ${plural(b.vacFree,"día","días")} de vacaciones para el resto.`;
+  } else if(u.vL<10){r.className="callout err";r.textContent="Ya no te alcanzan 10 días seguidos para el tramo de verano. Quita algún día del resto de vacaciones.";}
+  else {r.className="callout";r.textContent=`Primero el verano: 10 días hábiles y ${plural(p.summerW,"finde","findes")}. Los otros ${plural(b.vacFree,"día","días")} y ${plural(b.wFree,"finde","findes")} quedan para repartir durante el año.`;}
+}
+
+function renderRx(){
+  const b=budget(), u=b.u, p=P();
+  if(!mode) mode=b.needLong?"verano":"resto";
+  $("modes").innerHTML=MODES.map(([k,l])=>`<button type="button" class="tab" data-m="${k}" aria-pressed="${k===mode}">${l}</button>`).join("");
+  // sub-controles
+  const firstM=(year===THIS_YEAR)?NOW.getMonth():0;
+  const monthSel=`<span class="sub-lbl">Mes</span><select class="sel" id="month">`+`<option value="">Cualquiera</option>`+MES.map((n,i)=>i<firstM?"":`<option value="${i}" ${String(i)===month?"selected":""}>${cap(n)}</option>`).join("")+`</select>`;
+  let sub="", pieces=[];
+  if(mode==="verano"){
+    if(hasSchool()){
+      sub=`<span class="sub-lbl">Clases de Melin (${fmtK(schoolK())})</span>`+SCHOOL_MODES.map(([k,l])=>`<button type="button" class="chip" data-school="${k}" aria-pressed="${k===p.schoolMode}">${l}</button>`).join("");
+    }
+    sub+=`<span class="sub-lbl" style="flex-basis:100%">10 días hábiles y ${plural(p.summerW,"finde","findes")}, partiendo lo más cerca posible después de un pago.</span>`;
+  } else if(mode==="resto"){
+    pieces=restPieces(b);
+    if(piece==null||!pieces.includes(piece)) piece=pieces.length?pieces[0]:null;
+    sub=`<span class="sub-lbl">Reparto</span>`+SPLITS.map(([k,l])=>`<button type="button" class="chip" data-split="${k}" aria-pressed="${k===p.split}">${l}</button>`).join("");
+    const distinct=[...new Set(pieces)];
+    if(distinct.length>1) sub+=`<span class="sub-lbl" style="margin-left:6px">Ahora</span>`+distinct.map(n=>`<button type="button" class="chip" data-piece="${n}" aria-pressed="${n===piece}">${plural(n,"día","días")}</button>`).join("");
+    sub+=`<button type="button" class="chip" data-even="1" aria-pressed="${!!p.even}">Espaciado parejo</button>`;
+    sub+=`<span style="display:inline-flex;align-items:center;gap:8px">${monthSel}</span>`;
+  } else {
+    sub=`<span class="sub-lbl">Solo usa los ${fmt(u.libres)} libres${p.admGroup>0?`, de a ${p.admGroup}`:""}. ${p.admMedios>0?"La reserva y los medios días no se tocan":"La reserva no se toca"}.</span>`+(p.admGroup>0?`<button type="button" class="chip" data-even="1" aria-pressed="${!!p.even}">Espaciado parejo</button>`:"")+`<span style="display:inline-flex;align-items:center;gap:8px">${monthSel}</span>`;
+  }
+  $("subctl").innerHTML=sub;
+  const rx=$("rx");
+  const emptyCard=(t,msg,btn)=>`<div class="rp" aria-hidden="true">Rp/</div><div><p class="big" style="font-size:1.25rem">${t}</p><p class="empty">${msg}</p>${btn||""}</div>`;
+  // casos sin sugerencia
+  if(mode==="verano"&&!b.needLong){
+    rx.innerHTML=b.longFr?emptyCard("Tramo de verano agendado",`Quedó ${range(b.longFr.i,b.longFr.j)}. Sigue con el resto de vacaciones.`,`<div class="actions"><button type="button" class="btn btn-solid" data-go="resto">Ir al resto</button></div>`)
+      :summerPast()?emptyCard(`El verano de ${year} ya pasó`,"Usa el resto de vacaciones o los administrativos.")
+      :emptyCard("Reserva de verano desactivada","Actívala en Ajustes para que te proponga el tramo de 10 días.");
+    list=[]; return;
+  }
+  if(mode==="resto"&&!pieces.length){rx.innerHTML=emptyCard("Nada por repartir",b.needLong?"Los días que quedan están reservados para el tramo de verano.":"Ya repartiste todas tus vacaciones de este año.");list=[];return;}
+  if(mode==="adm"&&u.libresL<Math.max(1,p.admGroup)){rx.innerHTML=emptyCard("Sin administrativos libres",`Ya agendaste los libres. La reserva de emergencia sigue intacta${p.admMedios>0?", y los medios días se marcan tocando un día del calendario tres veces":""}.`);list=[];return;}
+  list=gen(b);
+  if(optIdx>=list.length) optIdx=0;
+  if(!list.length){
+    const why=mode==="adm"&&u.wL<1?"Sin findes libres, un administrativo solo cubre su propio día, salvo junto a un feriado libre. Puedes marcarlo directo en el calendario.":`No encontré combinaciones con tu saldo${month!==""?" en "+MES[+month]:""}. Prueba otro mes${mode==="resto"?" u otro reparto":""}, o quita algo de «Tu plan».`;
+    rx.innerHTML=emptyCard("Nada que sugerir aquí",why);
+    return;
+  }
+  const c=list[optIdx], s=split(c);
+  const tag=mode==="verano"?"Tramo de verano":mode==="resto"?`Parte de ${plural(piece,"día","días")}, reparto ${p.split.replace(/\+/g," + ")}`:(p.admGroup>0?`Grupo de ${plural(p.admGroup,"administrativo","administrativos")}`:"Administrativo libre");
+  const items=[];
+  if(s.dts.length){
+    if(s.type==="V") items.push(`<li style="--c:var(--ok)">Vacaciones ${range(s.dts[0],s.dts[s.dts.length-1])} (${plural(s.dts.length,"día hábil","días hábiles")})</li>`);
+    else items.push(`<li style="--c:var(--ocre-soft)">Administrativo: ${s.dts.map(sd).join(" y ")}</li>`);
+  }
+  if(s.wks.length) items.push(`<li style="--c:var(--slate)">${s.wks.length===1?"Finde libre":"Findes libres"}: ${s.wks.map(wkTxt).join(", ")}</li>`);
+  const hs=s.hols.filter(k=>natFree(days[k]));
+  if(hs.length) items.push(`<li style="--c:var(--rust)">Feriados que suman: ${hs.map(k=>days[k].hol+" ("+days[k].dd+" "+MESC[days[k].m]+")").join(", ")}</li>`);
+  if(mode!=="verano"){const R=rhythm(); if(R){
+    const {bef,aft}=workAround(c,R);
+    if(bef!==null) items.push(`<li style="--c:var(--ink-soft)">Trabajo seguido: ${plural(bef,"día","días")} desde tu último descanso y ${plural(aft,"día","días")} hasta el siguiente (parejo ~${Math.round(R.workPar)}).</li>`);
+  }}
+  if(hasSchool()&&(mode==="verano"||(days[c.i].k<=schoolK()&&days[c.j].k>=schoolK()))){
+    const sc=schoolK(), a=days[c.i].k, z=days[c.j].k;
+    if(a<=sc&&z>=sc) items.push(`<li style="--c:var(--terracota)">Incluye el inicio de clases de Melin (${fmtK(sc)}).</li>`);
+    else if(z<sc) items.push(`<li style="--c:var(--terracota)">Termina ${plural(dnum(sc)-dnum(z),"día","días")} antes del inicio de clases de Melin (${fmtK(sc)}).</li>`);
+  }
+  {const pi=payInfo(c);
+   if(pi.inside.length) items.push(`<li style="--c:var(--moss)">Te pagan en medio: ${pi.inside.map(fmtK).join(" y ")}.</li>`);
+   else if(pi.last&&pi.after<=10) items.push(`<li style="--c:var(--moss)">Parte ${plural(pi.after,"día","días")} después del pago (${fmtK(pi.last)}).</li>`);
+   else if(pi.last&&mode==="verano") items.push(`<li style="--c:var(--moss)">El último pago fue ${plural(pi.after,"día","días")} antes (${fmtK(pi.last)}).</li>`);}
+  if(c.i>0&&days[c.i-1].eve) items.push(`<li style="--c:var(--terracota-deep)">El ${sd(c.i-1)} sales a las ${EVE_HORA}: el descanso parte ese mediodía.</li>`);
+  const evIn=[]; for(let k=c.i;k<=c.j;k++) if(days[k].eve&&s.dts.includes(k)) evIn.push(k);
+  if(evIn.length) items.push(`<li style="--c:var(--terracota-deep)">${cap(evIn.map(sd).join(" y "))}: ese día ya sales a las ${EVE_HORA}.</li>`);
+  const cost=[];
+  if(s.dts.length) cost.push(s.type==="V"?plural(s.dts.length,"día de vacaciones","días de vacaciones"):plural(s.dts.length,"administrativo","administrativos"));
+  if(c.W) cost.push(plural(c.W,"fin de semana","fines de semana"));
+  const wLeft=(mode==="verano"?u.wL:b.wFree)-c.W;
+  rx.innerHTML=`<div class="rp" aria-hidden="true">Rp/</div>
+  <div>
+    <div class="rx-top"><span class="rx-when">${cap(range(c.i,c.j))}</span><span class="stag">${tag}</span></div>
+    <p class="big">${c.free} días libres seguidos</p>
+    <ul>${items.join("")}</ul>
+    <p class="cost">Gastas ${cost.join(" y ")}. ${c.W?(wLeft>0?`Te ${wLeft===1?"queda":"quedan"} ${plural(wLeft,"finde","findes")} para lo demás.`:"No te quedan findes para lo demás."):""}</p>
+    <div class="actions">
+      <button type="button" class="btn btn-solid" data-act="agendar">Agendar en el calendario</button>
+      <button type="button" class="btn btn-ghost" data-act="otra" ${list.length<2?"disabled":""}>Otra opción</button>
+      <span class="count">${optIdx+1} / ${list.length}</span>
+    </div>
+  </div>`;
+}
+
+function renderMonths(){
+  const p=P(); let html="";
+  const firstM=(year===THIS_YEAR)?NOW.getMonth():0;
+  let idx=0; const start=[]; for(let m=0;m<12;m++){start[m]=idx; idx+=days.filter(x=>x.m===m).length;}
+  for(let m=firstM;m<12;m++){
+    const md=days.filter(x=>x.m===m);
+    let cells=DC.map(d=>`<span class="dow">${d.charAt(0).toUpperCase()}</span>`).join("");
+    for(let b=0;b<md[0].dow;b++) cells+=`<span class="blank"></span>`;
+    md.forEach((x,n)=>{
+      const i=start[m]+n; const cls=["day"]; let st="";
+      if(x.hol) cls.push("hol");
+      if(x.eve) cls.push("eve");
+      const isSch=hasSchool()&&x.k===schoolK(); if(isSch) cls.push("sch");
+      const pay=isPay(x.k);
+      if(isWE(x)){
+        if(wkOn(i)){cls.push("w");st="finde libre";}
+        else if(natFree(x)){cls.push("nat");st="feriado libre";}
+        else if(weekendNeedsW(i)&&weekendLong(i)){cls.push("long");st="finde largo, no disponible";}
+        else {cls.push("we");st="trabajas";}
+      } else {
+        const mk=p.marks[x.k];
+        if(mk==="V"){cls.push("v");st="vacaciones";}
+        else if(mk==="A"){cls.push("a");st="administrativo";}
+        else if(mk==="H"){cls.push("h");st="medio administrativo";}
+        else if(natFree(x)){cls.push("nat");st="feriado libre";}
+        else if(x.hol){st="feriado que trabajas";}
+      }
+      if(noTake(x)&&!p.marks[x.k]&&!wkOn(i)){cls.push("blk");st=blockedDay(x)?"semana de alta demanda, no se piden días":"media jornada, no se piden días";}
+      if(x.past) cls.push("past");
+      const evTxt=x.eve?`${x.eve}, sales a las ${EVE_HORA}`:"";
+      const extra=[x.hol,evTxt,pay?"día de pago":"",isSch?"inicio de clases de Melin":""].filter(Boolean);
+      const label=`${DL[x.dow]} ${x.dd} de ${MES[x.m]}${extra.length?", "+extra.join(", "):""}${st?", "+st:""}`;
+      cells+=`<button type="button" class="${cls.join(" ")}" data-i="${i}" aria-label="${label}" title="${extra.map(cap).join(". ")}" ${x.past?"disabled":""}>${pay?`<span class="pay" aria-hidden="true">$</span>`:""}${x.dd}</button>`;
+    });
+    const hl=md.filter(x=>x.hol||x.eve||(hasSchool()&&x.k===schoolK())).map(x=>(hasSchool()&&x.k===schoolK())?`<li class="schl"><b>${x.dd}</b>Inicio de clases de Melin (${DC[x.dow]})</li>`:"").join("")+md.filter(x=>x.hol||x.eve).map(x=>x.hol?`<li><b>${x.dd}</b>${x.hol} (${DC[x.dow]}${x.irr?", irrenunciable":""})${x.eve?`, sales ${EVE_HORA}`:""}</li>`:`<li class="eve"><b>${x.dd}</b>${x.eve} (${DC[x.dow]}), sales ${EVE_HORA}</li>`).join("");
+    html+=`<div><h3 class="mname">${MES[m]}</h3><div class="g7">${cells}</div>${hl?`<ul class="hols">${hl}</ul>`:""}</div>`;
+  }
+  $("months").innerHTML=html;
+}
+
+function planBlocks(){
+  const res=[]; let cur=null; const p=P();
+  for(let i=0;i<days.length;i++){
+    if(isFree(i)){
+      if(!cur){cur={i,j:i,mark:false,V:0,A:0,W:0};res.push(cur);}
+      cur.j=i; const x=days[i];
+      if(isWE(x)){ if(wkOn(i)){cur.mark=true; if(x.dow===5||i===cur.i) cur.W++;} }
+      else { const m=p.marks[x.k]; if(m){cur.mark=true; if(m==="V")cur.V++; else cur.A++;} }
+    } else cur=null;
+  }
+  return res.filter(b=>b.mark);
+}
+function renderPlan(){
+  const p=P(), blocks=planBlocks();
+  const halves=days.map((x,i)=>i).filter(i=>p.marks[days[i].k]==="H");
+  if(!blocks.length&&!halves.length){
+    $("plan").innerHTML=`<div class="empty-box">Aún no hay nada agendado. Usa la sugerencia o toca días en el calendario.</div>`;
+    $("planSub").textContent=""; return;
+  }
+  let total=0;
+  const rows=blocks.map((b,n)=>{
+    total+=b.j-b.i+1;
+    const parts=[]; if(b.V)parts.push(plural(b.V,"día de vacaciones","días de vacaciones")); if(b.A)parts.push(plural(b.A,"administrativo","administrativos")); if(b.W)parts.push(plural(b.W,"finde","findes"));
+    return `<div class="drow"><div><div class="dt">${cap(range(b.i,b.j))}: ${plural(b.j-b.i+1,"día libre","días libres")}</div><div class="dd">${parts.join(", ")}</div></div><button type="button" class="btn btn-rm" data-rm="${n}">Quitar</button></div>`;
+  }).join("")+halves.map(i=>`<div class="drow"><div><div class="dt">Medio día ${sd(i)}</div><div class="dd">½ administrativo</div></div><button type="button" class="btn btn-rm" data-rmh="${i}">Quitar</button></div>`).join("");
+  const lines=[];
+  const fr=fractions();
+  if(fr.length){lines.push("Feriado legal (vacaciones):"); fr.forEach(f=>lines.push(`- Del ${longD(f.i)} al ${longD(f.j)}: ${plural(f.n,"día hábil","días hábiles")}.`));}
+  const adm=days.map((x,i)=>i).filter(i=>["A","H"].includes(p.marks[days[i].k]));
+  if(adm.length){if(lines.length)lines.push(""); lines.push("Permiso administrativo:"); adm.forEach(i=>lines.push(`- ${cap(longD(i))}: ${p.marks[days[i].k]==="A"?"día completo":"medio día"}.`));}
+  const wks=days.map((x,i)=>i).filter(i=>days[i].dow===5&&p.wk[days[i].k]);
+  if(wks.length){if(lines.length)lines.push(""); lines.push("Fines de semana libres:"); wks.forEach(i=>{const a=days[i],c=days[i+1]; lines.push(`- Sábado ${pad(a.dd)}/${pad(a.m+1)}`+(c?` y domingo ${pad(c.dd)}/${pad(c.m+1)}`:"")+`/${year}.`);});}
+  $("planSub").textContent=`${plural(total,"día libre","días libres")} en ${year}`;
+  $("plan").innerHTML=`${rows}${rhythmHtml()}
+    <div class="req-h"><h3 class="ctitle">Texto para pedirlos</h3><button type="button" class="btn btn-ghost btn-sm" data-act="copiar">Copiar texto</button></div>
+    <textarea class="req" id="req" readonly>${lines.join("\n")}</textarea>`;
+}
+
+function rhythmHtml(){
+  const R=rhythm(); if(!R) return "";
+  const pos=v=>Math.min(100,Math.max(0,(v-R.b0)/R.L*100)).toFixed(2);
+  const all=[R.base,...R.others.map(o=>o.x)];
+  const segs=all.map(x=>{const a=dnum(days[x.i].k),z=dnum(days[x.j].k)+1; return `<span class="rseg${x.V?"":" adm"}" style="left:${pos(a)}%;width:${((z-a)/R.L*100).toFixed(2)}%"></span>`;}).join("");
+  const bx=days[R.base.i]; let labs="";
+  for(let k=0;k<12;k++){const dt=new Date(bx.y,bx.m+k,1), v=dnum(keyOf(dt)); if(v<R.b0||v>=R.b1) continue; labs+=`<span class="rlab" style="left:${pos(v)}%">${MESC[dt.getMonth()]}</span>`;}
+  const par=Math.round(R.workPar), far=w=>Math.abs(w.n-R.workPar)>R.workPar*.25;
+  const wlabs=R.work.map(w=>`<span class="rgap${far(w)?" far":""}" style="left:${pos((w.from+w.to)/2)}%">${w.n}</span>`).join("");
+  const wlist=R.work.map(w=>far(w)?`<b class="farT">${w.n}</b>`:w.n).join(", ").replace(/, ([^,]*)$/," y $1");
+  const pending=Math.max(0,R.n-all.length);
+  const kTxt=k=>k?fmtK(k).split(" ").slice(1).join(" "):"";
+  const offs=R.work.filter(far);
+  let msg;
+  if(!R.others.length) msg=`Parte con el verano. Las pestañas Resto y Administrativos te proponen fechas buscando tramos de ~${par} días de trabajo y que partan cerca del pago.`;
+  else if(offs.length) msg=`Tramos que se salen de lo parejo: ${offs.map(w=>`${w.n} días (${kTxt(w.fromK)} al ${kTxt(w.toK)})`).join(" y ")}.`;
+  else {const ns=R.work.map(w=>w.n); msg=`Quedan parejos: todos los tramos de trabajo están entre ${Math.min(...ns)} y ${Math.max(...ns)} días.`;}
+  if(pending&&R.others.length) msg+=` Falta${pending===1?"":"n"} ${plural(pending,"descanso","descansos")} por ubicar.`;
+  return `<div class="rit">
+    <div class="rit-h"><h3 class="ctitle">Ritmo</h3><span class="dd">${R.n} descansos (verano, ${plural(R.n-1-R.admGroups,"parte","partes")} de vacaciones${R.admGroups?` y ${plural(R.admGroups,"grupo","grupos")} de administrativos`:""}), hasta el ${fmtK(R.next)} ${year+1}</span></div>
+    <div class="track" aria-hidden="true">${segs}${wlabs}</div><div class="tlabels" aria-hidden="true">${labs}</div>
+    <p class="dd" style="margin:8px 0 0">Días trabajados seguidos entre descansos, desde tu último día libre: ${wlist} (parejo: ~${par}).</p>
+    <p class="callout${offs.length?"":" ok"}">${msg}</p>
+  </div>`;
+}
+function renderSettings(){
+  const p=P();
+  $("settings").innerHTML=`<div class="fgrid">
+    <div class="fg"><label for="f-vac">Días de vacaciones</label><input id="f-vac" type="number" min="0" max="60" step="1" data-f="vac" value="${p.vac}"></div>
+    <div class="fg"><label for="f-adm">Administrativos en total</label><input id="f-adm" type="number" min="0" max="20" step="0.5" data-f="adm" value="${p.adm}"></div>
+    <div class="fg"><label for="f-res">De emergencia (no se tocan)</label><input id="f-res" type="number" min="0" max="20" step="1" data-f="admReserva" value="${p.admReserva}"></div>
+    <div class="fg"><label for="f-grp">Administrativos por grupo (0 = sueltos)</label><input id="f-grp" type="number" min="0" max="6" step="1" data-f="admGroup" value="${p.admGroup}"></div>
+    <div class="fg"><label for="f-med">Para medios días</label><input id="f-med" type="number" min="0" max="20" step="1" data-f="admMedios" value="${p.admMedios}"></div>
+    <div class="fg"><label for="f-fds">Fines de semana libres</label><input id="f-fds" type="number" min="0" max="20" step="1" data-f="fds" value="${p.fds}"></div>
+    <div class="fg"><label for="f-sw">Findes para el verano</label><input id="f-sw" type="number" min="0" max="10" step="1" data-f="summerW" value="${p.summerW}"></div>
+    <div class="fg"><label for="f-sch">Inicio de clases de Melin</label><input id="f-sch" type="date" data-f="school" value="${year}-${p.school}" min="${year}-01-01" max="${year}-12-31"></div>
+    <div class="fg"><label for="f-sf">Verano desde</label><input id="f-sf" type="date" data-f="summerFrom" value="${year}-${p.summerFrom}" min="${year}-01-01" max="${year}-12-31"></div>
+    <div class="fg"><label for="f-st">Verano hasta</label><input id="f-st" type="date" data-f="summerTo" value="${year}-${p.summerTo}" min="${year}-01-01" max="${year}-12-31"></div>
+  </div>
+  <label class="check"><input type="checkbox" data-f="rule10" ${p.rule10?"checked":""}><span>Reservar 10 días seguidos para el verano<small>Regla del estatuto: si fraccionas las vacaciones, una de las partes debe ser de al menos 10 días.</small></span></label>
+  <label class="check"><input type="checkbox" data-f="blockSep" ${p.blockSep?"checked":""}><span>No pedir días la semana del 18/09 ni la siguiente<small>Semanas de alta demanda en la farmacia.</small></span></label>
+  <label class="check"><input type="checkbox" data-f="noHalf" ${p.noHalf?"checked":""}><span>No pedir días de media jornada<small>Vísperas con salida a las ${EVE_HORA} (17/09, 24/12, 31/12) y medios administrativos.</small></span></label>
+  <label class="check"><input type="checkbox" data-f="workHol" ${p.workHol?"checked":""}><span>Trabajo los feriados normales<small>Los irrenunciables (1 ene, 1 may, 18 y 19 sep, 25 dic) siempre son libres. Los findes pegados a un feriado normal en lunes o viernes no se ofrecen.</small></span></label>`;
+}
+
+/* ---------- eventos ---------- */
+$("years").addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-y]"); if(!b) return;
+  const y=+b.dataset.y; if(y===year) return;
+  year=y; if(!plans[y]) await loadYear(y);
+  days=buildDays(y); mode=null; month=""; optIdx=0; piece=null; renderClear(false); render();
+});
+$("modes").addEventListener("click",e=>{const b=e.target.closest("button[data-m]"); if(!b) return; mode=b.dataset.m; optIdx=0; renderRx();});
+$("subctl").addEventListener("click",e=>{
+  const ev=e.target.closest("button[data-even]"); if(ev){P().even=!P().even; optIdx=0; save(); renderRx(); return;}
+  const sc=e.target.closest("button[data-school]"); if(sc){P().schoolMode=sc.dataset.school; optIdx=0; save(); renderRx(); renderMonths(); return;}
+  const s=e.target.closest("button[data-split]"), pc=e.target.closest("button[data-piece]");
+  if(s){P().split=s.dataset.split; piece=null; optIdx=0; save(); renderPacks(); renderRx();}
+  if(pc){piece=+pc.dataset.piece; optIdx=0; renderRx();}
+});
+$("subctl").addEventListener("change",e=>{if(e.target.id==="month"){month=e.target.value; optIdx=0; renderRx();}});
+$("rx").addEventListener("click",e=>{
+  const g=e.target.closest("button[data-go]"); if(g){mode=g.dataset.go; optIdx=0; renderRx(); return;}
+  const b=e.target.closest("button[data-act]"); if(!b) return;
+  if(b.dataset.act==="otra"){optIdx=(optIdx+1)%list.length; renderRx();}
+  if(b.dataset.act==="agendar"&&list[optIdx]) applyCand(list[optIdx]);
+});
+/* Limpiar: confirmación en la misma página (los diálogos del navegador vienen bloqueados en el visor). */
+let clearTimer=null;
+function renderClear(ask){
+  clearTimeout(clearTimer);
+  const box=$("clearBox");
+  if(ask){
+    box.innerHTML=`<span class="q">¿Borrar todo lo agendado en ${year}?</span><button type="button" class="btn btn-rm" data-clear="yes">Sí, limpiar</button><button type="button" class="btn btn-ghost btn-sm" data-clear="no">Cancelar</button>`;
+    const y=box.querySelector('[data-clear="yes"]'); if(y) y.focus({preventScroll:true});
+    clearTimer=setTimeout(()=>renderClear(false),8000);
+  } else box.innerHTML=`<button type="button" class="btn btn-ghost btn-sm" data-clear="ask">Limpiar calendario</button>`;
+}
+$("clearBox").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-clear]"); if(!b) return;
+  const p=P(), act=b.dataset.clear;
+  if(act==="ask"){
+    if(!Object.keys(p.marks).length&&!Object.keys(p.wk).length){toast("El calendario ya está limpio.");return;}
+    renderClear(true);
+  } else if(act==="no"){ renderClear(false); }
+  else {
+    p.marks={}; p.wk={}; mode=null; optIdx=0; piece=null; save(); renderClear(false); render(); toast("Calendario limpio. Saldo completo de nuevo.");
+  }
+});
+$("months").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-i]"); if(!b||b.disabled) return;
+  const i=+b.dataset.i, x=days[i], p=P();
+  if(isWE(x)){
+    const s=satIdx(i); if(s<0) return; const k=days[s].k;
+    if(!p.wk[k]&&!weekendNeedsW(i)){toast("Ese finde ya es libre por feriados.");return;}
+    if(!p.wk[k]&&(noTake(days[s])||(days[s+1]&&noTake(days[s+1])))){toast("Semana de alta demanda (18/09 y la siguiente): no se piden días.");return;}
+    if(!p.wk[k]&&weekendLong(i)){const h=longHol(i); toast(`Finde largo por ${h.hol} (${DC[h.dow]} ${h.dd}). Se cubre como periodo completo, así que no se ofrece.`);return;}
+    if(p.wk[k]) delete p.wk[k]; else p.wk[k]=true;
+  } else if(noTake(x)&&!p.marks[x.k]){
+    toast(blockedDay(x)?"Semana de alta demanda (18/09 y la siguiente): no se piden días.":`Media jornada (sales a las ${EVE_HORA}): no se piden días.`); return;
+  } else if(x.hol){
+    toast((x.irr?`${x.hol}: irrenunciable. Libre sin gastar días.`:natFree(x)?`${x.hol}: feriado libre, no gasta días.`:`${x.hol}: feriado normal, lo trabajas (cámbialo en Ajustes).`)+(x.eve?` Sales a las ${EVE_HORA}.`:"")); return;
+  } else {
+    const order=(p.admMedios>0&&!p.noHalf)?[undefined,"V","A","H"]:[undefined,"V","A"]; const ix=order.indexOf(p.marks[x.k]); const nx=order[(ix<0?0:ix+1)%order.length];
+    if(nx) p.marks[x.k]=nx; else delete p.marks[x.k];
+  }
+  save(); render();
+  const again=document.querySelector(`#months button[data-i="${i}"]`); if(again) again.focus({preventScroll:true});
+});
+$("plan").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return; const p=P();
+  if(b.dataset.rm!==undefined){
+    const bl=planBlocks()[+b.dataset.rm]; if(!bl) return;
+    for(let k=bl.i;k<=bl.j;k++){const x=days[k]; delete p.marks[x.k]; const s=satIdx(k); if(s>=0&&days[s]) delete p.wk[days[s].k];}
+    piece=null; save(); render(); toast("Quitado. Los días volvieron a tu saldo.");
+  } else if(b.dataset.rmh!==undefined){
+    delete p.marks[days[+b.dataset.rmh].k]; save(); render();
+  } else if(b.dataset.act==="copiar"){
+    const ta=$("req"); const t=ta.value; const done=()=>toast("Texto copiado.");
+    const fb=()=>{ta.select();try{document.execCommand("copy");done();}catch(_){toast("Selecciona el texto y cópialo.");}};
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,fb); else fb();
+  }
+});
+$("settings").addEventListener("change",e=>{
+  const el=e.target, f=el.dataset.f; if(!f) return; const p=P();
+  if(el.type==="checkbox") p[f]=el.checked;
+  else if(el.type==="date"){ if(/^\d{4}-\d\d-\d\d$/.test(el.value)) p[f]=el.value.slice(5); }
+  else {const v=parseFloat(el.value); if(!isNaN(v)&&v>=0) p[f]=f==="adm"?Math.round(v*2)/2:Math.round(v);}
+  mode=null; optIdx=0; piece=null; save(); render();
+});
+
+let tt=null;
+function toast(msg){const t=$("toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("on"),2800);}
+function setSync(s){$("sync").textContent=s;}
+
+/* ---------- guardado ---------- */
+/* Plan precargado (copia del planificador en claude.ai al 16-10-2026). Solo se usa si este navegador aún no tiene plan para ese año. */
+const SEED={"2026":{"adm":2.5,"admGroup":0,"admMedios":3,"admReserva":0,"blockSep":true,"even":true,"fds":1,"marks":{"2026-10-19":"V","2026-10-20":"V"},"noHalf":true,"rule10":true,"school":"03-03","schoolMode":"incluir","split":"2+2+1","summerFrom":"01-01","summerTo":"03-07","summerW":0,"vac":0,"wk":{"2026-10-17":true},"workHol":true},"2027":{"adm":6,"admGroup":2,"admMedios":0,"admReserva":2,"blockSep":true,"even":true,"fds":3,"marks":{"2027-02-01":"V","2027-02-02":"V","2027-02-03":"V","2027-02-04":"V","2027-02-05":"V","2027-02-08":"V","2027-02-09":"V","2027-02-10":"V","2027-02-11":"V","2027-02-12":"V","2027-04-29":"A","2027-04-30":"A","2027-07-01":"V","2027-07-02":"V","2027-10-01":"V"},"noHalf":true,"rule10":true,"school":"03-03","schoolMode":"antes","split":"2+3","summerFrom":"01-01","summerTo":"03-07","summerW":1,"vac":15,"wk":{"2027-02-06":true,"2027-07-03":true,"2027-10-02":true},"workHol":true}};
+const lsKey=y=>"panel.v5.vacaciones."+y;
+function readLocal(y){try{const r=localStorage.getItem(lsKey(y))||localStorage.getItem("vacaciones-plan-"+y); if(r) return JSON.parse(r);}catch(_){} return SEED[y]?JSON.parse(JSON.stringify(SEED[y])):null;}
+async function loadYear(y){
+  let d=null;
+  if(db){try{const s=await db.doc("planes/"+y).get(); if(s.exists) d=s.data();}catch(_){}}
+  if(!d) d=readLocal(y);
+  plans[y]=normalize(d?JSON.parse(JSON.stringify(d)):null);
+}
+function save(){
+  try{localStorage.setItem(lsKey(year),JSON.stringify(plans[year]));}catch(_){}
+  pending.add(year); clearTimeout(saveTimer); saveTimer=setTimeout(flush,700);
+}
+async function flush(){
+  if(!db||saving) return; saving=true; setSync("Guardando…");
+  try{
+    for(const y of [...pending]){pending.delete(y); await db.doc("planes/"+y).set(JSON.parse(JSON.stringify(plans[y])));}
+    setSync("Plan guardado.");
+  }catch(e){setSync("Guardado solo en este navegador.");}
+  saving=false; if(pending.size) flush();
+}
+
+/* ---------- inicio ---------- */
+plans[year]=normalize(readLocal(year));
+days=buildDays(year);
+render(); renderClear(false);
+setSync("Se guarda en este navegador.");
+if(window.claude&&typeof window.claude.use==="function"){
+  window.claude.use("db").then(async d=>{
+    if(!d) return; db=d;
+    try{
+      for(const y of Object.keys(plans).map(Number)){
+        const s=await db.doc("planes/"+y).get();
+        if(s.exists){plans[y]=normalize(JSON.parse(JSON.stringify(s.data())));}
+        else if(Object.keys(plans[y].marks).length||Object.keys(plans[y].wk).length){pending.add(y);}
+      }
+      days=buildDays(year); render(); setSync("Plan guardado."); if(pending.size) flush();
+    }catch(_){setSync("Guardado solo en este navegador.");}
+  }).catch(()=>{});
+}
+})();
+</script>
+</body>
+</html>
